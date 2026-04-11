@@ -1,0 +1,46 @@
+{
+  "$schema": "https://qwen-code.ai/settings-schema.json",
+  "$version": 3,
+  "model": {
+    "name": "coder-model",
+    "generationConfig": {
+      "enableCacheControl": true,
+      "samplingParams": {
+        "temperature": 0.2,
+        "max_tokens": 8192
+      }
+    }
+  },
+  "tools": {
+    "approvalMode": "yolo"
+  },
+  "context": {
+    "fileFiltering": {
+      "enableFuzzySearch": true
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.qwen/hooks/security-guard.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.qwen/hooks/notify-desktop.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

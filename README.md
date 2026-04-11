@@ -1,26 +1,112 @@
-# Qwen Con Poderes
+<p align="center">
+  <img src="https://img.shields.io/badge/version-2.0.0-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/agents-168-green?style=flat-square" alt="Agents">
+  <img src="https://img.shields.io/badge/skills-193-green?style=flat-square" alt="Skills">
+  <img src="https://img.shields.io/badge/hooks-7-orange?style=flat-square" alt="Hooks">
+  <img src="https://img.shields.io/badge/commands-11-purple?style=flat-square" alt="Commands">
+  <img src="https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square" alt="License">
+  <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform">
+</p>
 
-**168 agentes especializados + 193 skills** para [Qwen Code CLI](https://github.com/QwenLM/qwen-code) — convierte tu terminal en un ejército de expertos en IA.
+<h1 align="center">Qwen Con Poderes v2</h1>
 
-> Qwen Code es un agente de IA open-source para terminal, optimizado para los modelos Qwen de Alibaba. Con este repo le agregas **superpoderes**: 168 agentes especializados y 193 skills que cubren desarrollo, diseño, marketing, ventas, testing, gaming, y mucho más.
+<p align="center">
+  <strong>168 agentes + 193 skills + 7 hooks + 11 commands</strong> para <a href="https://github.com/QwenLM/qwen-code">Qwen Code CLI</a><br>
+  Convierte tu terminal en un ejercito de expertos con optimizacion de tokens y routing inteligente.
+</p>
+
+<p align="center">
+  <a href="#instalacion">Instalacion</a> &bull;
+  <a href="#arquitectura">Arquitectura</a> &bull;
+  <a href="#features">Features</a> &bull;
+  <a href="#agentes">Agentes</a> &bull;
+  <a href="#skills">Skills</a> &bull;
+  <a href="#hooks">Hooks</a> &bull;
+  <a href="#commands">Commands</a> &bull;
+  <a href="#comparativa">Comparativa</a>
+</p>
 
 ---
 
-## Instalación rápida
+## Por que v2?
 
-### Requisitos previos
+La v1 era un paquete de agentes y skills. La v2 es un **sistema completo de optimizacion** inspirado en las mejores practicas del ecosistema de agentes AI:
 
-- **Node.js v20+** — [descargar](https://nodejs.org)
-- **Git** — [descargar](https://git-scm.com)
+| Mejora | v1 | v2 | Impacto |
+|--------|----|----|---------|
+| Agentes | 168 | 168 | Misma cobertura |
+| Skills | 193 | 193 | Misma cobertura |
+| Hooks inteligentes | 0 | 7 | Seguridad + auto-routing |
+| Slash commands | 0 | 11 | Workflows profesionales |
+| Token optimization | No | Si | ~30-40% menos tokens |
+| Security hooks | No | Si | Bloqueo de secrets y comandos peligrosos |
+| Auto-routing de skills | No | Si | Sugiere skills automaticamente |
+| Handoff entre sesiones | No | Si | Continuidad sin perder contexto |
+| Doctor/diagnostico | No | Si | Auto-verificacion |
+| settings.json con hooks | No | Si | Zero-config |
+
+---
+
+## Arquitectura
+
+```
+                    +------------------+
+                    |    Tu Prompt     |
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    |   Skill Router   |  <-- Hook: auto-detecta intent
+                    |   (UserPrompt)   |      y sugiere skill/agente
+                    +--------+---------+
+                             |
+              +--------------+--------------+
+              |              |              |
+     +--------v---+  +------v------+  +----v--------+
+     |  Nivel 1   |  |  Nivel 2    |  |  Nivel 3    |
+     |  Simple    |  |  Medio      |  |  Complejo   |
+     | Edit tool  |  | 1 SubAgent  |  | Multi-Agent |
+     | directo    |  | enfocado    |  | coordinado  |
+     +------------+  +-------------+  +-------------+
+              |              |              |
+     +--------v--------------v--------------v--------+
+     |              Security Layer                     |
+     |  Pre-Edit Guard | Security Guard | Secret Block |
+     +-------------------------------------------------+
+              |
+     +--------v---------+
+     |   Post-Tool Log   |  <-- Auditoria automatica
+     +-------------------+
+              |
+     +--------v---------+
+     |   Auto-Handoff    |  <-- Guarda progreso al terminar
+     +-------------------+
+```
+
+### 3 Niveles de Complejidad
+
+El sistema optimiza tokens automaticamente clasificando cada tarea:
+
+| Nivel | Complejidad | Estrategia | Tokens | Ejemplo |
+|-------|-------------|------------|--------|---------|
+| **1** | Simple (<30%) | Edit directo | Minimo | Renombrar, fix typo |
+| **2** | Media (30-70%) | 1 subagent | Moderado | Bug fix, feature |
+| **3** | Alta (>70%) | Multi-agent | Maximo | Arquitectura, migracion |
+
+---
+
+## Instalacion
+
+### Requisitos
+
+- **Node.js v20+** - [descargar](https://nodejs.org)
+- **Git** - [descargar](https://git-scm.com)
+- **jq** (recomendado, para hooks) - `sudo pacman -S jq` / `sudo apt install jq` / `brew install jq`
 
 ### Linux / macOS
 
 ```bash
-# 1. Clonar el repo
 git clone https://github.com/nicolas2601/qwen-con-poderes-.git
 cd qwen-con-poderes-
-
-# 2. Ejecutar instalador (instala Qwen CLI + agentes + skills)
 chmod +x scripts/install-linux.sh
 ./scripts/install-linux.sh
 ```
@@ -28,269 +114,235 @@ chmod +x scripts/install-linux.sh
 ### Windows (CMD)
 
 ```cmd
-REM 1. Clonar el repo
 git clone https://github.com/nicolas2601/qwen-con-poderes-.git
 cd qwen-con-poderes-
-
-REM 2. Ejecutar instalador
 scripts\install-windows.bat
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
-# 1. Clonar el repo
 git clone https://github.com/nicolas2601/qwen-con-poderes-.git
 cd qwen-con-poderes-
-
-# 2. Ejecutar instalador
 .\scripts\install-windows.ps1
 ```
 
----
-
-## Qué se instala
-
-| Componente | Cantidad | Ubicación |
-|---|---|---|
-| Qwen Code CLI | 1 | Global (npm) |
-| SubAgentes | 168 | `~/.qwen/agents/` |
-| Skills | 193 | `~/.qwen/skills/` |
-| Config global | 1 | `~/.qwen/QWEN.md` |
-
----
-
-## Cómo usar
-
-### Iniciar Qwen Code
+### Opciones del instalador (Linux/macOS)
 
 ```bash
-qwen
+./scripts/install-linux.sh --help       # Ver opciones
+./scripts/install-linux.sh --doctor     # Solo diagnostico
+./scripts/install-linux.sh --skip-cli   # No instalar Qwen CLI
+./scripts/install-linux.sh --force      # Sobreescribir todo
 ```
 
-La primera vez te pedirá autenticarte con `/auth`. Puedes usar:
-- **Qwen OAuth** (1,000 requests/día gratis)
-- **API key** de Alibaba Cloud ModelStudio
-- Cualquier API compatible con OpenAI/Anthropic/Gemini
+### Verificar instalacion
 
-### Ver y usar agentes
+```bash
+./scripts/install-linux.sh --doctor
+```
+
+---
+
+## Que se instala
+
+```
+~/.qwen/
+├── agents/          168 archivos .md de subagentes
+├── skills/          193 carpetas con SKILL.md
+├── hooks/           7 hooks de automatizacion
+│   ├── security-guard.sh      Bloquea comandos peligrosos
+│   ├── pre-edit-guard.sh      Protege archivos sensibles
+│   ├── post-tool-logger.sh    Logging de operaciones
+│   ├── skill-router.sh        Auto-routing de skills
+│   ├── session-init.sh        Carga contexto anterior
+│   ├── auto-handoff.sh        Guarda progreso al salir
+│   └── notify-desktop.sh      Notificaciones nativas
+├── commands/        11 slash commands profesionales
+│   ├── review.md              Code review P0-P3
+│   ├── ship.md                Test+lint+commit+push
+│   ├── handoff.md             Continuidad entre sesiones
+│   ├── audit.md               Auditoria multi-dimension
+│   ├── refactor.md            Refactor con verificacion
+│   ├── test-gen.md            Generacion automatica de tests
+│   ├── deps.md                Analisis de dependencias
+│   ├── perf.md                Analisis de performance
+│   ├── compact.md             Compresion inteligente
+│   ├── doc-sync.md            Sincronizar documentacion
+│   └── plan.md                Planificacion estructurada
+├── QWEN.md          Instrucciones globales optimizadas
+├── settings.json    Config con hooks pre-configurados
+└── logs/            Directorio de auditoria
+```
+
+---
+
+## Features
+
+### Hooks Inteligentes
+
+Los hooks se ejecutan automaticamente en puntos clave del ciclo de Qwen Code:
+
+| Hook | Evento | Funcion |
+|------|--------|---------|
+| `security-guard` | PreToolUse (Bash) | Bloquea `rm -rf /`, fork bombs, `curl\|sh` y otros comandos peligrosos |
+| `pre-edit-guard` | PreToolUse (Edit/Write) | Impide edicion de `.env`, `credentials.json`, keys SSH. Detecta API keys en contenido |
+| `post-tool-logger` | PostToolUse | Registra cada operacion en `~/.qwen/logs/` con rotacion automatica |
+| `skill-router` | UserPromptSubmit | Analiza tu prompt y sugiere el skill/agente mas relevante automaticamente |
+| `session-init` | SessionStart | Detecta handoff previo, stack del proyecto, y branch actual |
+| `auto-handoff` | Stop | Si la sesion fue productiva (5+ operaciones), sugiere crear handoff |
+| `notify-desktop` | Notification | Envia notificaciones nativas (Linux notify-send / macOS osascript) |
+
+### Slash Commands
+
+| Comando | Descripcion |
+|---------|-------------|
+| `/review` | Code review estructurado con prioridades P0-P3 |
+| `/ship` | Pipeline completo: tests -> lint -> review -> commit -> push |
+| `/handoff` | Genera documento de continuidad para la proxima sesion |
+| `/audit` | Auditoria: seguridad, performance, calidad, deps, testing |
+| `/refactor` | Refactor seguro con snapshot + verificacion de regresiones |
+| `/test-gen` | Genera tests para archivos sin cobertura |
+| `/deps` | Analiza dependencias: vulnerables, outdated, unused |
+| `/perf` | Detecta bottlenecks: N+1, O(n^2), memory leaks |
+| `/compact` | Comprime contexto con handoff automatico |
+| `/doc-sync` | Sincroniza documentacion con el codigo actual |
+| `/plan` | Descompone tareas complejas en pasos ejecutables |
+
+### Optimizacion de Tokens
+
+Tecnicas integradas en el `QWEN.md`:
+
+1. **Routing por complejidad** - No lanza subagents para tareas simples
+2. **Lectura parcial** - Usa offset+limit en archivos grandes
+3. **No repeticion** - Evita re-leer contenido ya en contexto
+4. **Compresion proactiva** - `/compact` antes de llegar al limite
+5. **Handoff documents** - Preserva contexto entre sesiones sin tokens
+6. **Respuestas concisas** - Codigo > explicacion por defecto
+7. **Batch operations** - Agrupa lecturas y escrituras en un mensaje
+
+---
+
+## Agentes (168)
+
+### Por Categoria
+
+| Categoria | Cantidad | Destacados |
+|-----------|----------|------------|
+| Engineering | 27 | `backend-architect`, `frontend-developer`, `software-architect`, `devops-automator` |
+| Marketing | 29 | `seo-specialist`, `content-creator`, `growth-hacker`, `tiktok-strategist` |
+| Specialized | 30 | `blockchain-security-auditor`, `mcp-builder`, `salesforce-architect` |
+| Game Dev | 20 | `unity-architect`, `unreal-systems-engineer`, `godot-gameplay-scripter` |
+| Design | 8 | `ui-designer`, `ux-architect`, `ux-researcher`, `brand-guardian` |
+| Testing | 8 | `api-tester`, `accessibility-auditor`, `performance-benchmarker` |
+| Sales | 8 | `sales-engineer`, `deal-strategist`, `outbound-strategist` |
+| Paid Media | 7 | `ppc-strategist`, `programmatic-buyer`, `tracking-specialist` |
+| Support | 6 | `analytics-reporter`, `finance-tracker`, `legal-compliance-checker` |
+| Spatial Computing | 6 | `visionos-spatial-engineer`, `xr-immersive-developer` |
+| Project Mgmt | 6 | `project-manager-senior`, `jira-workflow-steward` |
+| Academic | 5 | `historian`, `psychologist`, `anthropologist` |
+| Product | 5 | `product-manager`, `sprint-prioritizer`, `trend-researcher` |
+
+### Uso
 
 ```bash
 # Dentro de Qwen Code:
-/agents manage          # Ver todos los agentes disponibles
-/agents create          # Crear uno nuevo
+/agents manage                    # Ver todos los agentes
+/agents create                    # Crear uno nuevo
 
-# Usar agente en una conversación:
-> Usa el agente engineering-backend-architect para diseñar mi API
+# Usar en conversacion:
+> Usa engineering-backend-architect para disenar mi API REST
+> Necesito que marketing-seo-specialist audite mi sitio
 ```
 
-### Ver y usar skills
+---
+
+## Skills (193)
+
+193 skills organizadas en 15+ categorias, incluyendo **25 skills portadas del ecosistema de Claude Code**:
+
+| Skill | Origen | Funcion |
+|-------|--------|---------|
+| `code-review` | Claude Code | Review con checklist P0-P3 |
+| `comprehensive-review` | Claude Code | Review multi-subagent en paralelo |
+| `audit-website` | Claude Code | Auditoria web: SEO, seguridad, performance |
+| `maestro` | Claude Code | Gestion de repos complejos |
+| `ui-ux-pro-max` | Claude Code | Diseno UI/UX: 50 estilos, 21 paletas |
+| `playwright` | Claude Code | Automatizacion de browser |
+| `gemini` | Claude Code | Code review con contexto grande |
+| `vercel-react-best-practices` | Claude Code | Optimizacion React/Next.js |
+| `react-native-best-practices` | Claude Code | Optimizacion React Native |
+| `nano-banana-pro` | Claude Code | Generacion de imagenes |
 
 ```bash
-# Dentro de Qwen Code:
-/skills engineering-backend-architect    # Invocar skill directamente
+# Invocar skill:
+/skills code-review
+/skills audit-website
 
-# O simplemente pregunta — Qwen selecciona la skill automáticamente:
-> Diseña la arquitectura de mi aplicación mobile
-# → Activa automáticamente engineering-mobile-app-builder
+# O simplemente describe tu tarea — Qwen selecciona automaticamente
 ```
 
 ---
 
-## Catálogo de agentes (168)
+## Comparativa
 
-### Academic (5)
-| Agente | Descripción |
-|---|---|
-| `academic-anthropologist` | Antropólogo cultural |
-| `academic-geographer` | Geógrafo físico y humano |
-| `academic-historian` | Historiador y analista |
-| `academic-narratologist` | Teoría narrativa y estructura |
-| `academic-psychologist` | Comportamiento humano y cognitivo |
+### Qwen Code Solo vs Qwen Con Poderes v2
 
-### Design (8)
-| Agente | Descripción |
-|---|---|
-| `design-brand-guardian` | Estrategia y guardianismo de marca |
-| `design-image-prompt-engineer` | Prompts de fotografía e imagen |
-| `design-inclusive-visuals-specialist` | Representación inclusiva |
-| `design-ui-designer` | Diseño UI, sistemas de componentes |
-| `design-ux-architect` | Arquitectura UX y CSS systems |
-| `design-ux-researcher` | Investigación UX y usabilidad |
-| `design-visual-storyteller` | Narrativa visual |
-| `design-whimsy-injector` | Personalidad y delight en UI |
+| Feature | Qwen Code Base | Con Poderes v1 | Con Poderes v2 |
+|---------|---------------|----------------|----------------|
+| Agentes especializados | 0 | 168 | 168 |
+| Skills profesionales | 0 | 193 | 193 |
+| Security hooks | 0 | 0 | 7 |
+| Slash commands pro | 0 | 0 | 11 |
+| Token optimization | Basico | Basico | Avanzado (3 niveles) |
+| Auto-routing de skills | No | No | Si |
+| Handoff entre sesiones | No | No | Si |
+| Auditoria de operaciones | No | No | Si |
+| Doctor/diagnostico | No | No | Si |
+| Notificaciones desktop | No | No | Si |
+| settings.json pre-config | No | No | Si |
 
-### Engineering (27)
-| Agente | Descripción |
-|---|---|
-| `engineering-ai-engineer` | ML/AI models y deployment |
-| `engineering-backend-architect` | Arquitectura backend escalable |
-| `engineering-cms-developer` | Drupal/WordPress |
-| `engineering-code-reviewer` | Code review constructivo |
-| `engineering-data-engineer` | Data pipelines y lakehouse |
-| `engineering-database-optimizer` | Schema, queries, indexing |
-| `engineering-devops-automator` | Infrastructure y CI/CD |
-| `engineering-embedded-firmware-engineer` | ESP32, PlatformIO, RTOS |
-| `engineering-frontend-developer` | React/Vue/Angular |
-| `engineering-git-workflow-master` | Git workflows y branching |
-| `engineering-incident-response-commander` | Gestión de incidentes |
-| `engineering-mobile-app-builder` | iOS/Android nativo y cross-platform |
-| `engineering-rapid-prototyper` | MVPs ultra-rápidos |
-| `engineering-security-engineer` | AppSec, threat modeling |
-| `engineering-senior-developer` | Laravel/Livewire/Three.js |
-| `engineering-software-architect` | DDD, system design |
-| `engineering-solidity-smart-contract-engineer` | Smart contracts EVM |
-| `engineering-sre` | SRE, SLOs, observabilidad |
-| `engineering-technical-writer` | Documentación técnica |
-| ...y más |
+### vs Ruflo (Claude Code)
 
-### Game Development (20)
-| Agente | Descripción |
-|---|---|
-| `blender-addon-engineer` | Blender Python add-ons |
-| `game-designer` | Mecánicas, GDD, player psychology |
-| `godot-gameplay-scripter` | GDScript 2.0, C# en Godot |
-| `unity-architect` | ScriptableObjects, DI en Unity |
-| `unreal-systems-engineer` | C++/Blueprint en UE |
-| `narrative-designer` | Narrativa y diálogos |
-| `level-designer` | Level design y pacing |
-| ...y más (Roblox, shaders, multiplayer, VFX) |
-
-### Marketing (29)
-| Agente | Descripción |
-|---|---|
-| `marketing-content-creator` | Contenido multi-plataforma |
-| `marketing-growth-hacker` | Growth hacking |
-| `marketing-seo-specialist` | SEO técnico y contenido |
-| `marketing-tiktok-strategist` | TikTok viral content |
-| `marketing-instagram-curator` | Instagram marketing |
-| `marketing-linkedin-content-creator` | LinkedIn thought leadership |
-| `marketing-twitter-engager` | Twitter engagement |
-| `marketing-reddit-community-builder` | Reddit engagement |
-| ...y más (YouTube, Douyin, Xiaohongshu, WeChat, etc.) |
-
-### Paid Media (7)
-`paid-media-auditor`, `paid-media-creative-strategist`, `paid-media-ppc-strategist`, `paid-media-programmatic-buyer`, `paid-media-tracking-specialist`, ...
-
-### Product (5)
-`product-manager`, `product-feedback-synthesizer`, `product-sprint-prioritizer`, `product-trend-researcher`, `product-behavioral-nudge-engine`
-
-### Project Management (6)
-`project-manager-senior`, `project-management-jira-workflow-steward`, `project-management-project-shepherd`, ...
-
-### Sales (8)
-`sales-coach`, `sales-deal-strategist`, `sales-discovery-coach`, `sales-engineer`, `sales-outbound-strategist`, `sales-pipeline-analyst`, `sales-proposal-strategist`, `sales-account-strategist`
-
-### Spatial Computing (6)
-`visionos-spatial-engineer`, `xr-immersive-developer`, `xr-interface-architect`, `macos-spatial-metal-engineer`, ...
-
-### Specialized (30)
-`blockchain-security-auditor`, `compliance-auditor`, `recruitment-specialist`, `specialized-civil-engineer`, `specialized-mcp-builder`, `specialized-salesforce-architect`, `supply-chain-strategist`, ...
-
-### Support (6)
-`support-analytics-reporter`, `support-finance-tracker`, `support-legal-compliance-checker`, `support-support-responder`, ...
-
-### Testing (8)
-`testing-accessibility-auditor`, `testing-api-tester`, `testing-performance-benchmarker`, `testing-reality-checker`, `testing-workflow-optimizer`, ...
+| Feature | Ruflo | Qwen Con Poderes v2 |
+|---------|-------|---------------------|
+| Plataforma | Claude Code (Anthropic) | Qwen Code (Alibaba) |
+| Costo del CLI | $100-200/mes | **Gratis** (1000 req/dia) |
+| Agentes | 100+ | **168** |
+| Skills | 130+ | **193** |
+| Security hooks | Si | Si |
+| Auto-routing | Q-Learning | Pattern matching |
+| Slash commands | Via MCP | **11 nativos** |
+| Token optimization | 3-tier + WASM | **3 niveles** |
+| Handoff documents | No nativo | **Si** |
+| Multi-provider | Si | Si (OpenAI, Anthropic, Gemini) |
+| Open source | Si | **Si** |
 
 ---
 
-## Estructura del repo
+## Crear tus propios componentes
 
-```
-qwen-con-poderes/
-├── README.md                    # Este archivo
-├── QWEN.md                     # Config global (se copia a ~/.qwen/)
-├── .gitignore
-├── agents/                      # 168 archivos .md de subagentes
-│   ├── engineering-backend-architect.md
-│   ├── design-ui-designer.md
-│   ├── marketing-tiktok-strategist.md
-│   └── ...
-├── skills/                      # 193 carpetas de skills
-│   ├── engineering-backend-architect/
-│   │   └── SKILL.md
-│   ├── code-review/
-│   │   └── SKILL.md
-│   └── ...
-└── scripts/
-    ├── install-linux.sh         # Instalador Linux/macOS
-    ├── install-windows.bat      # Instalador Windows (CMD)
-    ├── install-windows.ps1      # Instalador Windows (PowerShell)
-    └── uninstall-linux.sh       # Desinstalador
-```
-
----
-
-## Instalación manual (sin scripts)
-
-Si prefieres instalar manualmente:
-
-```bash
-# 1. Instalar Qwen Code CLI
-npm install -g @qwen-code/qwen-code@latest
-
-# 2. Copiar agentes
-mkdir -p ~/.qwen/agents
-cp agents/*.md ~/.qwen/agents/
-
-# 3. Copiar skills
-mkdir -p ~/.qwen/skills
-cp -r skills/* ~/.qwen/skills/
-
-# 4. Copiar configuración global
-cp QWEN.md ~/.qwen/QWEN.md
-
-# 5. Iniciar Qwen
-qwen
-```
-
----
-
-## Desinstalar
-
-### Linux/macOS
-```bash
-./scripts/uninstall-linux.sh
-```
-
-### Manual
-```bash
-rm -rf ~/.qwen/agents ~/.qwen/skills ~/.qwen/QWEN.md
-# Para desinstalar Qwen Code CLI:
-npm uninstall -g @qwen-code/qwen-code
-```
-
----
-
-## Crear tus propios agentes
-
-Los agentes son archivos `.md` con frontmatter YAML:
+### Agente custom
 
 ```markdown
 ---
-name: mi-agente-custom
-description: "Descripción de lo que hace el agente"
+name: mi-agente
+description: "[categoria] Descripcion de tu agente"
 color: blue
 ---
 
-# Mi Agente Custom
+# Mi Agente
 
-Eres un experto en [dominio]. Tu misión es...
+Eres un experto en [dominio]...
 
 ## Instrucciones
 1. Siempre haz X
 2. Nunca hagas Y
-3. Prioriza Z
 ```
 
-Guarda el archivo en `~/.qwen/agents/mi-agente-custom.md` y reinicia Qwen.
+Guardar en `~/.qwen/agents/mi-agente.md`
 
----
-
-## Crear tus propias skills
-
-Las skills son carpetas con un `SKILL.md`:
+### Skill custom
 
 ```bash
 mkdir -p ~/.qwen/skills/mi-skill
@@ -299,7 +351,7 @@ mkdir -p ~/.qwen/skills/mi-skill
 ```markdown
 ---
 name: mi-skill
-description: "Mi skill personalizada para [tarea]"
+description: "Mi skill para [tarea]"
 ---
 
 # Mi Skill
@@ -308,35 +360,167 @@ description: "Mi skill personalizada para [tarea]"
 ...
 ```
 
+### Command custom
+
+```markdown
+---
+name: mi-command
+description: "Mi slash command para [workflow]"
 ---
 
-## FAQ
+# Mi Command
 
-**¿Necesito Claude Code para usar esto?**
-No. Este repo funciona 100% con Qwen Code CLI, sin necesidad de Claude Code ni cuenta de Anthropic.
+## Workflow
+1. Paso 1
+2. Paso 2
+```
 
-**¿Es gratis?**
-Sí. Qwen Code ofrece 1,000 requests/día gratis con OAuth. Los agentes y skills son archivos de texto locales.
+Guardar en `~/.qwen/commands/mi-command.md`
 
-**¿Puedo usar otros modelos?**
-Sí. Qwen Code soporta APIs compatibles con OpenAI, Anthropic y Gemini. Configura tu API key en `/auth`.
+### Hook custom
 
-**¿Cómo actualizo los agentes?**
+Crear script en `~/.qwen/hooks/mi-hook.sh` y registrar en `settings.json`.
+
+---
+
+## Velocidad - Turbo Mode
+
+Qwen Code con OAuth puede ser lento en tareas grandes. Aqui hay varias formas de acelerarlo:
+
+### Turbo Mode (un comando)
+
+```bash
+# Activar turbo - desactiva hooks pesados, solo mantiene security-guard
+./scripts/turbo-mode.sh on
+
+# Restaurar modo normal
+./scripts/turbo-mode.sh off
+
+# Ver modo actual
+./scripts/turbo-mode.sh status
+```
+
+Turbo mode hace:
+- Solo mantiene `security-guard` y `notify-desktop` (los demas hooks se desactivan)
+- `approval-mode: yolo` (sin pausas para pedir permiso)
+- `temperature: 0.2` (respuestas mas directas y cortas)
+- Token caching habilitado
+
+### Modelo local con Ollama (respuestas en 1-5 segundos)
+
+```bash
+# Instalar Ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Descargar modelo rapido para coding
+ollama pull qwen2.5-coder:7b
+
+# Dentro de Qwen Code, cambiar modelo:
+/model
+# Seleccionar el modelo local
+```
+
+### Headless mode (sin UI = sin lag de terminal)
+
+```bash
+# Ejecutar prompt sin interfaz interactiva
+qwen -p "Crea un server Express basico en src/server.js" --yolo
+
+# Pipe de archivos
+cat src/auth.js | qwen -p "Review de seguridad" > review.txt
+```
+
+### Token caching (API Key > OAuth)
+
+OAuth no soporta cache de tokens. Con API key puedes lograr ~90% cache hit:
+```bash
+# Dentro de Qwen Code:
+/auth
+# Seleccionar: Alibaba Cloud Coding Plan
+# Obtener key: https://bailian.console.aliyun.com/
+```
+
+### Tips de prompts rapidos
+
+```
+Malo:  "Por favor, podrias crear un archivo que tenga un servidor..."
+Bueno: "Crea src/server.js: Express, puerto 3000, CORS, sirve public/"
+
+Malo:  "Crea 7 fases con 20 archivos, review, audit y handoff"
+Bueno: "Crea el backend: server.js, routes/auth.js, routes/tasks.js, db.js"
+       (luego en otro mensaje: "Ahora el frontend: index.html con Tailwind")
+```
+
+### Ver todos los tips
+
+```bash
+./scripts/speed-tips.sh
+```
+
+### Tabla de velocidad por configuracion
+
+| Config | Velocidad | Costo |
+|--------|-----------|-------|
+| OAuth + hooks full | Lenta | Gratis |
+| OAuth + turbo mode | Media | Gratis |
+| API Key + turbo | Rapida | ~$0.01/req |
+| Ollama local + turbo | Ultra rapida | Gratis |
+| Headless + Ollama | Maxima | Gratis |
+
+### Bug conocido: Scroll
+
+En algunas terminales (especialmente en Linux/Windows), el scroll hacia arriba no funciona bien dentro de Qwen Code. Workarounds:
+
+- **Shift+PgUp/PgDn** en vez de scroll con mouse
+- **tmux**: `Ctrl+B` luego `[` para entrar en modo scroll
+- **Terminales recomendadas**: kitty, wezterm, alacritty (mejor soporte TUI)
+- **Headless mode**: `qwen -p "prompt" > output.txt` para ver todo el output
+
+---
+
+## Actualizar
+
 ```bash
 cd qwen-con-poderes-
 git pull
-./scripts/install-linux.sh  # Re-ejecutar instalador
+./scripts/install-linux.sh --force
+```
+
+## Desinstalar
+
+```bash
+./scripts/uninstall-linux.sh
 ```
 
 ---
 
-## Créditos
+## FAQ
 
-- [Qwen Code](https://github.com/QwenLM/qwen-code) — El CLI base de Alibaba/Qwen
-- [Agency Agents](https://github.com/your-repo) — Los 179 agentes especializados originales
-- Creado por [@nicolas2601](https://github.com/nicolas2601)
+**Necesito Claude Code para usar esto?**
+No. Funciona 100% con Qwen Code CLI, sin Anthropic.
+
+**Es gratis?**
+Si. Qwen Code: 1000 req/dia gratis con OAuth. Los agentes, skills, hooks y commands son archivos locales.
+
+**Puedo usar otros modelos?**
+Si. Qwen Code soporta APIs compatibles con OpenAI, Anthropic, Gemini y mas.
+
+**Los hooks ralentizan a Qwen?**
+No. Los hooks son scripts bash livianos (<50ms de ejecucion).
+
+**Necesito jq?**
+Recomendado para los hooks. Sin jq, los hooks no funcionaran pero el resto si.
 
 ---
+
+## Creditos
+
+- [Qwen Code](https://github.com/QwenLM/qwen-code) - CLI base de Alibaba/Qwen
+- [Ruflo](https://github.com/ruvnet/ruflo) - Inspiracion para hooks y routing
+- [Awesome Claude Code](https://github.com/hesreallyhim/awesome-claude-code) - Inspiracion para commands y workflows
+- [Context Engineering Kit](https://github.com/NeoLabHQ/context-engineering-kit) - Tecnicas de token optimization
+
+Creado por [@nicolas2601](https://github.com/nicolas2601)
 
 ## Licencia
 

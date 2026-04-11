@@ -1,149 +1,86 @@
 # ============================================================
-# Qwen Con Poderes - Instalador para Windows (PowerShell)
-# Instala Qwen Code CLI + 168 agentes + 193 skills
+# Qwen Con Poderes v2 - Instalador para Windows (PowerShell)
+# 168 agentes + 193 skills + 7 hooks + 11 commands + settings
 # ============================================================
 $ErrorActionPreference = "Stop"
 
 Write-Host ""
 Write-Host "========================================================" -ForegroundColor Cyan
-Write-Host "         QWEN CON PODERES - INSTALADOR WINDOWS          " -ForegroundColor Cyan
-Write-Host "    168 Agentes + 193 Skills para Qwen Code CLI          " -ForegroundColor Cyan
+Write-Host "    QWEN CON PODERES v2.0 - INSTALADOR WINDOWS          " -ForegroundColor Cyan
+Write-Host "    168 Agentes + 193 Skills + 7 Hooks + 11 Commands     " -ForegroundColor Cyan
+Write-Host "    Token optimization | Security hooks | Auto-routing    " -ForegroundColor Cyan
 Write-Host "========================================================" -ForegroundColor Cyan
 Write-Host ""
-
-# ──────────────────────────────────────────────────────────
-# PASO 1: Verificar requisitos
-# ──────────────────────────────────────────────────────────
-Write-Host "[1/5] Verificando requisitos..." -ForegroundColor Blue
-
-# Node.js
-try {
-    $nodeVersion = (node -v) -replace 'v', ''
-    $majorVersion = [int]($nodeVersion.Split('.')[0])
-    if ($majorVersion -lt 20) {
-        Write-Host "  ERROR: Node.js v20+ requerido. Tienes v$nodeVersion" -ForegroundColor Red
-        Write-Host "  Instala desde: https://nodejs.org" -ForegroundColor Yellow
-        exit 1
-    }
-    Write-Host "  [OK] Node.js v$nodeVersion" -ForegroundColor Green
-} catch {
-    Write-Host "  ERROR: Node.js no esta instalado." -ForegroundColor Red
-    Write-Host "  Instala con: winget install OpenJS.NodeJS.LTS" -ForegroundColor Yellow
-    exit 1
-}
-
-# npm
-try {
-    $npmVersion = npm -v
-    Write-Host "  [OK] npm v$npmVersion" -ForegroundColor Green
-} catch {
-    Write-Host "  ERROR: npm no esta instalado." -ForegroundColor Red
-    exit 1
-}
-
-# git
-try {
-    $gitVersion = (git --version) -replace 'git version ', ''
-    Write-Host "  [OK] git v$gitVersion" -ForegroundColor Green
-} catch {
-    Write-Host "  ERROR: git no esta instalado." -ForegroundColor Red
-    Write-Host "  Instala con: winget install Git.Git" -ForegroundColor Yellow
-    exit 1
-}
-
-# ──────────────────────────────────────────────────────────
-# PASO 2: Instalar Qwen Code CLI
-# ──────────────────────────────────────────────────────────
-Write-Host ""
-Write-Host "[2/5] Instalando Qwen Code CLI..." -ForegroundColor Blue
-
-$qwenInstalled = $null
-try { $qwenInstalled = Get-Command qwen -ErrorAction SilentlyContinue } catch {}
-
-if ($qwenInstalled) {
-    Write-Host "  [OK] Qwen Code ya esta instalado" -ForegroundColor Green
-} else {
-    Write-Host "  Instalando @qwen-code/qwen-code..."
-    npm install -g @qwen-code/qwen-code@latest
-    Write-Host "  [OK] Qwen Code instalado" -ForegroundColor Green
-}
-
-# ──────────────────────────────────────────────────────────
-# PASO 3: Detectar directorio del repo
-# ──────────────────────────────────────────────────────────
-Write-Host ""
-Write-Host "[3/5] Detectando archivos del repo..." -ForegroundColor Blue
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoDir = Split-Path -Parent $ScriptDir
 
-if (-not (Test-Path "$RepoDir\agents")) {
-    Write-Host "  ERROR: No se encontro la carpeta agents\ en $RepoDir" -ForegroundColor Red
-    exit 1
-}
-Write-Host "  [OK] Carpetas agents/ y skills/ encontradas" -ForegroundColor Green
+# ── PASO 1: Requisitos ──
+Write-Host "[1/8] Verificando requisitos..." -ForegroundColor Blue
+try {
+    $nv = (node -v) -replace 'v', ''
+    if ([int]($nv.Split('.')[0]) -lt 20) { Write-Host "  ERROR: Node.js v20+ requerido" -ForegroundColor Red; exit 1 }
+    Write-Host "  [OK] Node.js v$nv" -ForegroundColor Green
+} catch { Write-Host "  ERROR: Node.js no instalado. winget install OpenJS.NodeJS.LTS" -ForegroundColor Red; exit 1 }
 
-# ──────────────────────────────────────────────────────────
-# PASO 4: Instalar Agentes
-# ──────────────────────────────────────────────────────────
-Write-Host ""
-Write-Host "[4/5] Instalando agentes..." -ForegroundColor Blue
+try { $null = npm -v; Write-Host "  [OK] npm" -ForegroundColor Green } catch { Write-Host "  ERROR: npm no instalado" -ForegroundColor Red; exit 1 }
+try { $null = git --version; Write-Host "  [OK] git" -ForegroundColor Green } catch { Write-Host "  ERROR: git no instalado" -ForegroundColor Red; exit 1 }
 
-$QwenAgentsDir = "$env:USERPROFILE\.qwen\agents"
-if (-not (Test-Path $QwenAgentsDir)) {
-    New-Item -ItemType Directory -Path $QwenAgentsDir -Force | Out-Null
-}
+# ── PASO 2: Qwen CLI ──
+Write-Host "`n[2/8] Qwen Code CLI..." -ForegroundColor Blue
+try { $null = Get-Command qwen -ErrorAction Stop; Write-Host "  [OK] Ya instalado" -ForegroundColor Green }
+catch { npm install -g @qwen-code/qwen-code@latest; Write-Host "  [OK] Instalado" -ForegroundColor Green }
 
-$agentFiles = Get-ChildItem "$RepoDir\agents\*.md"
-$agentCount = 0
-foreach ($file in $agentFiles) {
-    Copy-Item $file.FullName "$QwenAgentsDir\$($file.Name)" -Force
-    $agentCount++
-}
-Write-Host "  [OK] $agentCount agentes instalados en $QwenAgentsDir" -ForegroundColor Green
+# ── PASO 3: Verificar repo ──
+Write-Host "`n[3/8] Verificando repo..." -ForegroundColor Blue
+if (-not (Test-Path "$RepoDir\agents")) { Write-Host "  ERROR: agents\ no encontrado" -ForegroundColor Red; exit 1 }
+Write-Host "  [OK] Repo detectado" -ForegroundColor Green
 
-# ──────────────────────────────────────────────────────────
-# PASO 5: Instalar Skills
-# ──────────────────────────────────────────────────────────
-Write-Host ""
-Write-Host "[5/5] Instalando skills..." -ForegroundColor Blue
+# ── PASO 4: Agentes ──
+Write-Host "`n[4/8] Instalando agentes..." -ForegroundColor Blue
+$AgentsDir = "$env:USERPROFILE\.qwen\agents"
+New-Item -ItemType Directory -Path $AgentsDir -Force | Out-Null
+$ac = 0; Get-ChildItem "$RepoDir\agents\*.md" | ForEach-Object { Copy-Item $_.FullName "$AgentsDir\$($_.Name)" -Force; $ac++ }
+Write-Host "  [OK] $ac agentes" -ForegroundColor Green
 
-$QwenSkillsDir = "$env:USERPROFILE\.qwen\skills"
-if (-not (Test-Path $QwenSkillsDir)) {
-    New-Item -ItemType Directory -Path $QwenSkillsDir -Force | Out-Null
-}
+# ── PASO 5: Skills ──
+Write-Host "`n[5/8] Instalando skills..." -ForegroundColor Blue
+$SkillsDir = "$env:USERPROFILE\.qwen\skills"
+New-Item -ItemType Directory -Path $SkillsDir -Force | Out-Null
+$sc = 0; Get-ChildItem "$RepoDir\skills" -Directory | ForEach-Object { Copy-Item $_.FullName "$SkillsDir\$($_.Name)" -Recurse -Force; $sc++ }
+Write-Host "  [OK] $sc skills" -ForegroundColor Green
 
-$skillDirs = Get-ChildItem "$RepoDir\skills" -Directory
-$skillCount = 0
-foreach ($dir in $skillDirs) {
-    $target = "$QwenSkillsDir\$($dir.Name)"
-    Copy-Item $dir.FullName $target -Recurse -Force
-    $skillCount++
-}
-Write-Host "  [OK] $skillCount skills instaladas en $QwenSkillsDir" -ForegroundColor Green
+# ── PASO 6: Hooks ──
+Write-Host "`n[6/8] Instalando hooks..." -ForegroundColor Blue
+$HooksDir = "$env:USERPROFILE\.qwen\hooks"
+New-Item -ItemType Directory -Path $HooksDir -Force | Out-Null
+$hc = 0; Get-ChildItem "$RepoDir\hooks\*.sh" | ForEach-Object { Copy-Item $_.FullName "$HooksDir\$($_.Name)" -Force; $hc++ }
+Write-Host "  [OK] $hc hooks" -ForegroundColor Green
 
-# ──────────────────────────────────────────────────────────
-# Copiar QWEN.md
-# ──────────────────────────────────────────────────────────
-if (Test-Path "$RepoDir\QWEN.md") {
-    Copy-Item "$RepoDir\QWEN.md" "$env:USERPROFILE\.qwen\QWEN.md" -Force
-    Write-Host "  [OK] QWEN.md copiado" -ForegroundColor Green
-}
+# ── PASO 7: Commands ──
+Write-Host "`n[7/8] Instalando commands..." -ForegroundColor Blue
+$CmdsDir = "$env:USERPROFILE\.qwen\commands"
+New-Item -ItemType Directory -Path $CmdsDir -Force | Out-Null
+$cc = 0; Get-ChildItem "$RepoDir\commands\*.md" | ForEach-Object { Copy-Item $_.FullName "$CmdsDir\$($_.Name)" -Force; $cc++ }
+Write-Host "  [OK] $cc commands" -ForegroundColor Green
 
-# ──────────────────────────────────────────────────────────
-# Resumen
-# ──────────────────────────────────────────────────────────
-Write-Host ""
+# ── PASO 8: Config ──
+Write-Host "`n[8/8] Configurando..." -ForegroundColor Blue
+if (Test-Path "$RepoDir\QWEN.md") { Copy-Item "$RepoDir\QWEN.md" "$env:USERPROFILE\.qwen\QWEN.md" -Force; Write-Host "  [OK] QWEN.md" -ForegroundColor Green }
+if (Test-Path "$RepoDir\config\settings.json") { Copy-Item "$RepoDir\config\settings.json" "$env:USERPROFILE\.qwen\settings.json" -Force; Write-Host "  [OK] settings.json" -ForegroundColor Green }
+New-Item -ItemType Directory -Path "$env:USERPROFILE\.qwen\logs" -Force | Out-Null
+
+# ── Resumen ──
+Write-Host "`n========================================================" -ForegroundColor Green
+Write-Host "           INSTALACION COMPLETADA v2.0                    " -ForegroundColor Green
 Write-Host "========================================================" -ForegroundColor Green
-Write-Host "            INSTALACION COMPLETADA                       " -ForegroundColor Green
-Write-Host "========================================================" -ForegroundColor Green
-Write-Host ""
-Write-Host "  Agentes: $agentCount  |  Skills: $skillCount"
-Write-Host ""
-Write-Host "  PARA EMPEZAR:" -ForegroundColor Yellow
-Write-Host "    1. Abre una nueva terminal"
-Write-Host "    2. Escribe: qwen"
-Write-Host "    3. Autenticate: /auth"
-Write-Host "    4. Ver agentes: /agents manage"
-Write-Host "    5. Usar skill: /skills engineering-backend-architect"
+Write-Host "`n  Agentes: $ac | Skills: $sc | Hooks: $hc | Commands: $cc"
+Write-Host "`n  PARA EMPEZAR:" -ForegroundColor Yellow
+Write-Host "    qwen                   Iniciar Qwen Code"
+Write-Host "    /agents manage         Ver agentes"
+Write-Host "    /skills                Ver skills"
+Write-Host "    /review                Code review"
+Write-Host "    /ship                  Test+lint+commit+push"
+Write-Host "    /audit                 Auditoria completa"
+Write-Host "    /handoff               Guardar progreso"
 Write-Host ""

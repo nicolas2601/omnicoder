@@ -1,36 +1,205 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Instalador para Linux/macOS
-# Instala Qwen Code CLI + 168 agentes + 193 skills
+# Qwen Con Poderes v2 - Instalador para Linux/macOS
+# 168 agentes + 193 skills + 7 hooks + 11 commands + settings
 # ============================================================
 set -euo pipefail
+
+VERSION="2.0.0"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
+BOLD='\033[1m'
+DIM='\033[2m'
 NC='\033[0m'
 
-echo -e "${CYAN}"
-echo "╔══════════════════════════════════════════════════════╗"
-echo "║         🚀 QWEN CON PODERES - INSTALADOR           ║"
-echo "║    168 Agentes + 193 Skills para Qwen Code CLI      ║"
-echo "╚══════════════════════════════════════════════════════╝"
+# ──────────────────────────────────────────────────────────
+# Banner
+# ──────────────────────────���───────────────────────────────
+echo -e "${CYAN}${BOLD}"
+cat << 'BANNER'
+
+   ___                          ____              ____            __
+  / _ \__    _____  ____       / ___|___  _ __   |  _ \ ___   __| | ___ _ __ ___  ___
+ | | | \ \ /\ / / _ \ '_ \    | |   / _ \| '_ \  | |_) / _ \ / _` |/ _ \ '__/ _ \/ __|
+ | |_| |\ V  V /  __/ | | |   | |__| (_) | | | | |  __/ (_) | (_| |  __/ | |  __/\__ \
+  \__\_\ \_/\_/ \___|_| |_|    \____\___/|_| |_| |_|   \___/ \__,_|\___|_|  \___||___/
+                                                                                 v2.0
+
+BANNER
 echo -e "${NC}"
+echo -e "${DIM}  168 Agentes + 193 Skills + 7 Hooks + 11 Commands${NC}"
+echo -e "${DIM}  Token optimization | Security hooks | Auto-routing${NC}"
+echo ""
+
+# ──────────────────────────────────────────────────────────
+# Detectar directorio del repo
+# ─��─────────────────────���──────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(dirname "$SCRIPT_DIR")"
+
+# ���─────────────────────────────────────────────────────────
+# Flags
+# ─────────────────────��────────────────────────────────────
+SKIP_CLI=false
+FORCE=false
+DOCTOR_ONLY=false
+
+for arg in "$@"; do
+    case "$arg" in
+        --skip-cli) SKIP_CLI=true ;;
+        --force) FORCE=true ;;
+        --doctor) DOCTOR_ONLY=true ;;
+        --help|-h)
+            echo "Uso: ./install-linux.sh [opciones]"
+            echo ""
+            echo "Opciones:"
+            echo "  --skip-cli   No instalar/actualizar Qwen Code CLI"
+            echo "  --force      Sobreescribir todo sin preguntar"
+            echo "  --doctor     Solo ejecutar diagnostico (no instalar)"
+            echo "  --help       Mostrar esta ayuda"
+            exit 0
+            ;;
+    esac
+done
+
+# ───��──────────────────────────────────��───────────────────
+# Doctor mode
+# ─────────────────────��────────────────────────────────────
+doctor() {
+    echo -e "${BLUE}${BOLD}=== Qwen Con Poderes - Doctor ===${NC}"
+    echo ""
+    ISSUES=0
+
+    # Check Node.js
+    if command -v node &>/dev/null; then
+        NODE_VER=$(node -v | sed 's/v//' | cut -d. -f1)
+        if [[ "$NODE_VER" -ge 20 ]]; then
+            echo -e "  ${GREEN}OK${NC} Node.js $(node -v)"
+        else
+            echo -e "  ${RED}!!${NC} Node.js $(node -v) - necesita v20+"
+            ISSUES=$((ISSUES + 1))
+        fi
+    else
+        echo -e "  ${RED}!!${NC} Node.js no instalado"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check Qwen CLI
+    if command -v qwen &>/dev/null; then
+        echo -e "  ${GREEN}OK${NC} Qwen Code CLI instalado"
+    else
+        echo -e "  ${RED}!!${NC} Qwen Code CLI no encontrado"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check agents
+    AGENT_COUNT=$(ls "$HOME/.qwen/agents/"*.md 2>/dev/null | wc -l || echo 0)
+    if [[ "$AGENT_COUNT" -gt 100 ]]; then
+        echo -e "  ${GREEN}OK${NC} $AGENT_COUNT agentes instalados"
+    elif [[ "$AGENT_COUNT" -gt 0 ]]; then
+        echo -e "  ${YELLOW}!!${NC} Solo $AGENT_COUNT agentes (esperado: 168+)"
+        ISSUES=$((ISSUES + 1))
+    else
+        echo -e "  ${RED}!!${NC} No hay agentes instalados"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check skills
+    SKILL_COUNT=$(ls -d "$HOME/.qwen/skills/"*/ 2>/dev/null | wc -l || echo 0)
+    if [[ "$SKILL_COUNT" -gt 150 ]]; then
+        echo -e "  ${GREEN}OK${NC} $SKILL_COUNT skills instaladas"
+    elif [[ "$SKILL_COUNT" -gt 0 ]]; then
+        echo -e "  ${YELLOW}!!${NC} Solo $SKILL_COUNT skills (esperado: 193+)"
+        ISSUES=$((ISSUES + 1))
+    else
+        echo -e "  ${RED}!!${NC} No hay skills instaladas"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check hooks
+    HOOK_COUNT=$(ls "$HOME/.qwen/hooks/"*.sh 2>/dev/null | wc -l || echo 0)
+    if [[ "$HOOK_COUNT" -ge 7 ]]; then
+        echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados"
+    elif [[ "$HOOK_COUNT" -gt 0 ]]; then
+        echo -e "  ${YELLOW}!!${NC} Solo $HOOK_COUNT hooks (esperado: 7+)"
+        ISSUES=$((ISSUES + 1))
+    else
+        echo -e "  ${RED}!!${NC} No hay hooks instalados"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check commands
+    CMD_COUNT=$(ls "$HOME/.qwen/commands/"*.md 2>/dev/null | wc -l || echo 0)
+    if [[ "$CMD_COUNT" -ge 10 ]]; then
+        echo -e "  ${GREEN}OK${NC} $CMD_COUNT commands instalados"
+    elif [[ "$CMD_COUNT" -gt 0 ]]; then
+        echo -e "  ${YELLOW}!!${NC} Solo $CMD_COUNT commands (esperado: 11+)"
+        ISSUES=$((ISSUES + 1))
+    else
+        echo -e "  ${RED}!!${NC} No hay commands instalados"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check QWEN.md
+    if [[ -f "$HOME/.qwen/QWEN.md" ]]; then
+        echo -e "  ${GREEN}OK${NC} QWEN.md configurado"
+    else
+        echo -e "  ${RED}!!${NC} QWEN.md no encontrado"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check settings.json has hooks
+    if [[ -f "$HOME/.qwen/settings.json" ]]; then
+        if grep -q '"hooks"' "$HOME/.qwen/settings.json" 2>/dev/null; then
+            echo -e "  ${GREEN}OK${NC} settings.json con hooks configurados"
+        else
+            echo -e "  ${YELLOW}!!${NC} settings.json sin hooks"
+            ISSUES=$((ISSUES + 1))
+        fi
+    else
+        echo -e "  ${YELLOW}!!${NC} settings.json no encontrado"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check jq (requerido para hooks)
+    if command -v jq &>/dev/null; then
+        echo -e "  ${GREEN}OK${NC} jq instalado (requerido para hooks)"
+    else
+        echo -e "  ${YELLOW}!!${NC} jq no instalado - los hooks no funcionaran"
+        echo -e "       ${DIM}Instala: sudo pacman -S jq / sudo apt install jq / brew install jq${NC}"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    echo ""
+    if [[ "$ISSUES" -eq 0 ]]; then
+        echo -e "  ${GREEN}${BOLD}Todo OK - Qwen Con Poderes v2 funcionando correctamente${NC}"
+    else
+        echo -e "  ${YELLOW}${BOLD}$ISSUES issues encontrados${NC}"
+        echo -e "  ${DIM}Ejecuta: ./install-linux.sh --force para reparar${NC}"
+    fi
+    echo ""
+}
+
+if [[ "$DOCTOR_ONLY" == true ]]; then
+    doctor
+    exit 0
+fi
 
 # ──────────────────────────────────────────────────────────
 # PASO 1: Verificar requisitos
-# ──────────────────────────────────────────────────────────
-echo -e "${BLUE}[1/5]${NC} Verificando requisitos..."
+# ───────────────────────────────────────────────��──────────
+echo -e "${BLUE}[1/8]${NC} Verificando requisitos..."
 
-# Verificar Node.js
+# Node.js
 if ! command -v node &>/dev/null; then
-    echo -e "${RED}ERROR: Node.js no está instalado.${NC}"
-    echo "Instálalo desde https://nodejs.org (v20 o superior)"
+    echo -e "${RED}ERROR: Node.js no esta instalado.${NC}"
     echo ""
-    echo "  Ubuntu/Debian: curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs"
     echo "  Arch Linux:    sudo pacman -S nodejs npm"
+    echo "  Ubuntu/Debian: curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt install -y nodejs"
     echo "  macOS:         brew install node"
     exit 1
 fi
@@ -40,128 +209,206 @@ if [[ "$NODE_VERSION" -lt 20 ]]; then
     echo -e "${RED}ERROR: Node.js v20+ requerido. Tienes v$(node -v)${NC}"
     exit 1
 fi
-echo -e "  ${GREEN}✓${NC} Node.js $(node -v)"
+echo -e "  ${GREEN}OK${NC} Node.js $(node -v)"
 
-# Verificar npm
+# npm
 if ! command -v npm &>/dev/null; then
-    echo -e "${RED}ERROR: npm no está instalado.${NC}"
+    echo -e "${RED}ERROR: npm no esta instalado.${NC}"
     exit 1
 fi
-echo -e "  ${GREEN}✓${NC} npm $(npm -v)"
+echo -e "  ${GREEN}OK${NC} npm $(npm -v)"
 
-# Verificar git
+# git
 if ! command -v git &>/dev/null; then
-    echo -e "${RED}ERROR: git no está instalado.${NC}"
+    echo -e "${RED}ERROR: git no esta instalado.${NC}"
     exit 1
 fi
-echo -e "  ${GREEN}✓${NC} git $(git --version | cut -d' ' -f3)"
+echo -e "  ${GREEN}OK${NC} git $(git --version | cut -d' ' -f3)"
 
-# ──────────────────────────────────────────────────────────
+# jq (warning, no bloqueante)
+if ! command -v jq &>/dev/null; then
+    echo -e "  ${YELLOW}!!${NC} jq no instalado - los hooks no funcionaran"
+    echo -e "     ${DIM}Recomendado: sudo pacman -S jq / sudo apt install jq / brew install jq${NC}"
+else
+    echo -e "  ${GREEN}OK${NC} jq $(jq --version 2>/dev/null | sed 's/jq-//')"
+fi
+
+# ───��───────────────────────────��──────────────────────────
 # PASO 2: Instalar Qwen Code CLI
-# ──────────────────────────────────────────────────────────
+# ────────���─────────────────────────────────────────────────
 echo ""
-echo -e "${BLUE}[2/5]${NC} Instalando Qwen Code CLI..."
+echo -e "${BLUE}[2/8]${NC} Qwen Code CLI..."
 
-if command -v qwen &>/dev/null; then
-    echo -e "  ${GREEN}✓${NC} Qwen Code ya está instalado ($(qwen --version 2>/dev/null || echo 'versión desconocida'))"
+if [[ "$SKIP_CLI" == true ]]; then
+    echo -e "  ${DIM}Saltado (--skip-cli)${NC}"
+elif command -v qwen &>/dev/null; then
+    echo -e "  ${GREEN}OK${NC} Ya instalado"
 else
     echo "  Instalando @qwen-code/qwen-code..."
     npm install -g @qwen-code/qwen-code@latest
     if command -v qwen &>/dev/null; then
-        echo -e "  ${GREEN}✓${NC} Qwen Code instalado correctamente"
+        echo -e "  ${GREEN}OK${NC} Instalado correctamente"
     else
-        echo -e "${YELLOW}  ⚠ npm install completado pero 'qwen' no está en PATH${NC}"
+        echo -e "${YELLOW}  !! npm install OK pero 'qwen' no esta en PATH${NC}"
         echo "  Intenta: export PATH=\"\$HOME/.npm-global/bin:\$PATH\""
-        echo "  O reinstala con: bash -c \"\$(curl -fsSL https://qwen-code-assets.oss-cn-hangzhou.aliyuncs.com/installation/install-qwen.sh)\" -s --source qwenchat"
     fi
 fi
 
-# ──────────────────────────────────────────────────────────
-# PASO 3: Detectar directorio del repo
-# ──────────────────────────────────────────────────────────
+# ─────────────���────────────────────────────��───────────────
+# PASO 3: Verificar repo
+# ───���────────────────────────��────────────────────────���────
 echo ""
-echo -e "${BLUE}[3/5]${NC} Detectando archivos del repo..."
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(dirname "$SCRIPT_DIR")"
+echo -e "${BLUE}[3/8]${NC} Verificando archivos del repo..."
 
 if [[ ! -d "$REPO_DIR/agents" ]] || [[ ! -d "$REPO_DIR/skills" ]]; then
-    echo -e "${RED}ERROR: No se encontraron las carpetas agents/ y skills/ en $REPO_DIR${NC}"
-    echo "Asegúrate de ejecutar este script desde el repo clonado."
+    echo -e "${RED}ERROR: No se encontraron agents/ y skills/ en $REPO_DIR${NC}"
     exit 1
 fi
 
 AGENT_COUNT=$(ls "$REPO_DIR/agents/"*.md 2>/dev/null | wc -l)
 SKILL_COUNT=$(ls -d "$REPO_DIR/skills/"*/ 2>/dev/null | wc -l)
-echo -e "  ${GREEN}✓${NC} Encontrados: $AGENT_COUNT agentes, $SKILL_COUNT skills"
+HOOK_COUNT=$(ls "$REPO_DIR/hooks/"*.sh 2>/dev/null | wc -l)
+CMD_COUNT=$(ls "$REPO_DIR/commands/"*.md 2>/dev/null | wc -l)
+echo -e "  ${GREEN}OK${NC} $AGENT_COUNT agentes, $SKILL_COUNT skills, $HOOK_COUNT hooks, $CMD_COUNT commands"
 
-# ──────────────────────────────────────────────────────────
-# PASO 4: Instalar Agentes (SubAgents)
-# ──────────────────────────────────────────────────────────
+# ────��──────────────────────────────────────────────────��──
+# PASO 4: Instalar Agentes
+# ────────────────────��─────────────────────────────────────
 echo ""
-echo -e "${BLUE}[4/5]${NC} Instalando agentes en ~/.qwen/agents/..."
+echo -e "${BLUE}[4/8]${NC} Instalando agentes..."
 
 QWEN_AGENTS_DIR="$HOME/.qwen/agents"
 mkdir -p "$QWEN_AGENTS_DIR"
 
-INSTALLED_AGENTS=0
-for agent_file in "$REPO_DIR/agents/"*.md; do
-    filename=$(basename "$agent_file")
-    cp "$agent_file" "$QWEN_AGENTS_DIR/$filename"
-    INSTALLED_AGENTS=$((INSTALLED_AGENTS + 1))
+INSTALLED=0
+for f in "$REPO_DIR/agents/"*.md; do
+    cp "$f" "$QWEN_AGENTS_DIR/$(basename "$f")"
+    INSTALLED=$((INSTALLED + 1))
 done
+echo -e "  ${GREEN}OK${NC} $INSTALLED agentes -> ~/.qwen/agents/"
 
-echo -e "  ${GREEN}✓${NC} $INSTALLED_AGENTS agentes instalados"
-
-# ──────────────────────────────────────────────────────────
+# ────────────────────────────��─────────────────────────────
 # PASO 5: Instalar Skills
-# ──────────────────────────────────────────────────────────
+# ────────��─────────────────────────────────────────────────
 echo ""
-echo -e "${BLUE}[5/5]${NC} Instalando skills en ~/.qwen/skills/..."
+echo -e "${BLUE}[5/8]${NC} Instalando skills..."
 
 QWEN_SKILLS_DIR="$HOME/.qwen/skills"
 mkdir -p "$QWEN_SKILLS_DIR"
 
-INSTALLED_SKILLS=0
-for skill_dir in "$REPO_DIR/skills/"*/; do
-    skill_name=$(basename "$skill_dir")
-    target="$QWEN_SKILLS_DIR/$skill_name"
-    # Copiar (sobreescribir si existe)
-    cp -r "$skill_dir" "$target"
-    INSTALLED_SKILLS=$((INSTALLED_SKILLS + 1))
+INSTALLED=0
+for d in "$REPO_DIR/skills/"*/; do
+    cp -r "$d" "$QWEN_SKILLS_DIR/$(basename "$d")"
+    INSTALLED=$((INSTALLED + 1))
 done
-
-echo -e "  ${GREEN}✓${NC} $INSTALLED_SKILLS skills instaladas"
+echo -e "  ${GREEN}OK${NC} $INSTALLED skills -> ~/.qwen/skills/"
 
 # ──────────────────────────────────────────────────────────
-# PASO 6: Copiar QWEN.md (instrucciones globales)
+# PASO 6: Instalar Hooks
+# ───���────────────────────────────────────────────────��─────
+echo ""
+echo -e "${BLUE}[6/8]${NC} Instalando hooks inteligentes..."
+
+QWEN_HOOKS_DIR="$HOME/.qwen/hooks"
+mkdir -p "$QWEN_HOOKS_DIR"
+
+INSTALLED=0
+for f in "$REPO_DIR/hooks/"*.sh; do
+    cp "$f" "$QWEN_HOOKS_DIR/$(basename "$f")"
+    chmod +x "$QWEN_HOOKS_DIR/$(basename "$f")"
+    INSTALLED=$((INSTALLED + 1))
+done
+echo -e "  ${GREEN}OK${NC} $INSTALLED hooks -> ~/.qwen/hooks/"
+
+# ──────────────────────────���───────────────────────────────
+# PASO 7: Instalar Commands (Slash Commands)
+# ──────────────────────────────────────────────────────���───
+echo ""
+echo -e "${BLUE}[7/8]${NC} Instalando slash commands..."
+
+QWEN_CMDS_DIR="$HOME/.qwen/commands"
+mkdir -p "$QWEN_CMDS_DIR"
+
+INSTALLED=0
+for f in "$REPO_DIR/commands/"*.md; do
+    cp "$f" "$QWEN_CMDS_DIR/$(basename "$f")"
+    INSTALLED=$((INSTALLED + 1))
+done
+echo -e "  ${GREEN}OK${NC} $INSTALLED commands -> ~/.qwen/commands/"
+
+# ───��────────────────────────────────────────��─────────────
+# PASO 8: Instalar Config (QWEN.md + settings.json)
 # ──────────────────────────────────────────────────────────
+echo ""
+echo -e "${BLUE}[8/8]${NC} Configurando..."
+
+# QWEN.md
 if [[ -f "$REPO_DIR/QWEN.md" ]]; then
     cp "$REPO_DIR/QWEN.md" "$HOME/.qwen/QWEN.md"
-    echo -e "  ${GREEN}✓${NC} QWEN.md copiado (instrucciones globales)"
+    echo -e "  ${GREEN}OK${NC} QWEN.md (instrucciones globales optimizadas)"
 fi
 
-# ──────────────────────────────────────────────────────────
-# Resumen final
-# ──────────────────────────────────────────────────────────
+# settings.json - merge hooks si ya existe
+SETTINGS_FILE="$HOME/.qwen/settings.json"
+if [[ -f "$SETTINGS_FILE" ]] && [[ "$FORCE" != true ]]; then
+    # Verificar si ya tiene hooks
+    if grep -q '"hooks"' "$SETTINGS_FILE" 2>/dev/null; then
+        echo -e "  ${YELLOW}!!${NC} settings.json ya tiene hooks configurados (no sobreescrito)"
+        echo -e "     ${DIM}Usa --force para sobreescribir${NC}"
+    else
+        # Merge: agregar hooks al settings existente
+        if command -v jq &>/dev/null; then
+            HOOKS_JSON=$(jq '.hooks' "$REPO_DIR/config/settings.json")
+            jq --argjson hooks "$HOOKS_JSON" '. + {hooks: $hooks}' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp" && mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
+            echo -e "  ${GREEN}OK${NC} Hooks agregados a settings.json existente"
+        else
+            echo -e "  ${YELLOW}!!${NC} jq no disponible - no se pudieron agregar hooks a settings.json"
+        fi
+    fi
+else
+    cp "$REPO_DIR/config/settings.json" "$SETTINGS_FILE"
+    echo -e "  ${GREEN}OK${NC} settings.json con hooks pre-configurados"
+fi
+
+# Crear directorio de logs
+mkdir -p "$HOME/.qwen/logs"
+
+# ───────────────────────────────────────���──────────────────
+# Resumen
+# ────���─────────────────────────────────────────────────────
 echo ""
-echo -e "${GREEN}╔══════════════════════════════════════════════════════╗"
-echo "║            ✅ INSTALACIÓN COMPLETADA                ║"
-echo "╚══════════════════════════════════════════════════════╝${NC}"
+echo -e "${GREEN}${BOLD}"
+cat << 'DONE'
+  ╔══════════════════════════════════════════════════╗
+  ║         INSTALACION COMPLETADA v2.0              ║
+  ╚════════��═════════════════════════════════════════╝
+DONE
+echo -e "${NC}"
+
+echo -e "  ${CYAN}Componentes instalados:${NC}"
+echo -e "    Agentes:      ${BOLD}$(ls "$HOME/.qwen/agents/"*.md 2>/dev/null | wc -l)${NC} -> ~/.qwen/agents/"
+echo -e "    Skills:       ${BOLD}$(ls -d "$HOME/.qwen/skills/"*/ 2>/dev/null | wc -l)${NC} -> ~/.qwen/skills/"
+echo -e "    Hooks:        ${BOLD}$(ls "$HOME/.qwen/hooks/"*.sh 2>/dev/null | wc -l)${NC} -> ~/.qwen/hooks/"
+echo -e "    Commands:     ${BOLD}$(ls "$HOME/.qwen/commands/"*.md 2>/dev/null | wc -l)${NC} -> ~/.qwen/commands/"
+echo -e "    Config:       ${BOLD}QWEN.md + settings.json${NC}"
 echo ""
-echo -e "  Agentes instalados: ${CYAN}$INSTALLED_AGENTS${NC} → ~/.qwen/agents/"
-echo -e "  Skills instaladas:  ${CYAN}$INSTALLED_SKILLS${NC} → ~/.qwen/skills/"
+echo -e "  ${YELLOW}${BOLD}Para empezar:${NC}"
+echo -e "    ${BOLD}qwen${NC}                          # Iniciar Qwen Code"
+echo -e "    ${BOLD}/agents manage${NC}                 # Ver agentes disponibles"
+echo -e "    ${BOLD}/skills${NC}                        # Ver skills disponibles"
+echo -e "    ${BOLD}/review${NC}                        # Code review del diff actual"
+echo -e "    ${BOLD}/ship${NC}                          # Pipeline completo: test+lint+commit+push"
+echo -e "    ${BOLD}/audit${NC}                         # Auditoria de seguridad y calidad"
+echo -e "    ${BOLD}/handoff${NC}                       # Guardar progreso entre sesiones"
 echo ""
-echo -e "${YELLOW}Para empezar:${NC}"
-echo "  1. Abre una nueva terminal"
-echo "  2. Escribe: qwen"
-echo "  3. Autentícate: /auth"
-echo "  4. Ver agentes: /agents manage"
-echo "  5. Usar skill:  /skills engineering-backend-architect"
+echo -e "  ${YELLOW}${BOLD}Hooks activos (automaticos):${NC}"
+echo -e "    ${DIM}security-guard${NC}   Bloquea comandos peligrosos y secrets"
+echo -e "    ${DIM}pre-edit-guard${NC}   Protege archivos sensibles (.env, keys)"
+echo -e "    ${DIM}skill-router${NC}     Auto-sugiere skills segun tu prompt"
+echo -e "    ${DIM}session-init${NC}     Carga handoff de sesion anterior"
+echo -e "    ${DIM}auto-handoff${NC}     Sugiere guardar progreso al terminar"
+echo -e "    ${DIM}post-tool-log${NC}    Registra operaciones para auditoria"
+echo -e "    ${DIM}notify-desktop${NC}   Notificaciones nativas del OS"
 echo ""
-echo -e "${YELLOW}Categorías de agentes disponibles:${NC}"
-echo "  academic (5) | design (8) | engineering (27) | game-dev (20)"
-echo "  marketing (29) | paid-media (7) | product (5) | project-mgmt (6)"
-echo "  sales (8) | spatial-computing (6) | specialized (30)"
-echo "  support (6) | testing (8)"
+echo -e "  ${CYAN}Diagnostico: ${BOLD}./scripts/install-linux.sh --doctor${NC}"
 echo ""
