@@ -96,44 +96,55 @@ El sistema optimiza tokens automaticamente clasificando cada tarea:
 
 ## Instalacion
 
-### Requisitos
+### One-liner automatizado (copia y pega)
 
-- **Node.js v20+** - [descargar](https://nodejs.org)
-- **Git** - [descargar](https://git-scm.com)
-- **jq** (recomendado, para hooks) - `sudo pacman -S jq` / `sudo apt install jq` / `brew install jq`
-
-### Linux / macOS
-
+**Linux / macOS:**
 ```bash
-git clone https://github.com/nicolas2601/qwen-con-poderes-.git
-cd qwen-con-poderes-
-chmod +x scripts/install-linux.sh
-./scripts/install-linux.sh
+git clone https://github.com/nicolas2601/qwen-con-poderes-.git && cd qwen-con-poderes- && chmod +x scripts/install-linux.sh && ./scripts/install-linux.sh
 ```
 
-### Windows (CMD)
-
+**Windows (CMD):**
 ```cmd
-git clone https://github.com/nicolas2601/qwen-con-poderes-.git
-cd qwen-con-poderes-
-scripts\install-windows.bat
+git clone https://github.com/nicolas2601/qwen-con-poderes-.git && cd qwen-con-poderes- && scripts\install-windows.bat
 ```
 
-### Windows (PowerShell)
-
+**Windows (PowerShell):**
 ```powershell
-git clone https://github.com/nicolas2601/qwen-con-poderes-.git
-cd qwen-con-poderes-
-.\scripts\install-windows.ps1
+git clone https://github.com/nicolas2601/qwen-con-poderes-.git; cd qwen-con-poderes-; .\scripts\install-windows.ps1
 ```
 
-### Opciones del instalador (Linux/macOS)
+Eso es todo. El instalador hace todo automaticamente:
+1. Verifica Node.js v20+, npm, git, jq
+2. Instala Qwen Code CLI si no esta
+3. Copia 168 agentes a `~/.qwen/agents/`
+4. Copia 193 skills a `~/.qwen/skills/`
+5. Copia 7 hooks a `~/.qwen/hooks/`
+6. Copia 13 commands a `~/.qwen/commands/`
+7. Configura QWEN.md + settings.json con hooks
+8. Crea directorio de logs
+
+### Requisitos previos
+
+| Requisito | Linux | Windows | macOS |
+|-----------|-------|---------|-------|
+| Node.js v20+ | `sudo pacman -S nodejs npm` / `sudo apt install nodejs` | `winget install OpenJS.NodeJS.LTS` | `brew install node` |
+| Git | `sudo pacman -S git` / `sudo apt install git` | `winget install Git.Git` | `brew install git` |
+| jq (para hooks) | `sudo pacman -S jq` / `sudo apt install jq` | Opcional | `brew install jq` |
+
+### Opciones avanzadas (Linux/macOS)
 
 ```bash
-./scripts/install-linux.sh --help       # Ver opciones
-./scripts/install-linux.sh --doctor     # Solo diagnostico
-./scripts/install-linux.sh --skip-cli   # No instalar Qwen CLI
+./scripts/install-linux.sh --doctor     # Diagnostico (verifica que todo esta OK)
 ./scripts/install-linux.sh --force      # Sobreescribir todo
+./scripts/install-linux.sh --skip-cli   # No instalar Qwen CLI
+./scripts/install-linux.sh --help       # Ver todas las opciones
+```
+
+### Activar turbo mode (opcional, para maxima velocidad)
+
+```bash
+# Linux/macOS - despues de instalar:
+chmod +x scripts/turbo-mode.sh && ./scripts/turbo-mode.sh on
 ```
 
 ### Verificar instalacion
@@ -259,20 +270,20 @@ Tecnicas integradas en el `QWEN.md`:
 
 ## Skills (193)
 
-193 skills organizadas en 15+ categorias, incluyendo **25 skills portadas del ecosistema de Claude Code**:
+193 skills organizadas en 15+ categorias, incluyendo **25 skills profesionales extra**:
 
-| Skill | Origen | Funcion |
-|-------|--------|---------|
-| `code-review` | Claude Code | Review con checklist P0-P3 |
-| `comprehensive-review` | Claude Code | Review multi-subagent en paralelo |
-| `audit-website` | Claude Code | Auditoria web: SEO, seguridad, performance |
-| `maestro` | Claude Code | Gestion de repos complejos |
-| `ui-ux-pro-max` | Claude Code | Diseno UI/UX: 50 estilos, 21 paletas |
-| `playwright` | Claude Code | Automatizacion de browser |
-| `gemini` | Claude Code | Code review con contexto grande |
-| `vercel-react-best-practices` | Claude Code | Optimizacion React/Next.js |
-| `react-native-best-practices` | Claude Code | Optimizacion React Native |
-| `nano-banana-pro` | Claude Code | Generacion de imagenes |
+| Skill | Funcion |
+|-------|---------|
+| `code-review` | Review con checklist P0-P3 |
+| `comprehensive-review` | Review multi-subagent en paralelo |
+| `audit-website` | Auditoria web: SEO, seguridad, performance |
+| `maestro` | Gestion de repos complejos |
+| `ui-ux-pro-max` | Diseno UI/UX: 50 estilos, 21 paletas |
+| `playwright` | Automatizacion de browser |
+| `gemini` | Code review con contexto grande |
+| `vercel-react-best-practices` | Optimizacion React/Next.js |
+| `react-native-best-practices` | Optimizacion React Native |
+| `nano-banana-pro` | Generacion de imagenes |
 
 ```bash
 # Invocar skill:
@@ -302,20 +313,19 @@ Tecnicas integradas en el `QWEN.md`:
 | Notificaciones desktop | No | No | Si |
 | settings.json pre-config | No | No | Si |
 
-### vs Ruflo (Claude Code)
+### vs Alternativas de pago
 
-| Feature | Ruflo | Qwen Con Poderes v2 |
-|---------|-------|---------------------|
-| Plataforma | Claude Code (Anthropic) | Qwen Code (Alibaba) |
+| Feature | Alternativas de pago | Qwen Con Poderes v2 |
+|---------|---------------------|---------------------|
 | Costo del CLI | $100-200/mes | **Gratis** (1000 req/dia) |
 | Agentes | 100+ | **168** |
 | Skills | 130+ | **193** |
 | Security hooks | Si | Si |
 | Auto-routing | Q-Learning | Pattern matching |
-| Slash commands | Via MCP | **11 nativos** |
-| Token optimization | 3-tier + WASM | **3 niveles** |
+| Slash commands | Via MCP | **13 nativos** |
+| Token optimization | 3-tier + WASM | **3 niveles + turbo mode** |
 | Handoff documents | No nativo | **Si** |
-| Multi-provider | Si | Si (OpenAI, Anthropic, Gemini) |
+| Multi-provider | Si | Si (OpenAI, Anthropic, Gemini, Ollama) |
 | Open source | Si | **Si** |
 
 ---
@@ -496,11 +506,11 @@ git pull
 
 ## FAQ
 
-**Necesito Claude Code para usar esto?**
-No. Funciona 100% con Qwen Code CLI, sin Anthropic.
+**Necesito algun servicio de pago?**
+No. Funciona 100% con Qwen Code CLI y OAuth gratis (1000 req/dia).
 
 **Es gratis?**
-Si. Qwen Code: 1000 req/dia gratis con OAuth. Los agentes, skills, hooks y commands son archivos locales.
+Si. Qwen Code + OAuth = gratis. Los agentes, skills, hooks y commands son archivos locales.
 
 **Puedo usar otros modelos?**
 Si. Qwen Code soporta APIs compatibles con OpenAI, Anthropic, Gemini y mas.
@@ -517,7 +527,7 @@ Recomendado para los hooks. Sin jq, los hooks no funcionaran pero el resto si.
 
 - [Qwen Code](https://github.com/QwenLM/qwen-code) - CLI base de Alibaba/Qwen
 - [Ruflo](https://github.com/ruvnet/ruflo) - Inspiracion para hooks y routing
-- [Awesome Claude Code](https://github.com/hesreallyhim/awesome-claude-code) - Inspiracion para commands y workflows
+- [Awesome Qwen/AI Code](https://github.com/hesreallyhim/awesome-claude-code) - Inspiracion para commands y workflows
 - [Context Engineering Kit](https://github.com/NeoLabHQ/context-engineering-kit) - Tecnicas de token optimization
 
 Creado por [@nicolas2601](https://github.com/nicolas2601)

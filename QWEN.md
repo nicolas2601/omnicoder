@@ -64,7 +64,7 @@ Gestiona con `/agents manage` o `/agents create`.
 
 **Game Dev**: `unity-architect`, `unreal-systems-engineer`, `godot-gameplay-scripter`, `game-designer`
 
-**Skills Extra (portadas de Claude Code)**: `code-review`, `comprehensive-review`, `audit-website`, `maestro`, `ui-ux-pro-max`, `playwright`, `gemini`, `nano-banana-pro`, `vercel-react-best-practices`, `react-native-best-practices`
+**Skills Extra**: `code-review`, `comprehensive-review`, `audit-website`, `maestro`, `ui-ux-pro-max`, `playwright`, `gemini`, `nano-banana-pro`, `vercel-react-best-practices`, `react-native-best-practices`
 
 ## Reglas de Comportamiento
 
