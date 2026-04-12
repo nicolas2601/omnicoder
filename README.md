@@ -103,15 +103,26 @@ El sistema optimiza tokens automaticamente clasificando cada tarea:
 git clone https://github.com/nicolas2601/qwen-con-poderes-.git && cd qwen-con-poderes- && chmod +x scripts/install-linux.sh && ./scripts/install-linux.sh
 ```
 
-**Windows (CMD):**
+**Windows (RECOMENDADO: Git Bash):**
+
+> **IMPORTANTE:** En Windows los hooks del sistema requieren `bash`. PowerShell y CMD **no funcionan** con los hooks activados (timeout al cargar settings.json). Usa **Git Bash**, que viene con [Git for Windows](https://git-scm.com/download/win).
+
+```bash
+# Abre "Git Bash" (NO PowerShell, NO CMD) y ejecuta:
+git clone https://github.com/nicolas2601/qwen-con-poderes-.git && cd qwen-con-poderes- && chmod +x scripts/install-linux.sh && ./scripts/install-linux.sh
+```
+
+**Windows (CMD) — solo si ya tienes bash/WSL en PATH:**
 ```cmd
 git clone https://github.com/nicolas2601/qwen-con-poderes-.git && cd qwen-con-poderes- && scripts\install-windows.bat
 ```
 
-**Windows (PowerShell):**
+**Windows (PowerShell) — solo si ya tienes bash/WSL en PATH:**
 ```powershell
 git clone https://github.com/nicolas2601/qwen-con-poderes-.git; cd qwen-con-poderes-; .\scripts\install-windows.ps1
 ```
+
+> Si instalaste con `.bat` o `.ps1` y ves `Request timed out waiting for hook-execution-response`, significa que falta `bash`. Desinstala (ver seccion [Desinstalar](#desinstalar)) y reinstala desde Git Bash.
 
 Eso es todo. El instalador hace todo automaticamente:
 1. Verifica Node.js v20+, npm, git, jq
@@ -498,8 +509,41 @@ git pull
 
 ## Desinstalar
 
+**Linux / macOS / Git Bash en Windows:**
 ```bash
 ./scripts/uninstall-linux.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+.\scripts\uninstall-windows.ps1
+# O sin confirmacion:
+.\scripts\uninstall-windows.ps1 -Force
+```
+
+**Windows (CMD):**
+```cmd
+scripts\uninstall-windows.bat
+```
+
+El desinstalador elimina agentes, skills, hooks, commands, logs y limpia la seccion `hooks` del `settings.json` (causa comun del error `Request timed out waiting for hook-execution-response` en Windows sin bash). NO toca Qwen Code CLI ni tu `settings.json` completo.
+
+### Reinstalacion limpia desde Git Bash (fix del timeout en Windows)
+
+Si instalaste con `.bat` o `.ps1` y tienes timeouts de hooks, sigue estos pasos:
+
+```bash
+# 1. Desde PowerShell/CMD, desinstala:
+.\scripts\uninstall-windows.ps1 -Force
+
+# 2. Instala Git for Windows si no lo tienes:
+#    https://git-scm.com/download/win
+
+# 3. Abre "Git Bash" y reinstala con el script de Linux:
+git clone https://github.com/nicolas2601/qwen-con-poderes-.git
+cd qwen-con-poderes-
+chmod +x scripts/install-linux.sh
+./scripts/install-linux.sh
 ```
 
 ---
