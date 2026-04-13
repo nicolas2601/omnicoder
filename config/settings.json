@@ -20,19 +20,13 @@
       {
         "matcher": "Bash",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.qwen/hooks/security-guard.sh"
-          }
+          { "type": "command", "command": "bash ~/.qwen/hooks/security-guard.sh" }
         ]
       },
       {
         "matcher": "Edit|Write",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.qwen/hooks/pre-edit-guard.sh"
-          }
+          { "type": "command", "command": "bash ~/.qwen/hooks/pre-edit-guard.sh" }
         ]
       }
     ],
@@ -40,10 +34,8 @@
       {
         "matcher": "Bash|Edit|Write",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.qwen/hooks/post-tool-logger.sh"
-          }
+          { "type": "command", "command": "bash ~/.qwen/hooks/post-tool-logger.sh" },
+          { "type": "command", "command": "bash ~/.qwen/hooks/error-learner.sh" }
         ]
       }
     ],
@@ -51,10 +43,7 @@
       {
         "matcher": "",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.qwen/hooks/skill-router.sh"
-          }
+          { "type": "command", "command": "bash ~/.qwen/hooks/skill-router.sh" }
         ]
       }
     ],
@@ -62,10 +51,8 @@
       {
         "matcher": "",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.qwen/hooks/session-init.sh"
-          }
+          { "type": "command", "command": "bash ~/.qwen/hooks/session-init.sh" },
+          { "type": "command", "command": "bash ~/.qwen/hooks/memory-loader.sh" }
         ]
       }
     ],
@@ -73,10 +60,7 @@
       {
         "matcher": "",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.qwen/hooks/auto-handoff.sh"
-          }
+          { "type": "command", "command": "bash ~/.qwen/hooks/auto-handoff.sh" }
         ]
       }
     ],
@@ -84,10 +68,7 @@
       {
         "matcher": "",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.qwen/hooks/notify-desktop.sh"
-          }
+          { "type": "command", "command": "bash ~/.qwen/hooks/notify-desktop.sh" }
         ]
       }
     ]

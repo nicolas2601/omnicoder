@@ -1,19 +1,50 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.0.0-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.0.0-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/agents-168-green?style=flat-square" alt="Agents">
   <img src="https://img.shields.io/badge/skills-193-green?style=flat-square" alt="Skills">
-  <img src="https://img.shields.io/badge/hooks-7-orange?style=flat-square" alt="Hooks">
-  <img src="https://img.shields.io/badge/commands-11-purple?style=flat-square" alt="Commands">
+  <img src="https://img.shields.io/badge/hooks-13-orange?style=flat-square" alt="Hooks">
+  <img src="https://img.shields.io/badge/commands-17-purple?style=flat-square" alt="Commands">
+  <img src="https://img.shields.io/badge/aprendizaje-adaptativo-red?style=flat-square" alt="Learning">
+  <img src="https://img.shields.io/badge/memoria-dual-yellow?style=flat-square" alt="Memory">
   <img src="https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform">
 </p>
 
-<h1 align="center">Qwen Con Poderes v2</h1>
+<h1 align="center">Qwen Con Poderes v3</h1>
 
 <p align="center">
-  <strong>168 agentes + 193 skills + 7 hooks + 11 commands</strong> para <a href="https://github.com/QwenLM/qwen-code">Qwen Code CLI</a><br>
-  Convierte tu terminal en un ejercito de expertos con optimizacion de tokens y routing inteligente.
+  <strong>168 agentes + 193 skills + 13 hooks + 17 commands</strong> para <a href="https://github.com/QwenLM/qwen-code">Qwen Code CLI</a><br>
+  Sistema cognitivo completo: memoria dual, aprendizaje adaptativo, router con enforcement, y destilación automática de patrones.
 </p>
+
+## Novedades v3.0 — Sistema Cognitivo Adaptativo
+
+Basado en papers **ReasoningBank** (2025), **Reflexion** (NeurIPS 2023), **ExpeL** y **AgentBank** (NeurIPS 2024):
+
+### Router v3 — Hybrid Scoring + Enforcement Adaptativo
+- BM25-like scoring + bigramas + nombre + memoria feedback
+- 3 niveles: **HARD** (score≥6, obligatorio), **SOFT** (3-5, sugerido), **HINT** (<3)
+- Feedback loop: skill ignorado 3+ veces → router lo eleva a HARD automáticamente
+
+### Memoria Dual (Episodic + Semantic)
+- **Episodic**: `trajectories.md`, `learned.md`, `causal-edges.md`, `ignored-skills.md`
+- **Semantic**: `patterns.md` (auto-destilado), `feedback.md`, `reflections.md`, `skill-stats.json`
+
+### 5 Hooks de Aprendizaje
+- `error-learner.sh` — Fallas con dedup md5
+- `success-learner.sh` — **NUEVO** captura `tests-pass`, `build-ok`, `commit`
+- `skill-usage-tracker.sh` — **NUEVO** detecta si ignoraste sugerencia del router
+- `causal-learner.sh` — **NUEVO** aprende "si X falla → probar Y"
+- `reflection.sh` — **NUEVO** auto-reflexión al cerrar sesión + destila cada 5
+
+### 4 Nuevos Slash Commands
+- `/reflect` — Reflexión manual estilo Reflexion
+- `/patterns` — Gestión de patrones semánticos
+- `/skills-stats` — Dashboard de uso (usados/ignorados/zombies)
+- `/meta` — Meta-análisis semanal del aprendizaje
+
+### Fix Timeout
+- Config `contentGenerator.timeout: 180000` (3 min) evita el error "Streaming request timeout after 45s"
 
 <p align="center">
   <a href="#instalacion">Instalacion</a> &bull;
@@ -27,6 +58,14 @@
 </p>
 
 ---
+
+## Novedades v2.1 (Memoria + Razonamiento)
+
+- **Skill Router v2**: scoring semantico por keywords contra las 193 descriptions de skills + 168 agentes (indice cacheado en `~/.qwen/.cache/`). Antes era regex con 12 patterns; ahora descubre skills nuevas sin tocar codigo.
+- **Memoria persistente** (`~/.qwen/memory/`): MEMORY.md, feedback.md, learned.md, project_*.md. Se inyecta automaticamente al inicio de cada sesion via `memory-loader.sh`.
+- **Error Learner**: hook `error-learner.sh` detecta fallos en PostToolUse (exit != 0, stderr con error) y los registra en `learned.md` con deduplicacion por hash. Evita repetir los mismos errores.
+- **`/learn`**: comando que analiza el proyecto actual (package.json, README, git log) y escribe `./.qwen/memory/project.md` con stack, comandos, convenciones y archivos criticos.
+- **`/memory`**: gestor de memoria (list, show, forget, clean, stats, export, import).
 
 ## Por que v2?
 

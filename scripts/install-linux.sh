@@ -122,14 +122,31 @@ doctor() {
 
     # Check hooks
     HOOK_COUNT=$(ls "$HOME/.qwen/hooks/"*.sh 2>/dev/null | wc -l || echo 0)
-    if [[ "$HOOK_COUNT" -ge 7 ]]; then
-        echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados"
+    if [[ "$HOOK_COUNT" -ge 9 ]]; then
+        echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados (v2.1 con memory-loader + error-learner)"
     elif [[ "$HOOK_COUNT" -gt 0 ]]; then
-        echo -e "  ${YELLOW}!!${NC} Solo $HOOK_COUNT hooks (esperado: 7+)"
+        echo -e "  ${YELLOW}!!${NC} Solo $HOOK_COUNT hooks (esperado: 9+)"
         ISSUES=$((ISSUES + 1))
     else
         echo -e "  ${RED}!!${NC} No hay hooks instalados"
         ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check memory
+    if [[ -d "$HOME/.qwen/memory" ]]; then
+        MEM_COUNT=$(ls "$HOME/.qwen/memory/"*.md 2>/dev/null | wc -l || echo 0)
+        echo -e "  ${GREEN}OK${NC} Memoria persistente: $MEM_COUNT archivos en ~/.qwen/memory/"
+    else
+        echo -e "  ${YELLOW}!!${NC} No hay memoria persistente (reinstala para activarla)"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check skill index cache
+    if [[ -f "$HOME/.qwen/.cache/skills-index.tsv" ]]; then
+        IDX_COUNT=$(wc -l < "$HOME/.qwen/.cache/skills-index.tsv")
+        echo -e "  ${GREEN}OK${NC} Indice de skills cacheado ($IDX_COUNT entradas)"
+    else
+        echo -e "  ${YELLOW}!!${NC} Sin indice de skills (ejecuta scripts/build-skill-index.sh)"
     fi
 
     # Check commands
@@ -372,6 +389,42 @@ fi
 
 # Crear directorio de logs
 mkdir -p "$HOME/.qwen/logs"
+
+# ──────────────────────────────────────────────────────────
+# PASO 9: Instalar memoria persistente (skeleton)
+# ──────────────────────────────────────────────────────────
+echo ""
+echo -e "${BLUE}[9/10]${NC} Instalando memoria persistente..."
+
+QWEN_MEM_DIR="$HOME/.qwen/memory"
+mkdir -p "$QWEN_MEM_DIR"
+
+if [[ -d "$REPO_DIR/memory" ]]; then
+    for f in "$REPO_DIR/memory/"*.md; do
+        [[ -f "$f" ]] || continue
+        DEST="$QWEN_MEM_DIR/$(basename "$f")"
+        # No sobreescribir memoria existente salvo con --force
+        if [[ -f "$DEST" ]] && [[ "$FORCE" != true ]]; then
+            echo -e "  ${YELLOW}!!${NC} $(basename "$f") ya existe (no sobreescrito)"
+        else
+            cp "$f" "$DEST"
+            echo -e "  ${GREEN}OK${NC} $(basename "$f") -> ~/.qwen/memory/"
+        fi
+    done
+fi
+
+# ──────────────────────────────────────────────────────────
+# PASO 10: Construir indice de skills/agentes (cache)
+# ──────────────────────────────────────────────────────────
+echo ""
+echo -e "${BLUE}[10/10]${NC} Construyendo indice de skills y agentes..."
+
+if [[ -x "$REPO_DIR/scripts/build-skill-index.sh" ]]; then
+    bash "$REPO_DIR/scripts/build-skill-index.sh" || true
+else
+    chmod +x "$REPO_DIR/scripts/build-skill-index.sh" 2>/dev/null || true
+    bash "$REPO_DIR/scripts/build-skill-index.sh" || true
+fi
 
 # ───────────────────────────────────────���──────────────────
 # Resumen
