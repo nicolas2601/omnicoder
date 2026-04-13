@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes v2 - Instalador para Linux/macOS
-# 168 agentes + 193 skills + 7 hooks + 11 commands + settings
+# Qwen Con Poderes v3.4 - Instalador para Linux/macOS
+# 168 agentes + 193 skills + 15 hooks + 20 commands + settings
 # ============================================================
 set -euo pipefail
 
@@ -125,7 +125,7 @@ doctor() {
     if [[ "$HOOK_COUNT" -ge 9 ]]; then
         echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados (v2.1 con memory-loader + error-learner)"
     elif [[ "$HOOK_COUNT" -gt 0 ]]; then
-        echo -e "  ${YELLOW}!!${NC} Solo $HOOK_COUNT hooks (esperado: 9+)"
+        echo -e "  ${YELLOW}!!${NC} Solo $HOOK_COUNT hooks (esperado: 15+)"
         ISSUES=$((ISSUES + 1))
     else
         echo -e "  ${RED}!!${NC} No hay hooks instalados"

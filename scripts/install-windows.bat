@@ -1,7 +1,7 @@
 @echo off
 REM ============================================================
-REM Qwen Con Poderes v2 - Instalador para Windows (CMD)
-REM 168 agentes + 193 skills + 7 hooks + 11 commands + settings
+REM Qwen Con Poderes v3.4 - Instalador para Windows (CMD)
+REM 168 agentes + 193 skills + 15 hooks + 20 commands + settings
 REM ============================================================
 chcp 65001 >nul 2>&1
 setlocal EnableDelayedExpansion
