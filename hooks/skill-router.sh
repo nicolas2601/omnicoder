@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
 # ============================================================
-# Claude Code - Skill Router v3.2 (UserPromptSubmit)
+# Claude Code - Skill Router v3.3 (UserPromptSubmit)
 #
-# NOVEDAD v3.2: Detección de tecnologías + auto-ejecución de
-# `npx skills find <tech>` con cache. Devuelve las skills del
-# ecosistema directamente en el contexto. El agente NO puede
-# ignorar porque ya tiene los resultados visibles.
+# NOVEDAD v3.3: Project Context Awareness. Escanea archivos del
+# cwd (AGENTS.md, QWEN.md, CLAUDE.md, README.md, package.json,
+# go.mod, Cargo.toml, requirements.txt, composer.json, Gemfile,
+# pubspec.yaml) para detectar tech aunque el prompt no la mencione.
+# Cache por hash de cwd + mtime de archivos.
+#
+# v3.2: Detección de tecnologías + auto-ejecución de
+# `npx skills find <tech>` con cache.
 # ============================================================
 set -euo pipefail
 
 INPUT=$(cat)
 PROMPT=$(echo "$INPUT" | jq -r '.user_prompt // .prompt // ""' 2>/dev/null || echo "")
+CWD=$(echo "$INPUT" | jq -r '.cwd // ""' 2>/dev/null || echo "")
+[[ -z "$CWD" ]] && CWD="$PWD"
 
 [[ ${#PROMPT} -lt 10 ]] && { echo '{}'; exit 0; }
 
@@ -22,8 +28,9 @@ SKILL_INDEX="$CACHE_DIR/skills-index.tsv"
 AGENT_INDEX="$CACHE_DIR/agents-index.tsv"
 SUGG_LOG="$CACHE_DIR/last-suggestion.json"
 NPX_CACHE="$CACHE_DIR/npx-cache"
+PROJ_CACHE="$CACHE_DIR/project-ctx"
 
-mkdir -p "$CACHE_DIR" "$NPX_CACHE"
+mkdir -p "$CACHE_DIR" "$NPX_CACHE" "$PROJ_CACHE"
 
 build_skill_index() {
     : > "$SKILL_INDEX"
@@ -121,13 +128,68 @@ declare -A TECH_KEYWORDS=(
     [gcp]=gcp
 )
 
+# --------------------------------------------------------
+# v3.3: Escaneo del proyecto (cwd) — detecta tech en archivos
+# --------------------------------------------------------
+scan_project_context() {
+    local cwd="$1"
+    [[ ! -d "$cwd" ]] && return
+    local key hash mtimes cache sig
+    hash=$(echo -n "$cwd" | md5sum | cut -d' ' -f1)
+    cache="$PROJ_CACHE/$hash"
+
+    local files=(
+        "$cwd/AGENTS.md" "$cwd/QWEN.md" "$cwd/CLAUDE.md"
+        "$cwd/README.md" "$cwd/README.MD" "$cwd/readme.md"
+        "$cwd/package.json" "$cwd/go.mod" "$cwd/Cargo.toml"
+        "$cwd/requirements.txt" "$cwd/pyproject.toml"
+        "$cwd/composer.json" "$cwd/Gemfile" "$cwd/pubspec.yaml"
+    )
+
+    mtimes=""
+    for f in "${files[@]}"; do
+        [[ -f "$f" ]] && mtimes+="$(stat -c%Y "$f" 2>/dev/null || echo 0) "
+    done
+    sig=$(echo -n "$mtimes" | md5sum | cut -d' ' -f1)
+
+    if [[ -f "$cache.sig" ]] && [[ "$(cat "$cache.sig" 2>/dev/null)" == "$sig" ]] && [[ -f "$cache" ]]; then
+        cat "$cache"
+        return
+    fi
+
+    local blob=""
+    for f in "${files[@]}"; do
+        [[ -f "$f" ]] || continue
+        blob+=" $(head -c 4096 "$f" 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -c '[:alnum:].' ' ')"
+    done
+
+    echo "$blob" > "$cache"
+    echo "$sig" > "$cache.sig"
+    echo "$blob"
+}
+
+PROJECT_BLOB=$(scan_project_context "$CWD")
+
 DETECTED_TECH=""
+DETECTED_FROM=""
 for keyword in "${!TECH_KEYWORDS[@]}"; do
     if [[ "$PROMPT_LOWER" == *"$keyword"* ]]; then
         DETECTED_TECH="${TECH_KEYWORDS[$keyword]}"
+        DETECTED_FROM="prompt"
         break
     fi
 done
+
+# Fallback: buscar en archivos del proyecto si el prompt no reveló tech
+if [[ -z "$DETECTED_TECH" ]] && [[ -n "$PROJECT_BLOB" ]]; then
+    for keyword in "${!TECH_KEYWORDS[@]}"; do
+        if [[ "$PROJECT_BLOB" == *" $keyword "* ]] || [[ "$PROJECT_BLOB" == *" $keyword."* ]]; then
+            DETECTED_TECH="${TECH_KEYWORDS[$keyword]}"
+            DETECTED_FROM="project"
+            break
+        fi
+    done
+fi
 
 # --------------------------------------------------------
 # Tokenize
@@ -266,7 +328,8 @@ if [[ -n "$TOP_SKILL" ]] || [[ -n "$TOP_AGENT" ]]; then
           --arg level "$LEVEL" \
           --arg prompt "$(echo "$PROMPT" | head -c 200)" \
           --arg tech "$DETECTED_TECH" \
-          '{ts:$ts, skill:$skill, agent:$agent, skill_score:$sscore, agent_score:$ascore, level:$level, prompt:$prompt, tech:$tech}' \
+          --arg tech_source "$DETECTED_FROM" \
+          '{ts:$ts, skill:$skill, agent:$agent, skill_score:$sscore, agent_score:$ascore, level:$level, prompt:$prompt, tech:$tech, tech_source:$tech_source}' \
           > "$SUGG_LOG"
 fi
 
@@ -275,9 +338,13 @@ fi
 # --------------------------------------------------------
 CTX=""
 
+TECH_SOURCE_LABEL=""
+[[ "$DETECTED_FROM" == "project" ]] && TECH_SOURCE_LABEL=" (desde archivos del proyecto: AGENTS.md/package.json/etc)"
+[[ "$DETECTED_FROM" == "prompt" ]] && TECH_SOURCE_LABEL=" (mencionada en el prompt)"
+
 if [[ -n "$DETECTED_TECH" ]] && [[ -n "$NPX_RESULTS" ]]; then
     CTX="═══════════════════════════════════════════════════════════
-🎯 TECNOLOGÍA DETECTADA: **$DETECTED_TECH**
+🎯 TECNOLOGÍA DETECTADA: **$DETECTED_TECH**$TECH_SOURCE_LABEL
 ═══════════════════════════════════════════════════════════
 
 ⚠️  PROTOCOLO OBLIGATORIO (NO NEGOCIABLE):
@@ -304,7 +371,7 @@ $ALIST"
     fi
 elif [[ -n "$DETECTED_TECH" ]]; then
     # Detectó tech pero npx no devolvió (offline/sin npx)
-    CTX="🎯 TECNOLOGÍA DETECTADA: **$DETECTED_TECH**. OBLIGATORIO antes de responder: ejecuta \`npx skills find $DETECTED_TECH\` y presenta resultados. NO respondas genéricamente."
+    CTX="🎯 TECNOLOGÍA DETECTADA: **$DETECTED_TECH**$TECH_SOURCE_LABEL. OBLIGATORIO antes de responder: ejecuta \`npx skills find $DETECTED_TECH\` y presenta resultados. NO respondas genéricamente."
 elif [[ "$LEVEL" == "HARD" ]]; then
     if [[ "$MAX_SKILL_SCORE" -ge "$MAX_AGENT_SCORE" ]] && [[ -n "$TOP_SKILL" ]]; then
         CTX="$PREFIX Match FUERTE (score=$MAX_SKILL_SCORE) con skill '$TOP_SKILL'. USA /skills '$TOP_SKILL' antes de improvisar."
