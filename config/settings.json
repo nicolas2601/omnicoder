@@ -28,6 +28,12 @@
         "hooks": [
           { "type": "command", "command": "bash ~/.qwen/hooks/pre-edit-guard.sh" }
         ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          { "type": "command", "command": "bash ~/.qwen/hooks/subagent-inject.sh" }
+        ]
       }
     ],
     "PostToolUse": [
@@ -36,6 +42,12 @@
         "hooks": [
           { "type": "command", "command": "bash ~/.qwen/hooks/post-tool-logger.sh" },
           { "type": "command", "command": "bash ~/.qwen/hooks/error-learner.sh" }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          { "type": "command", "command": "bash ~/.qwen/hooks/subagent-verify.sh" }
         ]
       }
     ],

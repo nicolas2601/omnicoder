@@ -81,6 +81,32 @@ Gestiona con `/agents manage` o `/agents create`.
 - Commitear .env o archivos con secrets
 - Lanzar subagents para tareas de Nivel 1
 - Repetir informacion que ya esta en contexto
+- **Aceptar el reporte de un subagent sin verificar (ver seccion Verificacion)**
+
+## Verificacion de Subagents (OBLIGATORIO)
+
+Los subagents tienden a reportar exito sin hacer el trabajo real. Por eso:
+
+### Hooks automaticos
+- `subagent-inject.sh` (PreToolUse Task): inyecta el contrato de evidencia al subagent antes de ejecutar.
+- `subagent-verify.sh` (PostToolUse Task): parsea el bloque `<verification>` y valida mtime de archivos, evidencia de tests, comandos loggeados. Si falla, emite `[VERIFICACION-FALLIDA]`.
+
+### Contrato que debe emitir todo subagent
+Al final de su respuesta:
+```
+<verification>
+files: [ruta/archivo1, ruta/archivo2]
+commands: [npm test, git diff]
+tests: true|false
+summary: resumen breve
+</verification>
+```
+
+### Tu obligacion como agente principal
+1. Si ves `[VERIFICACION-FALLIDA]` tras un Task, NO reportes "listo" al usuario.
+2. Verifica manualmente con `Read`/`Bash(git diff --stat)` cada archivo que el subagent declaro.
+3. Si falta trabajo real, re-invoca el subagent con instrucciones especificas de lo que falta.
+4. Comando manual de auditoria: `/verify-last`.
 
 ## Sistema Cognitivo v3 — Aprendizaje Adaptativo
 
