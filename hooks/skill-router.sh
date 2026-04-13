@@ -266,8 +266,24 @@ if [[ -n "$MEMORY_HINT" ]]; then
     CTX+="[MEMORIA] ${MEMORY_HINT%|| }"
 fi
 
-if [[ -z "$CTX" ]]; then
-    CTX="[ROUTER] Sin match claro. Si la tarea es especializada: invoca /skills find-skills antes de improvisar."
+# Si nivel HINT o sin contexto, forzar find-skills
+if [[ "$ENFORCE_LEVEL" == "HINT" ]] || [[ -z "$CTX" ]]; then
+    QUERY=""
+    count=0
+    for tok in "${FILTERED[@]}"; do
+        [[ $count -ge 3 ]] && break
+        QUERY+="$tok "
+        count=$((count + 1))
+    done
+    QUERY=$(echo "$QUERY" | xargs)
+
+    FIND_HINT="[BUSCAR-SKILL] Sin match fuerte local. OBLIGATORIO antes de improvisar: usa /skills find-skills o ejecuta: npx skills find $QUERY. Browse: https://skills.sh/"
+
+    if [[ -z "$CTX" ]]; then
+        CTX="$FIND_HINT"
+    else
+        CTX+=" || $FIND_HINT"
+    fi
 fi
 
 jq -n --arg ctx "$CTX" '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":$ctx}}'

@@ -156,9 +156,22 @@ Ajustes:
 
 1. **Si ves `[OBLIGATORIO]` en el contexto** → invoca ese skill SIEMPRE antes de responder.
 2. **Si ves `[SUGERIDO]`** → usa el skill salvo que tengas razón fuerte contraria.
-3. **Si ves `[HINT]`** → invoca `/skills find-skills` antes de improvisar.
+3. **Si ves `[HINT]` o `[BUSCAR-SKILL]`** → usa `/skills find-skills` o ejecuta
+   `npx skills find <query>` antes de improvisar. Browse: https://skills.sh/
 4. **Nunca** resuelvas a mano algo que tiene skill dedicado. Desperdicia tokens y reputación.
 5. **Tareas multi-dominio** → combina 2-3 agentes en paralelo (Task tool).
+
+### Flujo OBLIGATORIO para proyecto/tarea nueva
+
+1. **Revisa local**: el router auto-escanea 193 skills + 168 agentes.
+2. **Si router emite `[BUSCAR-SKILL]`**:
+   - Invoca `/skills find-skills` o ejecuta `npx skills find <términos-dominio>`.
+   - Ejemplo: "React perf" → `npx skills find react performance`
+   - Ejemplo: "changelog" → `npx skills find changelog`
+   - Ejemplo: "PR review" → `npx skills find pr review`
+3. **Si encuentras skill útil**: instala con `npx skills add <owner/repo@skill> -g -y`
+   y re-sugiérela al usuario.
+4. **Solo después** improvisa — nunca antes de buscar.
 
 ## Slash Commands
 
