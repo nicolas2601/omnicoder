@@ -8,9 +8,9 @@ setlocal EnableDelayedExpansion
 
 echo.
 echo ========================================================
-echo    QWEN CON PODERES v2.0 - INSTALADOR WINDOWS
-echo    168 Agentes + 193 Skills + 7 Hooks + 11 Commands
-echo    Token optimization ^| Security hooks ^| Auto-routing
+echo    QWEN CON PODERES v3.5.1 - INSTALADOR WINDOWS
+echo    168 Agentes + 193 Skills + 16 Hooks + 20 Commands
+echo    Multi-provider ^| Cognitive routing ^| Subagent verify
 echo ========================================================
 echo.
 
@@ -104,10 +104,29 @@ if exist "%REPO_DIR%\QWEN.md" ( copy /y "%REPO_DIR%\QWEN.md" "%USERPROFILE%\.qwe
 if exist "%REPO_DIR%\config\settings.json" ( copy /y "%REPO_DIR%\config\settings.json" "%USERPROFILE%\.qwen\settings.json" >nul & echo   [OK] settings.json )
 if not exist "%USERPROFILE%\.qwen\logs" mkdir "%USERPROFILE%\.qwen\logs"
 
+REM ── PASO 9: Setup de provider (API key) ──
+echo.
+echo [9/9] Setup de provider (API key)...
+if exist "%USERPROFILE%\.qwen\.env" (
+    echo   [!!] Ya existe %USERPROFILE%\.qwen\.env
+    echo        Para cambiar: powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%setup-provider.ps1"
+) else (
+    set /p "SETUPNOW=  Configurar API key ahora? [Y/n]: "
+    if /i not "!SETUPNOW!"=="n" (
+        if exist "%SCRIPT_DIR%setup-provider.ps1" (
+            powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%setup-provider.ps1"
+        ) else (
+            echo   [!!] setup-provider.ps1 no encontrado
+        )
+    ) else (
+        echo   Saltado. Cuando quieras: powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%setup-provider.ps1"
+    )
+)
+
 REM ── Resumen ──
 echo.
 echo ========================================================
-echo           INSTALACION COMPLETADA v2.0
+echo           INSTALACION COMPLETADA v3.5.1
 echo ========================================================
 echo.
 echo   Agentes:  !AC!    Skills:  !SC!
@@ -121,11 +140,18 @@ echo     /review                 Code review
 echo     /ship                   Test+lint+commit+push
 echo     /audit                  Auditoria completa
 echo     /handoff                Guardar progreso
+echo     /verify-last            Auditoria del ultimo subagent
 echo.
-echo   HOOKS ACTIVOS:
-echo     security-guard    Bloquea comandos peligrosos
-echo     pre-edit-guard    Protege archivos sensibles
-echo     skill-router      Auto-sugiere skills
-echo     session-init      Carga sesion anterior
+echo   HOOKS ACTIVOS (16 total):
+echo     security-guard          Bloquea comandos peligrosos
+echo     pre-edit-guard          Protege archivos sensibles
+echo     skill-router            Routing cognitivo
+echo     session-init            Carga sesion anterior
+echo     subagent-inject         Contrato a subagents
+echo     subagent-verify         Verifica subagents
+echo     subagent-error-recover  Detecta errores 400
+echo     + 9 hooks de aprendizaje y soporte
+echo.
+echo   Cambiar provider: bash scripts\switch-provider.sh nvidia^|gemini^|...
 echo.
 pause

@@ -5,7 +5,7 @@
 # ============================================================
 set -euo pipefail
 
-VERSION="2.0.0"
+VERSION="3.5.1"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -27,12 +27,12 @@ cat << 'BANNER'
  | | | \ \ /\ / / _ \ '_ \    | |   / _ \| '_ \  | |_) / _ \ / _` |/ _ \ '__/ _ \/ __|
  | |_| |\ V  V /  __/ | | |   | |__| (_) | | | | |  __/ (_) | (_| |  __/ | |  __/\__ \
   \__\_\ \_/\_/ \___|_| |_|    \____\___/|_| |_| |_|   \___/ \__,_|\___|_|  \___||___/
-                                                                                 v2.0
+                                                                               v3.5.1
 
 BANNER
 echo -e "${NC}"
-echo -e "${DIM}  168 Agentes + 193 Skills + 7 Hooks + 11 Commands${NC}"
-echo -e "${DIM}  Token optimization | Security hooks | Auto-routing${NC}"
+echo -e "${DIM}  168 Agentes + 193 Skills + 16 Hooks + 20 Commands${NC}"
+echo -e "${DIM}  Multi-provider | Cognitive routing | Subagent verification${NC}"
 echo ""
 
 # ──────────────────────────────────────────────────────────
@@ -122,10 +122,10 @@ doctor() {
 
     # Check hooks
     HOOK_COUNT=$(ls "$HOME/.qwen/hooks/"*.sh 2>/dev/null | wc -l || echo 0)
-    if [[ "$HOOK_COUNT" -ge 9 ]]; then
-        echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados (v2.1 con memory-loader + error-learner)"
+    if [[ "$HOOK_COUNT" -ge 16 ]]; then
+        echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados (v3.5 con subagent-verify + error-recover)"
     elif [[ "$HOOK_COUNT" -gt 0 ]]; then
-        echo -e "  ${YELLOW}!!${NC} Solo $HOOK_COUNT hooks (esperado: 15+)"
+        echo -e "  ${YELLOW}!!${NC} Solo $HOOK_COUNT hooks (esperado: 16+)"
         ISSUES=$((ISSUES + 1))
     else
         echo -e "  ${RED}!!${NC} No hay hooks instalados"
@@ -151,10 +151,10 @@ doctor() {
 
     # Check commands
     CMD_COUNT=$(ls "$HOME/.qwen/commands/"*.md 2>/dev/null | wc -l || echo 0)
-    if [[ "$CMD_COUNT" -ge 10 ]]; then
+    if [[ "$CMD_COUNT" -ge 20 ]]; then
         echo -e "  ${GREEN}OK${NC} $CMD_COUNT commands instalados"
     elif [[ "$CMD_COUNT" -gt 0 ]]; then
-        echo -e "  ${YELLOW}!!${NC} Solo $CMD_COUNT commands (esperado: 11+)"
+        echo -e "  ${YELLOW}!!${NC} Solo $CMD_COUNT commands (esperado: 20+)"
         ISSUES=$((ISSUES + 1))
     else
         echo -e "  ${RED}!!${NC} No hay commands instalados"
@@ -193,7 +193,7 @@ doctor() {
 
     echo ""
     if [[ "$ISSUES" -eq 0 ]]; then
-        echo -e "  ${GREEN}${BOLD}Todo OK - Qwen Con Poderes v2 funcionando correctamente${NC}"
+        echo -e "  ${GREEN}${BOLD}Todo OK - Qwen Con Poderes v3.5.1 funcionando correctamente${NC}"
     else
         echo -e "  ${YELLOW}${BOLD}$ISSUES issues encontrados${NC}"
         echo -e "  ${DIM}Ejecuta: ./install-linux.sh --force para reparar${NC}"
@@ -426,15 +426,39 @@ else
     bash "$REPO_DIR/scripts/build-skill-index.sh" || true
 fi
 
-# ───────────────────────────────────────���──────────────────
+# ──────────────────────────────────────────────────────────
+# PASO 11: Setup interactivo de provider (API key)
+# ──────────────────────────────────────────────────────────
+echo ""
+echo -e "${BLUE}[11/11]${NC} Setup de provider (API key)..."
+
+if [[ -f "$HOME/.qwen/.env" ]] && [[ "$FORCE" != true ]]; then
+    echo -e "  ${YELLOW}!!${NC} Ya existe ~/.qwen/.env (provider configurado)"
+    echo -e "     ${DIM}Para cambiar: bash scripts/setup-provider.sh${NC}"
+else
+    echo ""
+    read -rp "  Configurar API key ahora? [Y/n]: " setup_now
+    if [[ "${setup_now,,}" != "n" ]]; then
+        if [[ -x "$REPO_DIR/scripts/setup-provider.sh" ]]; then
+            bash "$REPO_DIR/scripts/setup-provider.sh"
+        else
+            chmod +x "$REPO_DIR/scripts/setup-provider.sh" 2>/dev/null || true
+            bash "$REPO_DIR/scripts/setup-provider.sh"
+        fi
+    else
+        echo -e "  ${DIM}Saltado. Cuando quieras: bash scripts/setup-provider.sh${NC}"
+    fi
+fi
+
+# ──────────────────────────────────────────────────────────
 # Resumen
-# ────���─────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────
 echo ""
 echo -e "${GREEN}${BOLD}"
 cat << 'DONE'
   ╔══════════════════════════════════════════════════╗
-  ║         INSTALACION COMPLETADA v2.0              ║
-  ╚════════��═════════════════════════════════════════╝
+  ║         INSTALACION COMPLETADA v3.5.1            ║
+  ╚══════════════════════════════════════════════════╝
 DONE
 echo -e "${NC}"
 
@@ -453,15 +477,28 @@ echo -e "    ${BOLD}/review${NC}                        # Code review del diff a
 echo -e "    ${BOLD}/ship${NC}                          # Pipeline completo: test+lint+commit+push"
 echo -e "    ${BOLD}/audit${NC}                         # Auditoria de seguridad y calidad"
 echo -e "    ${BOLD}/handoff${NC}                       # Guardar progreso entre sesiones"
+echo -e "    ${BOLD}/verify-last${NC}                   # Auditoria del ultimo subagent"
 echo ""
-echo -e "  ${YELLOW}${BOLD}Hooks activos (automaticos):${NC}"
-echo -e "    ${DIM}security-guard${NC}   Bloquea comandos peligrosos y secrets"
-echo -e "    ${DIM}pre-edit-guard${NC}   Protege archivos sensibles (.env, keys)"
-echo -e "    ${DIM}skill-router${NC}     Auto-sugiere skills segun tu prompt"
-echo -e "    ${DIM}session-init${NC}     Carga handoff de sesion anterior"
-echo -e "    ${DIM}auto-handoff${NC}     Sugiere guardar progreso al terminar"
-echo -e "    ${DIM}post-tool-log${NC}    Registra operaciones para auditoria"
-echo -e "    ${DIM}notify-desktop${NC}   Notificaciones nativas del OS"
+echo -e "  ${YELLOW}${BOLD}Hooks activos (16 total):${NC}"
+echo -e "    ${DIM}security-guard${NC}          Bloquea comandos peligrosos y secrets"
+echo -e "    ${DIM}pre-edit-guard${NC}          Protege archivos sensibles (.env, keys)"
+echo -e "    ${DIM}skill-router${NC}            Routing cognitivo (BM25 + project context)"
+echo -e "    ${DIM}session-init${NC}            Carga handoff de sesion anterior"
+echo -e "    ${DIM}auto-handoff${NC}            Sugiere guardar progreso al terminar"
+echo -e "    ${DIM}post-tool-logger${NC}        Registra operaciones para auditoria"
+echo -e "    ${DIM}notify-desktop${NC}          Notificaciones nativas del OS"
+echo -e "    ${DIM}subagent-inject${NC}         Inyecta contrato de evidencia a subagents"
+echo -e "    ${DIM}subagent-verify${NC}         Verifica que subagents completaron tarea"
+echo -e "    ${DIM}subagent-error-recover${NC}  Detecta errores 400 en subagents"
+echo -e "    ${DIM}+ 6 hooks de aprendizaje (trajectories/learned/patterns/...)${NC}"
 echo ""
-echo -e "  ${CYAN}Diagnostico: ${BOLD}./scripts/install-linux.sh --doctor${NC}"
+echo -e "  ${YELLOW}${BOLD}Provider activo:${NC}"
+if [[ -f "$HOME/.qwen/.env" ]]; then
+    grep "^OPENAI_MODEL=" "$HOME/.qwen/.env" 2>/dev/null | sed 's/^/    /'
+else
+    echo -e "    ${RED}(no configurado)${NC} -> bash scripts/setup-provider.sh"
+fi
+echo ""
+echo -e "  ${CYAN}Diagnostico:${NC} ${BOLD}./scripts/install-linux.sh --doctor${NC}"
+echo -e "  ${CYAN}Cambiar provider:${NC} ${BOLD}./scripts/switch-provider.sh nvidia|gemini|minimax|...${NC}"
 echo ""

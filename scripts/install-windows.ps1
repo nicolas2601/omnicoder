@@ -6,9 +6,9 @@ $ErrorActionPreference = "Stop"
 
 Write-Host ""
 Write-Host "========================================================" -ForegroundColor Cyan
-Write-Host "    QWEN CON PODERES v2.0 - INSTALADOR WINDOWS          " -ForegroundColor Cyan
-Write-Host "    168 Agentes + 193 Skills + 7 Hooks + 11 Commands     " -ForegroundColor Cyan
-Write-Host "    Token optimization | Security hooks | Auto-routing    " -ForegroundColor Cyan
+Write-Host "    QWEN CON PODERES v3.5.1 - INSTALADOR WINDOWS         " -ForegroundColor Cyan
+Write-Host "    168 Agentes + 193 Skills + 16 Hooks + 20 Commands    " -ForegroundColor Cyan
+Write-Host "    Multi-provider | Cognitive routing | Subagent verify " -ForegroundColor Cyan
 Write-Host "========================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -70,11 +70,37 @@ if (Test-Path "$RepoDir\QWEN.md") { Copy-Item "$RepoDir\QWEN.md" "$env:USERPROFI
 if (Test-Path "$RepoDir\config\settings.json") { Copy-Item "$RepoDir\config\settings.json" "$env:USERPROFILE\.qwen\settings.json" -Force; Write-Host "  [OK] settings.json" -ForegroundColor Green }
 New-Item -ItemType Directory -Path "$env:USERPROFILE\.qwen\logs" -Force | Out-Null
 
+# ── PASO 9: Setup de provider (API key) ──
+Write-Host "`n[9/9] Setup de provider (API key)..." -ForegroundColor Blue
+$activeEnv = "$env:USERPROFILE\.qwen\.env"
+if (Test-Path $activeEnv) {
+    Write-Host "  [!!] Ya existe ~/.qwen/.env (provider configurado)" -ForegroundColor Yellow
+    Write-Host "       Para cambiar: powershell -ExecutionPolicy Bypass -File scripts\setup-provider.ps1"
+} else {
+    $setupNow = Read-Host "  Configurar API key ahora? [Y/n]"
+    if ($setupNow.ToLower() -ne 'n') {
+        $setupScript = Join-Path $ScriptDir 'setup-provider.ps1'
+        if (Test-Path $setupScript) {
+            & $setupScript
+        } else {
+            Write-Host "  [!!] setup-provider.ps1 no encontrado en $setupScript" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "  Saltado. Cuando quieras: powershell -ExecutionPolicy Bypass -File scripts\setup-provider.ps1"
+    }
+}
+
 # ── Resumen ──
 Write-Host "`n========================================================" -ForegroundColor Green
-Write-Host "           INSTALACION COMPLETADA v2.0                    " -ForegroundColor Green
+Write-Host "           INSTALACION COMPLETADA v3.5.1                  " -ForegroundColor Green
 Write-Host "========================================================" -ForegroundColor Green
 Write-Host "`n  Agentes: $ac | Skills: $sc | Hooks: $hc | Commands: $cc"
+if (Test-Path $activeEnv) {
+    $model = (Get-Content $activeEnv | Where-Object { $_ -match '^OPENAI_MODEL=' }) -replace 'OPENAI_MODEL=',''
+    Write-Host "  Provider activo: $model" -ForegroundColor Cyan
+} else {
+    Write-Host "  Provider: NO configurado -> setup-provider.ps1" -ForegroundColor Red
+}
 Write-Host "`n  PARA EMPEZAR:" -ForegroundColor Yellow
 Write-Host "    qwen                   Iniciar Qwen Code"
 Write-Host "    /agents manage         Ver agentes"
@@ -83,4 +109,6 @@ Write-Host "    /review                Code review"
 Write-Host "    /ship                  Test+lint+commit+push"
 Write-Host "    /audit                 Auditoria completa"
 Write-Host "    /handoff               Guardar progreso"
+Write-Host "    /verify-last           Auditoria del ultimo subagent"
+Write-Host "`n  Cambiar provider: bash scripts\switch-provider.sh nvidia|gemini|..."
 Write-Host ""
