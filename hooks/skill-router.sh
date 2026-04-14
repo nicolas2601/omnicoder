@@ -100,7 +100,6 @@ declare -A TECH_KEYWORDS=(
     [solidity]=solidity
     [rust]=rust
     [golang]=golang
-    ["go"]=golang
     [unity]=unity
     [unreal]=unreal
     [godot]=godot
@@ -172,8 +171,10 @@ PROJECT_BLOB=$(scan_project_context "$CWD")
 
 DETECTED_TECH=""
 DETECTED_FROM=""
+# v3.5: word-boundary match para evitar falsos positivos
+# ("go" en "hago", "algoritmo", etc; "react" en "reaction")
 for keyword in "${!TECH_KEYWORDS[@]}"; do
-    if [[ "$PROMPT_LOWER" == *"$keyword"* ]]; then
+    if [[ " $PROMPT_LOWER " =~ [^a-z0-9]${keyword}[^a-z0-9] ]]; then
         DETECTED_TECH="${TECH_KEYWORDS[$keyword]}"
         DETECTED_FROM="prompt"
         break
@@ -245,6 +246,36 @@ TOP_AGENTS=$(score_index "$AGENT_INDEX" 2>/dev/null || true)
 
 adjust() {
     local name="$1" base="$2" adj=0
+    # v3.5: blacklist de skills con falsos positivos frecuentes
+    # Sus descripciones tienen keywords muy comunes que matchean de mas.
+    # Requieren match explicito por nombre para activarse.
+    case "$name" in
+        seo-content|seo-audit|seo-page|seo-plan|seo-geo|seo-technical|seo-images|seo-sitemap|seo-schema|seo-programmatic|seo-competitor-pages|seo-hreflang|seo)
+            if [[ "$PROMPT_LOWER" != *"seo"* ]] && [[ "$PROMPT_LOWER" != *"eeat"* ]] && [[ "$PROMPT_LOWER" != *"search engine"* ]]; then
+                adj=$((adj - 10))
+            fi ;;
+        code-review|comprehensive-review|cross-review|review|plan-eng-review|plan-ceo-review|github-code-review)
+            if [[ "$PROMPT_LOWER" != *"review"* ]] && [[ "$PROMPT_LOWER" != *"pr "* ]] && [[ "$PROMPT_LOWER" != *"revisa"* ]] && [[ "$PROMPT_LOWER" != *"audita"* ]] && [[ "$PROMPT_LOWER" != *"diff"* ]]; then
+                adj=$((adj - 10))
+            fi ;;
+        docs-api-openapi|api-docs)
+            if [[ "$PROMPT_LOWER" != *"openapi"* ]] && [[ "$PROMPT_LOWER" != *"swagger"* ]] && [[ seo-content != *"documenta"* ]] && [[ "$PROMPT_LOWER" != *"documenta"* ]]; then
+                adj=$((adj - 10))
+            fi ;;
+        roblox-avatar-creator|roblox-experience-designer|roblox-systems-scripter|specialized-developer-advocate)
+            if [[ "$PROMPT_LOWER" != *"roblox"* ]] && [[ "$PROMPT_LOWER" != *"developer advocate"* ]] && [[ "$PROMPT_LOWER" != *"avatar"* ]]; then
+                adj=$((adj - 15))
+            fi ;;
+        nano-banana-pro)
+            if [[ "$PROMPT_LOWER" != *"imagen"* ]] && [[ "$PROMPT_LOWER" != *"image"* ]] && [[ "$PROMPT_LOWER" != *"banana"* ]] && [[ "$PROMPT_LOWER" != *"nano"* ]]; then
+                adj=$((adj - 15))
+            fi ;;
+        find-skills)
+            # find-skills solo si el usuario pide descubrir skills
+            if [[ "$PROMPT_LOWER" != *"skill"* ]] && [[ "$PROMPT_LOWER" != *"descubre"* ]]; then
+                adj=$((adj - 10))
+            fi ;;
+    esac
     if [[ -f "$MEM_DIR/ignored-skills.md" ]]; then
         local c
         c=$(grep -c "^$name |" "$MEM_DIR/ignored-skills.md" 2>/dev/null || echo 0)
@@ -280,10 +311,13 @@ if [[ -n "$TOP_AGENTS" ]]; then
     TOP_AGENT=$(echo "$FIRST" | awk -F'\t' '{print $2}')
 fi
 
+# v3.5: thresholds subidos para reducir falsos positivos brutales
+# Antes HARD=6/SOFT=3, eran demasiado permisivos (ej. seo-content score=48
+# en prompts sobre NVIDIA API, roblox-avatar-creator en subagents paralelos).
 LEVEL="HINT"; PREFIX="[HINT]"
-if [[ "$MAX_SKILL_SCORE" -ge 6 ]] || [[ "$MAX_AGENT_SCORE" -ge 6 ]]; then
+if [[ "$MAX_SKILL_SCORE" -ge 12 ]] || [[ "$MAX_AGENT_SCORE" -ge 12 ]]; then
     LEVEL="HARD"; PREFIX="[OBLIGATORIO]"
-elif [[ "$MAX_SKILL_SCORE" -ge 3 ]] || [[ "$MAX_AGENT_SCORE" -ge 3 ]]; then
+elif [[ "$MAX_SKILL_SCORE" -ge 7 ]] || [[ "$MAX_AGENT_SCORE" -ge 7 ]]; then
     LEVEL="SOFT"; PREFIX="[SUGERIDO]"
 fi
 
