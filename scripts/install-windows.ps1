@@ -1,6 +1,6 @@
 # ============================================================
-# Qwen Con Poderes v3.4 - Instalador para Windows (PowerShell)
-# 168 agentes + 193 skills + 15 hooks + 20 commands + settings
+# Qwen Con Poderes v3.5 - Instalador para Windows (PowerShell)
+# 168 agentes + 193 skills + 16 hooks + 20 commands + settings
 # ============================================================
 $ErrorActionPreference = "Stop"
 

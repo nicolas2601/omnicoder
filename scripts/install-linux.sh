@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes v3.4 - Instalador para Linux/macOS
-# 168 agentes + 193 skills + 15 hooks + 20 commands + settings
+# Qwen Con Poderes v3.5 - Instalador para Linux/macOS
+# 168 agentes + 193 skills + 16 hooks + 20 commands + settings
 # ============================================================
 set -euo pipefail
 

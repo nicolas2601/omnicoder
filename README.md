@@ -13,9 +13,25 @@
 <h1 align="center">Qwen Con Poderes v3</h1>
 
 <p align="center">
-  <strong>168 agentes + 193 skills + 13 hooks + 17 commands</strong> para <a href="https://github.com/QwenLM/qwen-code">Qwen Code CLI</a><br>
+  <strong>168 agentes + 193 skills + 16 hooks + 20 commands</strong> para <a href="https://github.com/QwenLM/qwen-code">Qwen Code CLI</a><br>
   Sistema cognitivo completo: memoria dual, aprendizaje adaptativo, router con enforcement, y destilación automática de patrones.
 </p>
+
+## Novedades v3.5 — Fix Error 400 en Subagentes (modelo gratuito)
+
+El modelo `qwen3-coder` gratuito falla con `InternalError.Algo.InvalidParameter:
+function.arguments must be JSON` cuando recibe tool_calls anidados con prompts
+largos o code-blocks embebidos. v3.5 lo resuelve sin cambiar de modelo:
+
+- **`subagent-inject.sh`** ahora detecta prompts >4000 chars o con >6 backticks y
+  advierte al orquestador ANTES de spawnear (evita el error preventivamente).
+- **`subagent-error-recover.sh`** (nuevo, PostToolUse Task) detecta 4 patrones
+  de error 400 y emite `[SUBAGENT-400-DETECTADO]` con plan de recuperacion:
+  acortar prompt, quitar code-fences, usar Edit directo, o secuencial en vez
+  de paralelo con 3+ subagents.
+- Contador de errores en `~/.qwen/logs/subagent-400-errors.log`. Tras 3+ errores
+  sugiere `turbo-mode on` o modelo alternativo.
+- El agente principal ya NO puede reportar "listo" tras un fallo silencioso.
 
 ## Novedades v3.0 — Sistema Cognitivo Adaptativo
 

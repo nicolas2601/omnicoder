@@ -47,6 +47,7 @@
       {
         "matcher": "Task",
         "hooks": [
+          { "type": "command", "command": "bash ~/.qwen/hooks/subagent-error-recover.sh" },
           { "type": "command", "command": "bash ~/.qwen/hooks/subagent-verify.sh" }
         ]
       }
