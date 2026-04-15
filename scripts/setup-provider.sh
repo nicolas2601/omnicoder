@@ -117,6 +117,28 @@ else
     echo "Activa manualmente con: cp $ENV_FILE $QWEN_DIR/.env"
 fi
 
+# CRITICO: forzar selectedType=openai para que Qwen NO pida OAuth al arrancar
+SETTINGS="$QWEN_DIR/settings.json"
+if [[ -f "$SETTINGS" ]] && command -v jq >/dev/null 2>&1; then
+    tmp=$(mktemp)
+    jq '.security = (.security // {}) | .security.auth = (.security.auth // {}) | .security.auth.selectedType = "openai"' \
+        "$SETTINGS" > "$tmp" && mv "$tmp" "$SETTINGS"
+    echo -e "${c_g}OK auth.selectedType = openai (Qwen NO pedira OAuth)${c_n}"
+elif [[ -f "$SETTINGS" ]]; then
+    echo -e "${c_y}!! jq no instalado - edita $SETTINGS y agrega:${c_n}"
+    echo '   "security": { "auth": { "selectedType": "openai" } }'
+fi
+
+# Eliminar OAuth cacheado si existe (sino prioriza sobre OpenAI key)
+if [[ -f "$QWEN_DIR/oauth_creds.json" ]]; then
+    echo ""
+    read -rp "Encontre OAuth cacheado de Qwen. Eliminar para usar tu API key? [Y/n]: " rmoauth
+    if [[ "${rmoauth,,}" != "n" ]]; then
+        rm -f "$QWEN_DIR/oauth_creds.json"
+        echo -e "${c_g}OK OAuth eliminado${c_n}"
+    fi
+fi
+
 # Test opcional
 echo ""
 read -rp "Probar conexion con curl ahora? [Y/n]: " test

@@ -1,6 +1,11 @@
 {
   "$schema": "https://qwen-code.ai/settings-schema.json",
   "$version": 3,
+  "security": {
+    "auth": {
+      "selectedType": "openai"
+    }
+  },
   "model": {
     "name": "coder-model"
   },

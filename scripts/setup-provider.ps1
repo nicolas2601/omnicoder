@@ -117,16 +117,31 @@ if (Test-Path $activeEnv) { Copy-Item $activeEnv $backupEnv -Force }
 Copy-Item $envFile $activeEnv -Force
 Write-Host "OK provider activo (backup en $backupEnv)" -ForegroundColor Green
 
-# Actualizar settings.json (model.name)
+# Actualizar settings.json (model.name + security.auth.selectedType=openai)
 if (Test-Path $SettingsFile) {
     try {
         $json = Get-Content $SettingsFile -Raw | ConvertFrom-Json
-        if (-not $json.model) { $json | Add-Member -NotePropertyName model -NotePropertyValue (@{}) }
-        $json.model.name = $cfg.Model
+        if (-not $json.model) { $json | Add-Member -NotePropertyName model -NotePropertyValue ([PSCustomObject]@{}) -Force }
+        $json.model | Add-Member -NotePropertyName name -NotePropertyValue $cfg.Model -Force
+        # CRITICO: forzar selectedType=openai (sino Qwen pide OAuth al arrancar)
+        if (-not $json.security) { $json | Add-Member -NotePropertyName security -NotePropertyValue ([PSCustomObject]@{}) -Force }
+        if (-not $json.security.auth) { $json.security | Add-Member -NotePropertyName auth -NotePropertyValue ([PSCustomObject]@{}) -Force }
+        $json.security.auth | Add-Member -NotePropertyName selectedType -NotePropertyValue 'openai' -Force
         $json | ConvertTo-Json -Depth 20 | Set-Content $SettingsFile -Encoding UTF8
-        Write-Host "OK settings.json actualizado: model.name = $($cfg.Model)" -ForegroundColor Green
+        Write-Host "OK settings.json: model.name=$($cfg.Model), auth.selectedType=openai" -ForegroundColor Green
     } catch {
         Write-Host "Aviso: no se pudo actualizar settings.json ($_)" -ForegroundColor Yellow
+    }
+}
+
+# Eliminar OAuth cacheado (sino prioriza sobre la API key)
+$oauthCreds = Join-Path $QwenDir 'oauth_creds.json'
+if (Test-Path $oauthCreds) {
+    Write-Host ""
+    $rm = Read-Host "Encontre OAuth cacheado de Qwen. Eliminar para usar tu API key? [Y/n]"
+    if ($rm.ToLower() -ne 'n') {
+        Remove-Item $oauthCreds -Force
+        Write-Host "OK OAuth eliminado" -ForegroundColor Green
     }
 }
 
