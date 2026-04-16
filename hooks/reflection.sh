@@ -53,13 +53,13 @@ SUCCESS_TODAY=0
 IGNORED_TODAY=0
 
 if [[ -f "$MEM_DIR/learned.md" ]]; then
-    ERRORS_TODAY=$(grep -c "^### $TODAY" "$MEM_DIR/learned.md" 2>/dev/null || echo 0)
+    ERRORS_TODAY=$(grep -c "^### $TODAY" "$MEM_DIR/learned.md" 2>/dev/null) || ERRORS_TODAY=0
 fi
 if [[ -f "$MEM_DIR/trajectories.md" ]]; then
-    SUCCESS_TODAY=$(grep -c "^- $TODAY" "$MEM_DIR/trajectories.md" 2>/dev/null || echo 0)
+    SUCCESS_TODAY=$(grep -c "^- $TODAY" "$MEM_DIR/trajectories.md" 2>/dev/null) || SUCCESS_TODAY=0
 fi
 if [[ -f "$MEM_DIR/ignored-skills.md" ]]; then
-    IGNORED_TODAY=$(grep -c " | $TODAY" "$MEM_DIR/ignored-skills.md" 2>/dev/null || echo 0)
+    IGNORED_TODAY=$(grep -c " | $TODAY" "$MEM_DIR/ignored-skills.md" 2>/dev/null) || IGNORED_TODAY=0
 fi
 
 # No reflexionar si no hubo actividad
@@ -119,7 +119,7 @@ fi
 # Destilación: cada 5 reflexiones, promover a patterns.md
 # (Reflexion -> ExpeL: episodic -> semantic)
 # --------------------------------------------------------
-REFL_COUNT=$(grep -c "^### " "$REFLECTIONS_FILE" 2>/dev/null || echo 0)
+REFL_COUNT=$(grep -c "^### " "$REFLECTIONS_FILE" 2>/dev/null) || REFL_COUNT=0
 if [[ $((REFL_COUNT % 5)) -eq 0 ]] && [[ "$REFL_COUNT" -gt 0 ]]; then
     echo "" >> "$PATTERNS_FILE"
     echo "## Destilado $TIMESTAMP (reflexión #$REFL_COUNT)" >> "$PATTERNS_FILE"

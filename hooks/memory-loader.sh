@@ -18,12 +18,20 @@ CONTEXT=""
 # Limite de lineas por archivo para no reventar contexto
 MAX_LINES=80
 
+MAX_TOTAL_CHARS=8000
+TOTAL_CHARS=0
+
 append_file() {
     local f="$1" label="$2"
     [[ -f "$f" ]] || return
+    # Skip binary files
+    file -b --mime "$f" 2>/dev/null | grep -q 'text/' || return
+    # Skip if total limit reached
+    [[ "$TOTAL_CHARS" -ge "$MAX_TOTAL_CHARS" ]] && return
     local content
     content=$(head -n "$MAX_LINES" "$f" 2>/dev/null)
     [[ -z "$content" ]] && return
+    TOTAL_CHARS=$((TOTAL_CHARS + ${#content}))
     CONTEXT+="
 
 ## [$label] $(basename "$f")

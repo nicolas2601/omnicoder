@@ -31,7 +31,7 @@ cat << 'BANNER'
 
 BANNER
 echo -e "${NC}"
-echo -e "${DIM}  168 Agentes + 193 Skills + 16 Hooks + 20 Commands${NC}"
+echo -e "${DIM}  168 Agentes + 193 Skills + 18 Hooks + 21 Commands${NC}"
 echo -e "${DIM}  Multi-provider | Cognitive routing | Subagent verification${NC}"
 echo ""
 

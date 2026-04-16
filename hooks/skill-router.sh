@@ -175,7 +175,8 @@ DETECTED_FROM=""
 # v3.5: word-boundary match para evitar falsos positivos
 # ("go" en "hago", "algoritmo", etc; "react" en "reaction")
 for keyword in "${!TECH_KEYWORDS[@]}"; do
-    if [[ " $PROMPT_LOWER " =~ [^a-z0-9]${keyword}[^a-z0-9] ]]; then
+    escaped_kw="${keyword//./\\.}"
+    if [[ " $PROMPT_LOWER " =~ [^a-z0-9]${escaped_kw}[^a-z0-9] ]]; then
         DETECTED_TECH="${TECH_KEYWORDS[$keyword]}"
         DETECTED_FROM="prompt"
         break
@@ -227,8 +228,8 @@ score_index() {
         score = 0
         for (i=1;i<=n;i++) {
             t = toks[i]; if (t == "") continue
-            tmp = desc; c = 0
-            while (sub(t, "", tmp) > 0 && c < 3) c++
+            tmp = desc; c = 0; lt = length(t)
+            while (lt > 0 && (p = index(tmp, t)) > 0 && c < 3) { c++; tmp = substr(tmp, p + lt) }
             score += c
             if (index(lname, t) > 0) score += 3
         }
@@ -260,7 +261,7 @@ adjust() {
                 adj=$((adj - 10))
             fi ;;
         docs-api-openapi|api-docs)
-            if [[ "$PROMPT_LOWER" != *"openapi"* ]] && [[ "$PROMPT_LOWER" != *"swagger"* ]] && [[ seo-content != *"documenta"* ]] && [[ "$PROMPT_LOWER" != *"documenta"* ]]; then
+            if [[ "$PROMPT_LOWER" != *"openapi"* ]] && [[ "$PROMPT_LOWER" != *"swagger"* ]] && [[ "$PROMPT_LOWER" != *"documenta"* ]]; then
                 adj=$((adj - 10))
             fi ;;
         roblox-avatar-creator|roblox-experience-designer|roblox-systems-scripter|specialized-developer-advocate)

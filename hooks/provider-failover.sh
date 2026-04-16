@@ -6,7 +6,7 @@
 set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
-INPUT=$(cat)
+INPUT=$(cat | tr '\n' ' ' | tr '\r' ' ')
 # Parse the tool output for error patterns
 OUTPUT=$(echo "$INPUT" | jq -r '.tool_output // ""' 2>/dev/null || echo "")
 
@@ -20,7 +20,7 @@ if echo "$OUTPUT" | grep -qiE '429|rate.?limit|too many requests'; then
 elif echo "$OUTPUT" | grep -qiE '503|service.?unavailable'; then
     FAILOVER_NEEDED=true
     REASON="Service unavailable (503)"
-elif echo "$OUTPUT" | grep -qiE 'timeout|timed?.?out|ETIMEDOUT|ECONNREFUSED'; then
+elif echo "$OUTPUT" | grep -qiE 'timed?\s*out|ETIMEDOUT|ECONNREFUSED|ECONNRESET|connection.*refused'; then
     FAILOVER_NEEDED=true
     REASON="Connection timeout"
 elif echo "$OUTPUT" | grep -qiE '401|unauthorized|invalid.*key|authentication'; then
@@ -35,7 +35,14 @@ if [[ "$FAILOVER_NEEDED" == true ]]; then
     echo "[$(date -Iseconds)] PROVIDER FAILURE: $REASON" >> "$LOG_DIR/provider-failures.log"
 
     # Count recent failures (last 5 minutes)
-    RECENT=$(grep -c "$(date +%Y-%m-%dT%H:%M 2>/dev/null || date +%Y-%m-%d)" "$LOG_DIR/provider-failures.log" 2>/dev/null || echo 0)
+    NOW_EPOCH=$(date +%s 2>/dev/null || echo 0)
+    FIVE_MIN_AGO=$((NOW_EPOCH - 300))
+    RECENT=$(awk -v cutoff="$FIVE_MIN_AGO" 'BEGIN{c=0} {
+        gsub(/[\[\]]/, "", $1)
+        cmd = "date -d \"" $1 "\" +%s 2>/dev/null"
+        if ((cmd | getline ts) > 0 && ts > cutoff) c++
+        close(cmd)
+    } END{print c}' "$LOG_DIR/provider-failures.log" 2>/dev/null || echo 0)
 
     # Emit warning
     MSG="[PROVIDER-ISSUE] $REASON detectado."

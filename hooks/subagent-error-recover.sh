@@ -57,8 +57,9 @@ fi
 # --------------------------------------------------------
 echo "$TIMESTAMP|$SESSION_ID|$DETECTED|agent=$SUB_AGENT|desc=$SUB_DESC|prompt_len=$PROMPT_LEN" >> "$ERR_LOG"
 
-# Umbral: si >3 errores del mismo tipo en 24h, sugiere turbo-mode
-RECENT_COUNT=$(grep "|$DETECTED|" "$ERR_LOG" 2>/dev/null | tail -20 | wc -l || echo 0)
+# Umbral: si >3 errores del mismo tipo hoy, sugiere turbo-mode
+TODAY=$(date +%Y-%m-%d 2>/dev/null || echo "")
+RECENT_COUNT=$(grep "$TODAY.*|$DETECTED|" "$ERR_LOG" 2>/dev/null | wc -l || echo 0)
 
 # --------------------------------------------------------
 # Plan de recuperacion

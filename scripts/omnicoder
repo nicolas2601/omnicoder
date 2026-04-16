@@ -48,7 +48,7 @@ BANNER
         esac
         echo -e "  ${DIM}Provider:${NC} ${GREEN}${PROVIDER_NAME}${NC}"
     fi
-    echo -e "  ${DIM}168 agentes | 193 skills | 16 hooks | 20 commands${NC}"
+    echo -e "  ${DIM}168 agentes | 193 skills | 18 hooks | 21 commands${NC}"
     echo ""
 fi
 

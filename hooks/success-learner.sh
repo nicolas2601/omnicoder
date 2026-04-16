@@ -11,7 +11,7 @@
 set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
-INPUT=$(cat)
+INPUT=$(cat | tr '\n' ' ' | tr '\r' ' ')
 
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null || echo "")
 TOOL_INPUT=$(echo "$INPUT" | jq -r '.tool_input // {}' 2>/dev/null || echo "{}")

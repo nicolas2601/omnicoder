@@ -33,7 +33,8 @@ TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 # --------------------------------------------------------
 # Extraer bloque <verification>...</verification>
 # --------------------------------------------------------
-VERIFICATION_BLOCK=$(echo "$TOOL_OUTPUT" | awk '/<verification>/,/<\/verification>/' | sed '1d;$d')
+# Extract LAST verification block only (in case of multiples)
+VERIFICATION_BLOCK=$(echo "$TOOL_OUTPUT" | awk '/<verification>/{found=1; block=""} found{block=block (block?"\n":"") $0} /<\/verification>/ && found{last=block; found=0} END{print last}' | sed '1d;$d')
 
 if [[ -z "$VERIFICATION_BLOCK" ]]; then
     CTX="⚠️ [VERIFICACION-FALLIDA] El subagente NO incluyo el bloque <verification>. No hay evidencia de trabajo real. ACCIONES OBLIGATORIAS antes de aceptar su output:

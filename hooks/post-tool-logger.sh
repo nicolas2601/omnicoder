@@ -6,7 +6,7 @@
 set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
-INPUT=$(cat)
+INPUT=$(cat | tr '\n' ' ' | tr '\r' ' ')
 
 LOG_DIR="$HOME/.omnicoder/logs"
 mkdir -p "$LOG_DIR"
