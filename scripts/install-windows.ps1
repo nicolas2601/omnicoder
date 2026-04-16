@@ -53,6 +53,14 @@ Write-Host "`n[2/11] Qwen Code CLI..." -ForegroundColor Blue
 try { $null = Get-Command qwen -ErrorAction Stop; Write-Host "  [OK] Ya instalado" -ForegroundColor Green }
 catch { npm install -g @qwen-code/qwen-code@latest; Write-Host "  [OK] Instalado" -ForegroundColor Green }
 
+# Patch de branding: Qwen Code -> OmniCoder
+$patchScript = Join-Path $ScriptDir 'patch-branding.ps1'
+if (Test-Path $patchScript) {
+    & $patchScript
+} else {
+    Write-Host "  [!!] patch-branding.ps1 no encontrado - branding no parcheado" -ForegroundColor Yellow
+}
+
 # ── PASO 3: Verificar repo ──
 Write-Host "`n[3/11] Verificando repo..." -ForegroundColor Blue
 if (-not (Test-Path "$RepoDir\agents")) { Write-Host "  ERROR: agents\ no encontrado" -ForegroundColor Red; exit 1 }

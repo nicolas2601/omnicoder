@@ -71,6 +71,13 @@ if %ERRORLEVEL% equ 0 (
     echo   [OK] Instalado
 )
 
+REM ── Patch de branding: Qwen Code -> OmniCoder ──
+if exist "%~dp0patch-branding.ps1" (
+    powershell -ExecutionPolicy Bypass -NoProfile -File "%~dp0patch-branding.ps1"
+) else (
+    echo   [!!] patch-branding.ps1 no encontrado - branding no parcheado
+)
+
 REM ── PASO 3: Detectar repo ──
 echo.
 echo [3/11] Detectando archivos...
