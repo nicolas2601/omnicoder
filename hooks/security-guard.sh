@@ -39,11 +39,11 @@ if [[ "$TOOL_NAME" == "Bash" ]]; then
 
     for pattern in "${DANGEROUS_PATTERNS[@]}"; do
         if echo "$COMMAND" | grep -qiE "$pattern"; then
-            jq -n '{
+            jq -n --arg p "$pattern" '{
                 "hookSpecificOutput": {
                     "hookEventName": "PreToolUse",
                     "permissionDecision": "deny",
-                    "permissionDecisionReason": "BLOQUEADO: Comando peligroso detectado. Patron: '"$pattern"'"
+                    "permissionDecisionReason": ("BLOQUEADO: Comando peligroso detectado. Patron: " + $p)
                 }
             }'
             exit 0
