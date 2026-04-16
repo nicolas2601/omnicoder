@@ -1,4 +1,4 @@
-# OmniCoder - Instrucciones Globales (v4)
+# OmniCoder - Instrucciones Globales (v4.2)
 
 ## Idioma
 Siempre responde en Espanol.
@@ -42,10 +42,10 @@ Cuando el contexto se acerque al limite o antes de /compress:
 
 ## Skills y Agentes Disponibles
 
-### 193 Skills Instaladas (`~/.omnicoder/skills/`)
+### 193+ Skills Instaladas (`~/.omnicoder/skills/`)
 Invoca con `/skills <nombre>` o deja que se active automaticamente.
 
-### 168 SubAgentes Instalados (`~/.omnicoder/agents/`)
+### 168+ SubAgentes Instalados (`~/.omnicoder/agents/`)
 Gestiona con `/agents manage` o `/agents create`.
 
 ### Catalogo Rapido por Dominio
@@ -148,9 +148,9 @@ Ajustes:
 
 | Score | Nivel | Comportamiento |
 |-------|-------|----------------|
-| ≥ 6 | **HARD** | `[OBLIGATORIO]` Usa el skill. No improvises. |
-| 3-5 | **SOFT** | `[SUGERIDO]` Considera el skill antes de responder. |
-| < 3 | **HINT** | Si la tarea es especializada, invoca `/skills find-skills`. |
+| ≥ 12 | **HARD** | `[OBLIGATORIO]` Usa el skill. No improvises. |
+| 7-11 | **SOFT** | `[SUGERIDO]` Considera el skill antes de responder. |
+| < 7 | **HINT** | Si la tarea es especializada, invoca `/skills find-skills`. |
 
 **Loop de feedback:**
 1. Router sugiere skill X con score 4.
@@ -223,9 +223,9 @@ Ajustes:
 
 ## Hooks Activos (v4)
 
-**PreToolUse**: security-guard + pre-edit-guard
-**PostToolUse**: post-tool-logger + error-learner + **success-learner** + **skill-usage-tracker** + **causal-learner**
-**UserPromptSubmit**: **skill-router v4** (hybrid scoring + enforcement)
+**PreToolUse**: security-guard + pre-edit-guard + subagent-inject
+**PostToolUse**: post-tool-logger + error-learner + **success-learner** + **skill-usage-tracker** + **causal-learner** + **token-tracker** + **provider-failover** + subagent-error-recover + subagent-verify
+**UserPromptSubmit**: **skill-router v4.2** (hybrid scoring + enforcement)
 **SessionStart**: session-init + memory-loader (carga patterns + feedback + learned)
 **Stop**: auto-handoff + **reflection** (auto-destila cada 5 sesiones)
 **Notification**: notify-desktop

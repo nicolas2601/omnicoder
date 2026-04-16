@@ -1,6 +1,7 @@
 node_modules/
 .git/
 *.log
+*.lock
 .DS_Store
 Thumbs.db
 .env
@@ -9,3 +10,4 @@ Thumbs.db
 *.pem
 credentials.json
 serviceAccountKey.json
+cli.js.bak

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # ============================================================
-# OmniCoder v4.0 - Instalador para Linux/macOS
-# 168 agentes + 193 skills + 16 hooks + 20 commands + settings
+# OmniCoder v4.2 - Instalador para Linux/macOS
+# 168 agentes + 193 skills + 18 hooks + 21 commands + settings
 # ============================================================
 set -euo pipefail
 
-VERSION="4.0.0"
+VERSION="4.2.0"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -27,7 +27,7 @@ cat << 'BANNER'
  / / / / __ `__ \/ __ \/ / /   / __ \/ __  / _ \/ ___/
 / /_/ / / / / / / / / / / /___/ /_/ / /_/ /  __/ /
 \____/_/ /_/ /_/_/ /_/_/\____/\____/\__,_/\___/_/
-                                                v4.0.0
+                                                v4.2.0
 
 BANNER
 echo -e "${NC}"
@@ -194,7 +194,7 @@ doctor() {
     # Check hooks
     HOOK_COUNT=$(ls "$HOME/.omnicoder/hooks/"*.sh 2>/dev/null | wc -l || true)
     if [[ "$HOOK_COUNT" -ge 16 ]]; then
-        echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados (v4.0 con aprendizaje adaptativo + failover)"
+        echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados (v4.2 con aprendizaje adaptativo + failover)"
     elif [[ "$HOOK_COUNT" -gt 0 ]]; then
         echo -e "  ${YELLOW}!!${NC} Solo $HOOK_COUNT hooks (esperado: 16+)"
         ISSUES=$((ISSUES + 1))
@@ -264,7 +264,7 @@ doctor() {
 
     echo ""
     if [[ "$ISSUES" -eq 0 ]]; then
-        echo -e "  ${GREEN}${BOLD}Todo OK - OmniCoder v4.0.0 funcionando correctamente${NC}"
+        echo -e "  ${GREEN}${BOLD}Todo OK - OmniCoder v4.2.0 funcionando correctamente${NC}"
     else
         echo -e "  ${YELLOW}${BOLD}$ISSUES issues encontrados${NC}"
         echo -e "  ${DIM}Ejecuta: ./install-linux.sh --force para reparar${NC}"
@@ -345,6 +345,14 @@ fi
 # ─────────────���────────────────────────────��───────────────
 # PASO 3: Verificar repo
 # ───���────────────────────────��────────────────────────���────
+# Patch branding: Qwen Code -> OmniCoder en la TUI
+if [[ -x "$REPO_DIR/scripts/patch-branding.sh" ]]; then
+    bash "$REPO_DIR/scripts/patch-branding.sh"
+else
+    chmod +x "$REPO_DIR/scripts/patch-branding.sh" 2>/dev/null || true
+    bash "$REPO_DIR/scripts/patch-branding.sh" 2>/dev/null || true
+fi
+
 echo ""
 echo -e "${BLUE}[3/11]${NC} Verificando archivos del repo..."
 
@@ -551,7 +559,7 @@ echo ""
 echo -e "${GREEN}${BOLD}"
 cat << 'DONE'
   ╔══════════════════════════════════════════════════╗
-  ║         INSTALACION COMPLETADA v4.0.0            ║
+  ║         INSTALACION COMPLETADA v4.2.0            ║
   ╚══════════════════════════════════════════════════╝
 DONE
 echo -e "${NC}"

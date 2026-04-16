@@ -1,23 +1,33 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.0.0-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/version-4.2.0-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/agents-168-green?style=flat-square" alt="Agents">
   <img src="https://img.shields.io/badge/skills-193-green?style=flat-square" alt="Skills">
-  <img src="https://img.shields.io/badge/hooks-16-orange?style=flat-square" alt="Hooks">
-  <img src="https://img.shields.io/badge/commands-20-purple?style=flat-square" alt="Commands">
+  <img src="https://img.shields.io/badge/hooks-18-orange?style=flat-square" alt="Hooks">
+  <img src="https://img.shields.io/badge/commands-21-purple?style=flat-square" alt="Commands">
   <img src="https://img.shields.io/badge/aprendizaje-adaptativo-red?style=flat-square" alt="Learning">
   <img src="https://img.shields.io/badge/memoria-dual-yellow?style=flat-square" alt="Memory">
   <img src="https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform">
 </p>
 
-<h1 align="center">⚡ OmniCoder v4</h1>
+<h1 align="center">⚡ OmniCoder v4.2</h1>
 <p align="center"><em>Tu terminal, 168 expertos. Cero suscripciones.</em></p>
 
 <p align="center">
-  <strong>168 agentes + 193 skills + 16 hooks + 20 commands</strong> para <a href="https://github.com/QwenLM/qwen-code">Qwen Code CLI</a><br>
+  <strong>168 agentes + 193 skills + 18 hooks + 21 commands</strong> para <a href="https://github.com/QwenLM/qwen-code">Qwen Code CLI</a><br>
   Sistema cognitivo completo: memoria dual, aprendizaje adaptativo, router con enforcement, y destilacion automatica de patrones.<br>
   <strong>Model-agnostic</strong>: funciona con cualquier API compatible con OpenAI (NVIDIA, Gemini, MiniMax, DeepSeek, OpenRouter, Ollama).
 </p>
+
+## Novedades v4.2 — Branding, Bug Fixes, Windows Parity
+
+- **Rebranding completo**: la TUI interna ahora muestra "OmniCoder" en vez de "Qwen Code" (patch automatico durante instalacion).
+- **Fix critico: skill-usage-tracker**: el tracker de skills ignorados no funcionaba (filename mismatch `last-suggestions.json` vs `last-suggestion.json`). Corregido.
+- **Fix: jq tostring bug**: el skill-stats.json se corrompia por un `| tostring` espurio. Corregido.
+- **Contadores corregidos**: ahora todos los archivos reflejan los contadores reales (18 hooks, 21 commands).
+- **Windows parity**: el instalador Windows (.bat/.ps1) ahora instala memoria persistente y construye el indice de skills (antes solo lo hacia Linux).
+- **Thresholds documentados correctamente**: OMNICODER.md ahora refleja los thresholds reales del router (≥12 HARD, 7-11 SOFT).
+- **Router v4.2**: header corregido (decia "Claude Code", ahora "OmniCoder").
 
 ## Novedades v4.0 — Model-Agnostic + Multi-Provider
 
@@ -203,7 +213,7 @@ chmod +x scripts/turbo-mode.sh && ./scripts/turbo-mode.sh on
 ~/.omnicoder/
 ├── agents/          168 archivos .md de subagentes
 ├── skills/          193 carpetas con SKILL.md
-├── hooks/           16 hooks de automatizacion
+├── hooks/           18 hooks de automatizacion
 │   ├── security-guard.sh      Bloquea comandos peligrosos
 │   ├── pre-edit-guard.sh      Protege archivos sensibles
 │   ├── post-tool-logger.sh    Logging de operaciones
@@ -217,10 +227,12 @@ chmod +x scripts/turbo-mode.sh && ./scripts/turbo-mode.sh on
 │   ├── causal-learner.sh      Aprendizaje causal
 │   ├── reflection.sh          Auto-reflexion
 │   ├── subagent-inject.sh     Validacion pre-spawn
+│   ├── subagent-verify.sh     Verifica trabajo de subagents
 │   ├── subagent-error-recover.sh  Recuperacion de errores 400
 │   ├── memory-loader.sh       Carga memoria al inicio
-│   └── provider-switch.sh     Cambio de proveedor en caliente
-├── commands/        20 slash commands profesionales
+│   ├── provider-failover.sh   Auto-failover de provider
+│   └── token-tracker.sh       Tracking de consumo de tokens
+├── commands/        21 slash commands profesionales
 │   ├── review.md              Code review P0-P3
 │   ├── ship.md                Test+lint+commit+push
 │   ├── handoff.md             Continuidad entre sesiones
@@ -240,7 +252,8 @@ chmod +x scripts/turbo-mode.sh && ./scripts/turbo-mode.sh on
 │   ├── memory.md              Gestor de memoria
 │   ├── agents.md              Gestor de agentes
 │   ├── provider.md            Cambio de proveedor
-│   └── turbo.md               Toggle turbo mode
+│   ├── turbo.md               Toggle turbo mode
+│   └── verify-last.md         Auditoria del ultimo subagent
 ├── OMNICODER.md     Instrucciones globales optimizadas
 ├── settings.json    Config con hooks pre-configurados
 └── logs/            Directorio de auditoria
@@ -258,10 +271,21 @@ Los hooks se ejecutan automaticamente en puntos clave del ciclo de OmniCoder:
 |------|--------|---------|
 | `security-guard` | PreToolUse (Bash) | Bloquea `rm -rf /`, fork bombs, `curl\|sh` y otros comandos peligrosos |
 | `pre-edit-guard` | PreToolUse (Edit/Write) | Impide edicion de `.env`, `credentials.json`, keys SSH. Detecta API keys en contenido |
+| `subagent-inject` | PreToolUse (Task) | Inyecta contrato de evidencia + reglas anti-400 a subagents |
 | `post-tool-logger` | PostToolUse | Registra cada operacion en `~/.omnicoder/logs/` con rotacion automatica |
-| `skill-router` | UserPromptSubmit | Analiza tu prompt y sugiere el skill/agente mas relevante automaticamente |
+| `error-learner` | PostToolUse | Registra fallas en `learned.md` con deduplicacion md5 |
+| `success-learner` | PostToolUse | Captura trayectorias exitosas (tests, builds, commits) |
+| `skill-usage-tracker` | PostToolUse | Detecta skills ignorados, cierra el feedback loop del router |
+| `causal-learner` | PostToolUse | Aprende pares "si X falla → probar Y" |
+| `token-tracker` | PostToolUse | Tracking de consumo estimado de tokens por sesion |
+| `provider-failover` | PostToolUse | Detecta fallas de API (429, 503, timeout) y sugiere cambio de provider |
+| `subagent-verify` | PostToolUse (Task) | Valida que subagents completaron trabajo real (mtime, tests, logs) |
+| `subagent-error-recover` | PostToolUse (Task) | Detecta errores 400 del modelo coder y emite plan de recovery |
+| `skill-router` | UserPromptSubmit | Analiza tu prompt y sugiere el skill/agente mas relevante (BM25 + bigramas) |
 | `session-init` | SessionStart | Detecta handoff previo, stack del proyecto, y branch actual |
+| `memory-loader` | SessionStart | Carga memoria dual (episodic + semantic) como contexto inicial |
 | `auto-handoff` | Stop | Si la sesion fue productiva (5+ operaciones), sugiere crear handoff |
+| `reflection` | Stop | Auto-reflexion: errores/exitos/ignorados. Destila a patterns.md cada 5 sesiones |
 | `notify-desktop` | Notification | Envia notificaciones nativas (Linux notify-send / macOS osascript) |
 
 ### Slash Commands
@@ -372,8 +396,8 @@ Tecnicas integradas en el `OMNICODER.md`:
 |---------|---------------|--------------|
 | Agentes especializados | 0 | 168 |
 | Skills profesionales | 0 | 193 |
-| Security hooks | 0 | 16 |
-| Slash commands pro | 0 | 20 |
+| Security hooks | 0 | 18 |
+| Slash commands pro | 0 | 21 |
 | Token optimization | Basico | Avanzado (3 niveles) |
 | Auto-routing de skills | No | Si |
 | Handoff entre sesiones | No | Si |
@@ -392,9 +416,9 @@ Tecnicas integradas en el `OMNICODER.md`:
 | Costo del CLI | $100-200/mes | **Gratis** (usa tu proveedor) |
 | Agentes | 100+ | **168** |
 | Skills | 130+ | **193** |
-| Security hooks | Si | Si (16) |
+| Security hooks | Si | Si (18) |
 | Auto-routing | Q-Learning | Pattern matching + BM25 |
-| Slash commands | Via MCP | **20 nativos** |
+| Slash commands | Via MCP | **21 nativos** |
 | Token optimization | 3-tier + WASM | **3 niveles + turbo mode** |
 | Handoff documents | No nativo | **Si** |
 | Multi-provider | Si | **Si** (NVIDIA, Gemini, MiniMax, DeepSeek, OpenRouter, Ollama) |

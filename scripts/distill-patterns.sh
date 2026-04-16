@@ -103,7 +103,7 @@ if [[ -f "$IGNORED_FILE" ]]; then
             SKILL=$(echo "$line" | awk '{print $2}')
             SIG=$(echo "force-$SKILL" | md5sum | cut -d' ' -f1)
             if ! grep -q "sig:$SIG" "$PATTERNS_FILE" 2>/dev/null; then
-                echo "- FORZAR skill \`$SKILL\`: fue ignorado ${COUNT}x pese a score alto. El router v3 lo marca HARD automáticamente. sig:$SIG" >> "$PATTERNS_FILE"
+                echo "- FORZAR skill \`$SKILL\`: fue ignorado ${COUNT}x pese a score alto. El router v4 lo marca HARD automáticamente. sig:$SIG" >> "$PATTERNS_FILE"
                 PATTERNS_ADDED=$((PATTERNS_ADDED + 1))
             fi
         done <<< "$CRON_IGN"

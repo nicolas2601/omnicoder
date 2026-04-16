@@ -1,15 +1,15 @@
 @echo off
 REM ============================================================
-REM OmniCoder v4.0 - Instalador para Windows (CMD)
-REM 168 agentes + 193 skills + 16 hooks + 20 commands + settings
+REM OmniCoder v4.2 - Instalador para Windows (CMD)
+REM 168 agentes + 193 skills + 18 hooks + 21 commands + settings
 REM ============================================================
 chcp 65001 >nul 2>&1
 setlocal EnableDelayedExpansion
 
 echo.
 echo ========================================================
-echo    OMNICODER v4.0.0 - INSTALADOR WINDOWS
-echo    168 Agentes + 193 Skills + 16 Hooks + 20 Commands
+echo    OMNICODER v4.2.0 - INSTALADOR WINDOWS
+echo    168 Agentes + 193 Skills + 18 Hooks + 21 Commands
 echo    Multi-provider ^| Cognitive routing ^| Subagent verify
 echo ========================================================
 echo.
@@ -18,8 +18,8 @@ REM ── Upgrade detection ──
 if exist "%USERPROFILE%\.omnicoder\.version" (
     set /p INSTALLED_VER=<"%USERPROFILE%\.omnicoder\.version"
     echo   Version instalada: !INSTALLED_VER!
-    echo   Version nueva:     4.0.0
-    if "!INSTALLED_VER!"=="4.0.0" (
+    echo   Version nueva:     4.2.0
+    if "!INSTALLED_VER!"=="4.2.0" (
         echo   Ya tienes la version actual.
         echo   Usa scripts\install-windows.bat --force para reinstalar.
         pause & exit /b 0
@@ -36,7 +36,7 @@ if exist "%USERPROFILE%\.omnicoder\.version" (
 echo.
 
 REM ── PASO 1: Verificar requisitos ──
-echo [1/8] Verificando requisitos...
+echo [1/11] Verificando requisitos...
 
 where node >nul 2>&1
 if %ERRORLEVEL% neq 0 (
@@ -62,7 +62,7 @@ echo   [OK] git
 
 REM ── PASO 2: Qwen Code CLI ──
 echo.
-echo [2/8] Qwen Code CLI...
+echo [2/11] Qwen Code CLI...
 where qwen >nul 2>&1
 if %ERRORLEVEL% equ 0 (
     echo   [OK] Ya instalado
@@ -73,7 +73,7 @@ if %ERRORLEVEL% equ 0 (
 
 REM ── PASO 3: Detectar repo ──
 echo.
-echo [3/8] Detectando archivos...
+echo [3/11] Detectando archivos...
 set "SCRIPT_DIR=%~dp0"
 set "REPO_DIR=%SCRIPT_DIR%.."
 if not exist "%REPO_DIR%\agents" (
@@ -84,7 +84,7 @@ echo   [OK] Repo detectado
 
 REM ── PASO 4: Instalar Agentes ──
 echo.
-echo [4/8] Instalando agentes...
+echo [4/11] Instalando agentes...
 set "OMNI_AGENTS=%USERPROFILE%\.omnicoder\agents"
 if not exist "%OMNI_AGENTS%" mkdir "%OMNI_AGENTS%"
 set AC=0
@@ -93,7 +93,7 @@ echo   [OK] !AC! agentes instalados
 
 REM ── PASO 5: Instalar Skills ──
 echo.
-echo [5/8] Instalando skills...
+echo [5/11] Instalando skills...
 set "OMNI_SKILLS=%USERPROFILE%\.omnicoder\skills"
 if not exist "%OMNI_SKILLS%" mkdir "%OMNI_SKILLS%"
 set SC=0
@@ -102,7 +102,7 @@ echo   [OK] !SC! skills instaladas
 
 REM ── PASO 6: Instalar Hooks ──
 echo.
-echo [6/8] Instalando hooks...
+echo [6/11] Instalando hooks...
 set "OMNI_HOOKS=%USERPROFILE%\.omnicoder\hooks"
 if not exist "%OMNI_HOOKS%" mkdir "%OMNI_HOOKS%"
 set HC=0
@@ -111,7 +111,7 @@ echo   [OK] !HC! hooks instalados
 
 REM ── PASO 7: Instalar Commands ──
 echo.
-echo [7/8] Instalando slash commands...
+echo [7/11] Instalando slash commands...
 set "OMNI_CMDS=%USERPROFILE%\.omnicoder\commands"
 if not exist "%OMNI_CMDS%" mkdir "%OMNI_CMDS%"
 set CC=0
@@ -120,7 +120,7 @@ echo   [OK] !CC! commands instalados
 
 REM ── PASO 8: Config y CLI wrapper ──
 echo.
-echo [8/8] Configurando...
+echo [8/11] Configurando...
 if exist "%REPO_DIR%\OMNICODER.md" ( copy /y "%REPO_DIR%\OMNICODER.md" "%USERPROFILE%\.omnicoder\OMNICODER.md" >nul & echo   [OK] OMNICODER.md )
 if exist "%REPO_DIR%\config\settings.json" ( copy /y "%REPO_DIR%\config\settings.json" "%USERPROFILE%\.omnicoder\settings.json" >nul & echo   [OK] settings.json )
 if not exist "%USERPROFILE%\.omnicoder\logs" mkdir "%USERPROFILE%\.omnicoder\logs"
@@ -145,9 +145,34 @@ if %ERRORLEVEL% neq 0 (
     echo        [Environment]::SetEnvironmentVariable("Path", $env:Path + ";%USERPROFILE%\.omnicoder", "User"^)
 )
 
-REM ── PASO 9: Setup de provider (API key) ──
+REM ── PASO 9: Instalar memoria (skeleton) ──
 echo.
-echo [9/9] Setup de provider (API key)...
+echo [9/11] Instalando memoria persistente...
+set "OMNI_MEM=%USERPROFILE%\.omnicoder\memory"
+if not exist "%OMNI_MEM%" mkdir "%OMNI_MEM%"
+if exist "%REPO_DIR%\memory" (
+    for %%f in ("%REPO_DIR%\memory\*.md") do (
+        if not exist "%OMNI_MEM%\%%~nxf" ( copy /y "%%f" "%OMNI_MEM%\%%~nxf" >nul )
+    )
+    echo   [OK] Memoria instalada
+) else (
+    echo   [OK] Directorio de memoria creado
+)
+
+REM ── PASO 10: Construir indice de skills ──
+echo.
+echo [10/11] Construyendo indice de skills...
+where bash >nul 2>&1
+if %ERRORLEVEL% equ 0 (
+    bash "%REPO_DIR%\scripts\build-skill-index.sh" 2>nul
+    echo   [OK] Indice construido
+) else (
+    echo   [!!] bash no encontrado - indice se construira en primera ejecucion
+)
+
+REM ── PASO 11: Setup de provider (API key) ──
+echo.
+echo [11/11] Setup de provider (API key)...
 if exist "%USERPROFILE%\.omnicoder\.env" (
     echo   [!!] Ya existe %USERPROFILE%\.omnicoder\.env
     echo        Para cambiar: powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%setup-provider.ps1"
@@ -165,12 +190,12 @@ if exist "%USERPROFILE%\.omnicoder\.env" (
 )
 
 REM ── Save version marker ──
-echo 4.0.0> "%USERPROFILE%\.omnicoder\.version"
+echo 4.2.0> "%USERPROFILE%\.omnicoder\.version"
 
 REM ── Resumen ──
 echo.
 echo ========================================================
-echo           INSTALACION COMPLETADA v4.0.0
+echo           INSTALACION COMPLETADA v4.2.0
 echo ========================================================
 echo.
 echo   Agentes:  !AC!    Skills:  !SC!
@@ -186,15 +211,18 @@ echo     /audit                  Auditoria completa
 echo     /handoff                Guardar progreso
 echo     /verify-last            Auditoria del ultimo subagent
 echo.
-echo   HOOKS ACTIVOS (16 total):
+echo   HOOKS ACTIVOS (18 total):
 echo     security-guard          Bloquea comandos peligrosos
 echo     pre-edit-guard          Protege archivos sensibles
-echo     skill-router            Routing cognitivo
+echo     skill-router            Routing cognitivo con BM25
 echo     session-init            Carga sesion anterior
+echo     memory-loader           Carga memoria persistente
 echo     subagent-inject         Contrato a subagents
 echo     subagent-verify         Verifica subagents
 echo     subagent-error-recover  Detecta errores 400
-echo     + 9 hooks de aprendizaje y soporte
+echo     provider-failover       Auto-failover de API
+echo     token-tracker           Tracking de consumo
+echo     + 8 hooks de aprendizaje y soporte
 echo.
 echo   Cambiar provider: bash scripts\switch-provider.sh nvidia^|gemini^|...
 echo.

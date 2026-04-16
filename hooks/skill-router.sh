@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Claude Code - Skill Router v3.3 (UserPromptSubmit)
+# OmniCoder - Skill Router v4.2 (UserPromptSubmit)
 #
 # NOVEDAD v3.3: Project Context Awareness. Escanea archivos del
 # cwd (AGENTS.md, OMNICODER.md, QWEN.md, CLAUDE.md, README.md, package.json,

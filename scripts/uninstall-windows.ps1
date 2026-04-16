@@ -1,5 +1,5 @@
 # ============================================================
-# OmniCoder v4.0 - Desinstalador para Windows (PowerShell)
+# OmniCoder v4.2 - Desinstalador para Windows (PowerShell)
 # ============================================================
 # Uso: .\scripts\uninstall-windows.ps1 [-Force]
 #   -Force : No pide confirmacion
@@ -12,7 +12,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 Write-Host ""
-Write-Host "=== OmniCoder v4.0 - Desinstalador (Windows) ===" -ForegroundColor Cyan
+Write-Host "=== OmniCoder v4.2 - Desinstalador (Windows) ===" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Esto eliminara:" -ForegroundColor Yellow
 Write-Host "  - Todos los agentes de %USERPROFILE%\.omnicoder\agents\"

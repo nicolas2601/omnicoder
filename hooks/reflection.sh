@@ -104,7 +104,7 @@ EOF
 # Auto-lecciones basadas en heurísticas
 if [[ -n "$TOP_IGNORED" ]]; then
     FIRST_IGN=$(echo "$TOP_IGNORED" | awk -F'(' '{print $1}')
-    echo "- Skill '$FIRST_IGN' se ignora repetidamente. El router v3 lo marcará OBLIGATORIO la próxima." >> "$REFLECTIONS_FILE"
+    echo "- Skill '$FIRST_IGN' se ignora repetidamente. El router v4 lo marcará OBLIGATORIO la próxima." >> "$REFLECTIONS_FILE"
 fi
 
 if [[ "$ERRORS_TODAY" -gt 3 ]]; then

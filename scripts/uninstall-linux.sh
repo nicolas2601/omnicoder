@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # ============================================================
-# OmniCoder v4.0 - Desinstalador para Linux/macOS
+# OmniCoder v4.2 - Desinstalador para Linux/macOS
 # ============================================================
 set -euo pipefail
 
 echo ""
-echo "=== OmniCoder v4.0 - Desinstalador ==="
+echo "=== OmniCoder v4.2 - Desinstalador ==="
 echo ""
 echo "Esto eliminara:"
 echo "  - Todos los agentes de ~/.omnicoder/agents/"

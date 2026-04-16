@@ -44,7 +44,7 @@ if (-not $skipBanner) {
         Write-Host "  Provider: " -ForegroundColor DarkGray -NoNewline
         Write-Host "$providerName" -ForegroundColor Green
     }
-    Write-Host "  168 agentes | 193 skills | 16 hooks | 20 commands" -ForegroundColor DarkGray
+    Write-Host "  168 agentes | 193 skills | 18 hooks | 21 commands" -ForegroundColor DarkGray
     Write-Host ""
 }
 

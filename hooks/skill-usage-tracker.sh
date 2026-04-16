@@ -15,7 +15,7 @@ INPUT=$(cat)
 
 CACHE_DIR="$HOME/.omnicoder/.cache"
 MEM_DIR="$HOME/.omnicoder/memory"
-SUGGESTIONS_LOG="$CACHE_DIR/last-suggestions.json"
+SUGGESTIONS_LOG="$CACHE_DIR/last-suggestion.json"
 
 # No hay sugerencia previa -> nada que trackear
 [[ -f "$SUGGESTIONS_LOG" ]] || exit 0
@@ -23,8 +23,8 @@ SUGGESTIONS_LOG="$CACHE_DIR/last-suggestions.json"
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null || echo "")
 TOOL_INPUT=$(echo "$INPUT" | jq -r '.tool_input // {}' 2>/dev/null || echo "{}")
 
-SUGGESTED_SKILL=$(jq -r '.top_skill // ""' "$SUGGESTIONS_LOG" 2>/dev/null)
-SUGGESTED_SCORE=$(jq -r '.score // 0' "$SUGGESTIONS_LOG" 2>/dev/null)
+SUGGESTED_SKILL=$(jq -r '.skill // .top_skill // ""' "$SUGGESTIONS_LOG" 2>/dev/null)
+SUGGESTED_SCORE=$(jq -r '.skill_score // .score // 0' "$SUGGESTIONS_LOG" 2>/dev/null)
 SUGGESTED_LEVEL=$(jq -r '.level // ""' "$SUGGESTIONS_LOG" 2>/dev/null)
 SUGGESTED_TS=$(jq -r '.ts // ""' "$SUGGESTIONS_LOG" 2>/dev/null)
 
@@ -61,7 +61,7 @@ if [[ "$USED" == "1" ]]; then
     if [[ ! -f "$STATS_FILE" ]]; then echo '{}' > "$STATS_FILE"; fi
     (flock -w 2 200
     jq --arg s "$SUGGESTED_SKILL" '
-        .[$s] = ((.[$s] // {used:0, ignored:0}) | .used += 1 | .last_used = now | tostring)
+        .[$s] = ((.[$s] // {used:0, ignored:0}) | .used += 1)
     ' "$STATS_FILE" > "${STATS_FILE}.tmp" && mv "${STATS_FILE}.tmp" "$STATS_FILE" 2>/dev/null || true
     ) 200>"$STATS_FILE.lock"
     exit 0

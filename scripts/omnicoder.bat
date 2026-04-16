@@ -41,7 +41,7 @@ if defined OPENAI_BASE_URL (
     echo !OPENAI_BASE_URL! | findstr /i "localhost 127.0.0.1" >nul && set "PROVIDER_NAME=Ollama (local)"
     echo   Provider: !PROVIDER_NAME!
 )
-echo   168 agentes ^| 193 skills ^| 16 hooks ^| 20 commands
+echo   168 agentes ^| 193 skills ^| 18 hooks ^| 21 commands
 echo.
 
 :launch
