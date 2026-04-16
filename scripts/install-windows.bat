@@ -129,7 +129,16 @@ REM ── PASO 8: Config y CLI wrapper ──
 echo.
 echo [8/11] Configurando...
 if exist "%REPO_DIR%\OMNICODER.md" ( copy /y "%REPO_DIR%\OMNICODER.md" "%USERPROFILE%\.omnicoder\OMNICODER.md" >nul & echo   [OK] OMNICODER.md )
-if exist "%REPO_DIR%\config\settings.json" ( copy /y "%REPO_DIR%\config\settings.json" "%USERPROFILE%\.omnicoder\settings.json" >nul & echo   [OK] settings.json )
+if exist "%REPO_DIR%\config\settings.json" (
+    copy /y "%REPO_DIR%\config\settings.json" "%USERPROFILE%\.omnicoder\settings.json" >nul
+    echo   [OK] settings.json -^> ~/.omnicoder/
+    REM CRITICO: qwen CLI lee hardcoded de ~/.qwen/, NO de ~/.omnicoder/
+    if not exist "%USERPROFILE%\.qwen" mkdir "%USERPROFILE%\.qwen"
+    copy /y "%REPO_DIR%\config\settings.json" "%USERPROFILE%\.qwen\settings.json" >nul
+    echo   [OK] settings.json -^> ~/.qwen/ (qwen CLI lo lee de ahi)
+    REM Eliminar OAuth cacheado (si existe, prioriza sobre API key)
+    if exist "%USERPROFILE%\.qwen\oauth_creds.json" del /q "%USERPROFILE%\.qwen\oauth_creds.json"
+)
 if not exist "%USERPROFILE%\.omnicoder\logs" mkdir "%USERPROFILE%\.omnicoder\logs"
 
 REM Instalar CLI wrapper (omnicoder.bat)

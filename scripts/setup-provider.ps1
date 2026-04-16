@@ -19,9 +19,12 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $OmniDir = Join-Path $env:USERPROFILE '.omnicoder'
+$QwenDir = Join-Path $env:USERPROFILE '.qwen'   # CRITICO: qwen CLI lee hardcoded de aqui
 $SettingsFile = Join-Path $OmniDir 'settings.json'
+$QwenSettingsFile = Join-Path $QwenDir 'settings.json'
 
 if (-not (Test-Path $OmniDir)) { New-Item -ItemType Directory -Path $OmniDir | Out-Null }
+if (-not (Test-Path $QwenDir)) { New-Item -ItemType Directory -Path $QwenDir | Out-Null }
 
 $Providers = @{
     nvidia     = @{ Url='https://integrate.api.nvidia.com/v1';                          Model='minimaxai/minimax-m2.7';            Signup='https://build.nvidia.com/  (gratis 40 RPM)' }
@@ -112,36 +115,45 @@ try {
 }
 Write-Host "OK escrito $envFile" -ForegroundColor Green
 
-# Activar: backup .env actual y copiar el nuevo
+# Activar: backup .env actual y copiar el nuevo a ambos sitios
 if (Test-Path $activeEnv) { Copy-Item $activeEnv $backupEnv -Force }
 Copy-Item $envFile $activeEnv -Force
-Write-Host "OK provider activo (backup en $backupEnv)" -ForegroundColor Green
+# CRITICO: replicar .env a ~/.qwen/.env (donde qwen CLI lo busca)
+Copy-Item $envFile (Join-Path $QwenDir '.env') -Force
+Write-Host "OK provider activo (~/.omnicoder/.env + ~/.qwen/.env)" -ForegroundColor Green
 
-# Actualizar settings.json (model.name + security.auth.selectedType=openai)
-if (Test-Path $SettingsFile) {
+# Funcion helper: actualiza un settings.json con model.name + security.auth.selectedType=openai
+function Update-SettingsFile {
+    param([string]$Path, [string]$ModelName, [string]$Label)
     try {
-        $json = Get-Content $SettingsFile -Raw | ConvertFrom-Json
+        if (Test-Path $Path) {
+            $json = Get-Content $Path -Raw | ConvertFrom-Json
+        } else {
+            $json = [PSCustomObject]@{}
+        }
         if (-not $json.model) { $json | Add-Member -NotePropertyName model -NotePropertyValue ([PSCustomObject]@{}) -Force }
-        $json.model | Add-Member -NotePropertyName name -NotePropertyValue $cfg.Model -Force
-        # CRITICO: forzar selectedType=openai (sino OmniCoder pide OAuth al arrancar)
+        $json.model | Add-Member -NotePropertyName name -NotePropertyValue $ModelName -Force
         if (-not $json.security) { $json | Add-Member -NotePropertyName security -NotePropertyValue ([PSCustomObject]@{}) -Force }
         if (-not $json.security.auth) { $json.security | Add-Member -NotePropertyName auth -NotePropertyValue ([PSCustomObject]@{}) -Force }
         $json.security.auth | Add-Member -NotePropertyName selectedType -NotePropertyValue 'openai' -Force
-        $json | ConvertTo-Json -Depth 20 | Set-Content $SettingsFile -Encoding UTF8
-        Write-Host "OK settings.json: model.name=$($cfg.Model), auth.selectedType=openai" -ForegroundColor Green
+        $json | ConvertTo-Json -Depth 20 | Set-Content $Path -Encoding UTF8
+        Write-Host "OK $Label : model.name=$ModelName, auth.selectedType=openai" -ForegroundColor Green
+        return $true
     } catch {
-        Write-Host "Aviso: no se pudo actualizar settings.json ($_)" -ForegroundColor Yellow
+        Write-Host "Aviso: no se pudo actualizar $Label ($_)" -ForegroundColor Yellow
+        return $false
     }
 }
 
-# Eliminar OAuth cacheado (sino prioriza sobre la API key)
-$oauthCreds = Join-Path $OmniDir 'oauth_creds.json'
-if (Test-Path $oauthCreds) {
-    Write-Host ""
-    $rm = Read-Host "Encontre OAuth cacheado. Eliminar para usar tu API key? [Y/n]"
-    if ($rm.ToLower() -ne 'n') {
+# Actualizar AMBOS settings.json (el visible en ~/.omnicoder/ y el real en ~/.qwen/)
+Update-SettingsFile -Path $SettingsFile      -ModelName $cfg.Model -Label '~/.omnicoder/settings.json' | Out-Null
+Update-SettingsFile -Path $QwenSettingsFile  -ModelName $cfg.Model -Label '~/.qwen/settings.json'      | Out-Null
+
+# Eliminar OAuth cacheado de AMBOS sitios (sino prioriza sobre la API key)
+foreach ($oauthCreds in @((Join-Path $OmniDir 'oauth_creds.json'), (Join-Path $QwenDir 'oauth_creds.json'))) {
+    if (Test-Path $oauthCreds) {
         Remove-Item $oauthCreds -Force
-        Write-Host "OK OAuth eliminado" -ForegroundColor Green
+        Write-Host "OK OAuth cacheado eliminado: $oauthCreds" -ForegroundColor Green
     }
 }
 

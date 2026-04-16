@@ -97,7 +97,17 @@ Write-Host "  [OK] $cc commands" -ForegroundColor Green
 # ── PASO 8: Config ──
 Write-Host "`n[8/11] Configurando..." -ForegroundColor Blue
 if (Test-Path "$RepoDir\OMNICODER.md") { Copy-Item "$RepoDir\OMNICODER.md" "$env:USERPROFILE\.omnicoder\OMNICODER.md" -Force; Write-Host "  [OK] OMNICODER.md" -ForegroundColor Green }
-if (Test-Path "$RepoDir\config\settings.json") { Copy-Item "$RepoDir\config\settings.json" "$env:USERPROFILE\.omnicoder\settings.json" -Force; Write-Host "  [OK] settings.json" -ForegroundColor Green }
+if (Test-Path "$RepoDir\config\settings.json") {
+    Copy-Item "$RepoDir\config\settings.json" "$env:USERPROFILE\.omnicoder\settings.json" -Force
+    Write-Host "  [OK] settings.json -> ~/.omnicoder/" -ForegroundColor Green
+    # CRITICO: qwen CLI lee hardcoded de ~/.qwen/, NO de ~/.omnicoder/
+    New-Item -ItemType Directory -Path "$env:USERPROFILE\.qwen" -Force | Out-Null
+    Copy-Item "$RepoDir\config\settings.json" "$env:USERPROFILE\.qwen\settings.json" -Force
+    Write-Host "  [OK] settings.json -> ~/.qwen/ (qwen CLI lo lee de ahi)" -ForegroundColor Green
+    # Eliminar OAuth cacheado si existe (prioriza sobre API key)
+    $oauthCreds = "$env:USERPROFILE\.qwen\oauth_creds.json"
+    if (Test-Path $oauthCreds) { Remove-Item $oauthCreds -Force }
+}
 New-Item -ItemType Directory -Path "$env:USERPROFILE\.omnicoder\logs" -Force | Out-Null
 
 # Instalar CLI wrappers (omnicoder.bat y omnicoder.ps1)
