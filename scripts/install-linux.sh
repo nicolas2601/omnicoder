@@ -97,7 +97,7 @@ doctor() {
     fi
 
     # Check agents
-    AGENT_COUNT=$(ls "$HOME/.omnicoder/agents/"*.md 2>/dev/null | wc -l || echo 0)
+    AGENT_COUNT=$(ls "$HOME/.omnicoder/agents/"*.md 2>/dev/null | wc -l || true)
     if [[ "$AGENT_COUNT" -gt 100 ]]; then
         echo -e "  ${GREEN}OK${NC} $AGENT_COUNT agentes instalados"
     elif [[ "$AGENT_COUNT" -gt 0 ]]; then
@@ -109,7 +109,7 @@ doctor() {
     fi
 
     # Check skills
-    SKILL_COUNT=$(ls -d "$HOME/.omnicoder/skills/"*/ 2>/dev/null | wc -l || echo 0)
+    SKILL_COUNT=$(ls -d "$HOME/.omnicoder/skills/"*/ 2>/dev/null | wc -l || true)
     if [[ "$SKILL_COUNT" -gt 150 ]]; then
         echo -e "  ${GREEN}OK${NC} $SKILL_COUNT skills instaladas"
     elif [[ "$SKILL_COUNT" -gt 0 ]]; then
@@ -121,7 +121,7 @@ doctor() {
     fi
 
     # Check hooks
-    HOOK_COUNT=$(ls "$HOME/.omnicoder/hooks/"*.sh 2>/dev/null | wc -l || echo 0)
+    HOOK_COUNT=$(ls "$HOME/.omnicoder/hooks/"*.sh 2>/dev/null | wc -l || true)
     if [[ "$HOOK_COUNT" -ge 16 ]]; then
         echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados (v3.5 con subagent-verify + error-recover)"
     elif [[ "$HOOK_COUNT" -gt 0 ]]; then
@@ -134,7 +134,7 @@ doctor() {
 
     # Check memory
     if [[ -d "$HOME/.omnicoder/memory" ]]; then
-        MEM_COUNT=$(ls "$HOME/.omnicoder/memory/"*.md 2>/dev/null | wc -l || echo 0)
+        MEM_COUNT=$(ls "$HOME/.omnicoder/memory/"*.md 2>/dev/null | wc -l || true)
         echo -e "  ${GREEN}OK${NC} Memoria persistente: $MEM_COUNT archivos en ~/.omnicoder/memory/"
     else
         echo -e "  ${YELLOW}!!${NC} No hay memoria persistente (reinstala para activarla)"
@@ -150,7 +150,7 @@ doctor() {
     fi
 
     # Check commands
-    CMD_COUNT=$(ls "$HOME/.omnicoder/commands/"*.md 2>/dev/null | wc -l || echo 0)
+    CMD_COUNT=$(ls "$HOME/.omnicoder/commands/"*.md 2>/dev/null | wc -l || true)
     if [[ "$CMD_COUNT" -ge 20 ]]; then
         echo -e "  ${GREEN}OK${NC} $CMD_COUNT commands instalados"
     elif [[ "$CMD_COUNT" -gt 0 ]]; then
@@ -209,7 +209,7 @@ fi
 # ──────────────────────────────────────────────────────────
 # PASO 1: Verificar requisitos
 # ───────────────────────────────────────────────��──────────
-echo -e "${BLUE}[1/8]${NC} Verificando requisitos..."
+echo -e "${BLUE}[1/11]${NC} Verificando requisitos..."
 
 # Node.js
 if ! command -v node &>/dev/null; then
@@ -254,7 +254,7 @@ fi
 # PASO 2: Instalar OmniCoder CLI
 # ────────���─────────────────────────────────────────────────
 echo ""
-echo -e "${BLUE}[2/8]${NC} OmniCoder CLI..."
+echo -e "${BLUE}[2/11]${NC} OmniCoder CLI..."
 
 if [[ "$SKIP_CLI" == true ]]; then
     echo -e "  ${DIM}Saltado (--skip-cli)${NC}"
@@ -275,7 +275,7 @@ fi
 # PASO 3: Verificar repo
 # ───���────────────────────────��────────────────────────���────
 echo ""
-echo -e "${BLUE}[3/8]${NC} Verificando archivos del repo..."
+echo -e "${BLUE}[3/11]${NC} Verificando archivos del repo..."
 
 if [[ ! -d "$REPO_DIR/agents" ]] || [[ ! -d "$REPO_DIR/skills" ]]; then
     echo -e "${RED}ERROR: No se encontraron agents/ y skills/ en $REPO_DIR${NC}"
@@ -292,7 +292,7 @@ echo -e "  ${GREEN}OK${NC} $AGENT_COUNT agentes, $SKILL_COUNT skills, $HOOK_COUN
 # PASO 4: Instalar Agentes
 # ────────────────────��─────────────────────────────────────
 echo ""
-echo -e "${BLUE}[4/8]${NC} Instalando agentes..."
+echo -e "${BLUE}[4/11]${NC} Instalando agentes..."
 
 OMNI_AGENTS_DIR="$HOME/.omnicoder/agents"
 mkdir -p "$OMNI_AGENTS_DIR"
@@ -308,7 +308,7 @@ echo -e "  ${GREEN}OK${NC} $INSTALLED agentes -> ~/.omnicoder/agents/"
 # PASO 5: Instalar Skills
 # ────────��─────────────────────────────────────────────────
 echo ""
-echo -e "${BLUE}[5/8]${NC} Instalando skills..."
+echo -e "${BLUE}[5/11]${NC} Instalando skills..."
 
 OMNI_SKILLS_DIR="$HOME/.omnicoder/skills"
 mkdir -p "$OMNI_SKILLS_DIR"
@@ -324,7 +324,7 @@ echo -e "  ${GREEN}OK${NC} $INSTALLED skills -> ~/.omnicoder/skills/"
 # PASO 6: Instalar Hooks
 # ───���────────────────────────────────────────────────��─────
 echo ""
-echo -e "${BLUE}[6/8]${NC} Instalando hooks inteligentes..."
+echo -e "${BLUE}[6/11]${NC} Instalando hooks inteligentes..."
 
 OMNI_HOOKS_DIR="$HOME/.omnicoder/hooks"
 mkdir -p "$OMNI_HOOKS_DIR"
@@ -341,7 +341,7 @@ echo -e "  ${GREEN}OK${NC} $INSTALLED hooks -> ~/.omnicoder/hooks/"
 # PASO 7: Instalar Commands (Slash Commands)
 # ──────────────────────────────────────────────────────���───
 echo ""
-echo -e "${BLUE}[7/8]${NC} Instalando slash commands..."
+echo -e "${BLUE}[7/11]${NC} Instalando slash commands..."
 
 OMNI_CMDS_DIR="$HOME/.omnicoder/commands"
 mkdir -p "$OMNI_CMDS_DIR"
@@ -357,7 +357,7 @@ echo -e "  ${GREEN}OK${NC} $INSTALLED commands -> ~/.omnicoder/commands/"
 # PASO 8: Instalar Config (OMNICODER.md + settings.json)
 # ──────────────────────────────────────────────────────────
 echo ""
-echo -e "${BLUE}[8/8]${NC} Configurando..."
+echo -e "${BLUE}[8/11]${NC} Configurando..."
 
 # OMNICODER.md
 if [[ -f "$REPO_DIR/OMNICODER.md" ]]; then
@@ -390,11 +390,29 @@ fi
 # Crear directorio de logs
 mkdir -p "$HOME/.omnicoder/logs"
 
+# Instalar wrapper 'omnicoder' en PATH
+if [[ -f "$REPO_DIR/scripts/omnicoder" ]]; then
+    cp "$REPO_DIR/scripts/omnicoder" "$HOME/.omnicoder/omnicoder"
+    chmod +x "$HOME/.omnicoder/omnicoder"
+
+    # Crear symlink en ~/.local/bin (o /usr/local/bin)
+    LOCAL_BIN="$HOME/.local/bin"
+    mkdir -p "$LOCAL_BIN"
+    ln -sf "$HOME/.omnicoder/omnicoder" "$LOCAL_BIN/omnicoder"
+
+    if echo "$PATH" | grep -q "$LOCAL_BIN"; then
+        echo -e "  ${GREEN}OK${NC} Comando 'omnicoder' instalado en $LOCAL_BIN"
+    else
+        echo -e "  ${GREEN}OK${NC} Comando 'omnicoder' instalado"
+        echo -e "  ${YELLOW}!!${NC} Agrega a tu PATH: export PATH=\"\$HOME/.local/bin:\$PATH\""
+    fi
+fi
+
 # ──────────────────────────────────────────────────────────
 # PASO 9: Instalar memoria persistente (skeleton)
 # ──────────────────────────────────────────────────────────
 echo ""
-echo -e "${BLUE}[9/10]${NC} Instalando memoria persistente..."
+echo -e "${BLUE}[9/11]${NC} Instalando memoria persistente..."
 
 OMNI_MEM_DIR="$HOME/.omnicoder/memory"
 mkdir -p "$OMNI_MEM_DIR"
@@ -417,7 +435,7 @@ fi
 # PASO 10: Construir indice de skills/agentes (cache)
 # ──────────────────────────────────────────────────────────
 echo ""
-echo -e "${BLUE}[10/10]${NC} Construyendo indice de skills y agentes..."
+echo -e "${BLUE}[10/11]${NC} Construyendo indice de skills y agentes..."
 
 if [[ -x "$REPO_DIR/scripts/build-skill-index.sh" ]]; then
     bash "$REPO_DIR/scripts/build-skill-index.sh" || true

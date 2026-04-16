@@ -1,4 +1,5 @@
 ---
+name: verify-last
 description: Verifica manualmente el output del ultimo subagent invocado
 ---
 
