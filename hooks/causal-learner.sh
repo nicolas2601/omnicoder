@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Causal Learner (PostToolUse)
+# OmniCoder - Causal Learner (PostToolUse)
 # Detecta pares (X falla -> Y funciona) y los guarda como
 # causal edges: "si X falla, probar Y".
 #
@@ -10,8 +10,8 @@
 set -euo pipefail
 
 INPUT=$(cat)
-MEM_DIR="$HOME/.qwen/memory"
-CACHE_DIR="$HOME/.qwen/.cache"
+MEM_DIR="$HOME/.omnicoder/memory"
+CACHE_DIR="$HOME/.omnicoder/.cache"
 mkdir -p "$MEM_DIR" "$CACHE_DIR"
 
 BUFFER="$CACHE_DIR/tool-buffer.json"

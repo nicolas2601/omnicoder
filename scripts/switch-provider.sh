@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Provider Switcher (v3.5)
+# OmniCoder - Provider Switcher (v3.5)
 #
 # Rota entre providers OpenAI-compatible guardando la config actual
 # como backup. Uso:
@@ -13,15 +13,15 @@
 #   ./switch-provider.sh status    # Muestra provider actual
 #   ./switch-provider.sh restore   # Restaura backup previo
 #
-# Las keys se leen de ~/.qwen/.env.<provider>.
-# Template: ~/.qwen/.env.<provider>.example
+# Las keys se leen de ~/.omnicoder/.env.<provider>.
+# Template: ~/.omnicoder/.env.<provider>.example
 # ============================================================
 set -euo pipefail
 
-QWEN_DIR="$HOME/.qwen"
-ACTIVE_ENV="$QWEN_DIR/.env"
-BACKUP_ENV="$QWEN_DIR/.env.backup"
-SETTINGS="$QWEN_DIR/settings.json"
+OMNI_DIR="$HOME/.omnicoder"
+ACTIVE_ENV="$OMNI_DIR/.env"
+BACKUP_ENV="$OMNI_DIR/.env.backup"
+SETTINGS="$OMNI_DIR/settings.json"
 
 usage() {
     cat <<EOF
@@ -61,8 +61,8 @@ case "$ACTION" in
         exit 0
         ;;
     list)
-        echo "Configs guardadas en $QWEN_DIR:"
-        ls -1 "$QWEN_DIR"/.env.* 2>/dev/null || echo "  (ninguna)"
+        echo "Configs guardadas en $OMNI_DIR:"
+        ls -1 "$OMNI_DIR"/.env.* 2>/dev/null || echo "  (ninguna)"
         exit 0
         ;;
 esac
@@ -76,23 +76,23 @@ fi
 # Cargar config por provider
 case "$ACTION" in
     nvidia)
-        SRC="$QWEN_DIR/.env.nvidia"
+        SRC="$OMNI_DIR/.env.nvidia"
         MODEL="minimaxai/minimax-m2.7"
         ;;
     gemini)
-        SRC="$QWEN_DIR/.env.gemini"
+        SRC="$OMNI_DIR/.env.gemini"
         MODEL="gemini-2.5-flash"
         ;;
     minimax)
-        SRC="$QWEN_DIR/.env.minimax"
+        SRC="$OMNI_DIR/.env.minimax"
         MODEL="MiniMax-M2"
         ;;
     deepseek)
-        SRC="$QWEN_DIR/.env.deepseek"
+        SRC="$OMNI_DIR/.env.deepseek"
         MODEL="deepseek-chat"
         ;;
     openrouter)
-        SRC="$QWEN_DIR/.env.openrouter"
+        SRC="$OMNI_DIR/.env.openrouter"
         MODEL="deepseek/deepseek-chat-v3-0324:free"
         ;;
     *)
@@ -132,4 +132,4 @@ echo "✅ Provider cambiado a: $ACTION"
 echo "   Model: $MODEL"
 echo "   Env:   $ACTIVE_ENV (backup en $BACKUP_ENV)"
 echo ""
-echo "Reinicia Qwen Code: export \$(grep -v '^#' $ACTIVE_ENV | xargs) && qwen"
+echo "Reinicia OmniCoder: export \$(grep -v '^#' $ACTIVE_ENV | xargs) && omnicoder"

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Setup Provider Interactivo (v1.0)
+# OmniCoder - Setup Provider Interactivo (v1.0)
 #
-# Pide la API key al usuario, genera ~/.qwen/.env.<provider>
+# Pide la API key al usuario, genera ~/.omnicoder/.env.<provider>
 # y activa el provider via switch-provider.sh
 #
 # Uso:
@@ -11,14 +11,14 @@
 # ============================================================
 set -euo pipefail
 
-QWEN_DIR="$HOME/.qwen"
+OMNI_DIR="$HOME/.omnicoder"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SWITCHER="$SCRIPT_DIR/switch-provider.sh"
 
 c_g='\033[0;32m'; c_y='\033[1;33m'; c_r='\033[0;31m'; c_b='\033[0;36m'; c_n='\033[0m'
 
-mkdir -p "$QWEN_DIR"
-chmod 700 "$QWEN_DIR" 2>/dev/null || true
+mkdir -p "$OMNI_DIR"
+chmod 700 "$OMNI_DIR" 2>/dev/null || true
 
 declare -A URLS=(
     [nvidia]="https://integrate.api.nvidia.com/v1"
@@ -43,7 +43,7 @@ declare -A SIGNUP=(
 )
 
 choose_provider() {
-    echo -e "${c_b}=== Qwen Con Poderes - Setup Provider ===${c_n}"
+    echo -e "${c_b}=== OmniCoder - Setup Provider ===${c_n}"
     echo ""
     echo "Providers disponibles:"
     echo "  1) nvidia      MiniMax M2.7 via NVIDIA NIM   [FREE 40 RPM] ${c_g}(recomendado)${c_n}"
@@ -73,7 +73,7 @@ fi
 
 BASE_URL="${URLS[$PROVIDER]}"
 MODEL="${MODELS[$PROVIDER]}"
-ENV_FILE="$QWEN_DIR/.env.$PROVIDER"
+ENV_FILE="$OMNI_DIR/.env.$PROVIDER"
 
 echo ""
 echo -e "${c_b}Provider:${c_n} $PROVIDER"
@@ -114,27 +114,27 @@ if [[ -x "$SWITCHER" ]]; then
     "$SWITCHER" "$PROVIDER"
 else
     echo -e "${c_y}switch-provider.sh no encontrado en $SWITCHER${c_n}"
-    echo "Activa manualmente con: cp $ENV_FILE $QWEN_DIR/.env"
+    echo "Activa manualmente con: cp $ENV_FILE $OMNI_DIR/.env"
 fi
 
-# CRITICO: forzar selectedType=openai para que Qwen NO pida OAuth al arrancar
-SETTINGS="$QWEN_DIR/settings.json"
+# CRITICO: forzar selectedType=openai para que OmniCoder NO pida OAuth al arrancar
+SETTINGS="$OMNI_DIR/settings.json"
 if [[ -f "$SETTINGS" ]] && command -v jq >/dev/null 2>&1; then
     tmp=$(mktemp)
     jq '.security = (.security // {}) | .security.auth = (.security.auth // {}) | .security.auth.selectedType = "openai"' \
         "$SETTINGS" > "$tmp" && mv "$tmp" "$SETTINGS"
-    echo -e "${c_g}OK auth.selectedType = openai (Qwen NO pedira OAuth)${c_n}"
+    echo -e "${c_g}OK auth.selectedType = openai (CLI NO pedira OAuth)${c_n}"
 elif [[ -f "$SETTINGS" ]]; then
     echo -e "${c_y}!! jq no instalado - edita $SETTINGS y agrega:${c_n}"
     echo '   "security": { "auth": { "selectedType": "openai" } }'
 fi
 
 # Eliminar OAuth cacheado si existe (sino prioriza sobre OpenAI key)
-if [[ -f "$QWEN_DIR/oauth_creds.json" ]]; then
+if [[ -f "$OMNI_DIR/oauth_creds.json" ]]; then
     echo ""
-    read -rp "Encontre OAuth cacheado de Qwen. Eliminar para usar tu API key? [Y/n]: " rmoauth
+    read -rp "Encontre OAuth cacheado. Eliminar para usar tu API key? [Y/n]: " rmoauth
     if [[ "${rmoauth,,}" != "n" ]]; then
-        rm -f "$QWEN_DIR/oauth_creds.json"
+        rm -f "$OMNI_DIR/oauth_creds.json"
         echo -e "${c_g}OK OAuth eliminado${c_n}"
     fi
 fi
@@ -145,7 +145,7 @@ read -rp "Probar conexion con curl ahora? [Y/n]: " test
 if [[ "${test,,}" != "n" ]]; then
     if command -v curl >/dev/null 2>&1; then
         echo "Enviando request de prueba..."
-        HTTP=$(curl -s -o /tmp/qwen-test-$$.json -w "%{http_code}" \
+        HTTP=$(curl -s -o /tmp/omni-test-$$.json -w "%{http_code}" \
             -X POST "${BASE_URL%/}/chat/completions" \
             -H "Authorization: Bearer $API_KEY" \
             -H "Content-Type: application/json" \
@@ -155,14 +155,14 @@ if [[ "${test,,}" != "n" ]]; then
             echo -e "${c_g}OK conexion exitosa (HTTP 200)${c_n}"
         else
             echo -e "${c_r}Error HTTP $HTTP${c_n}"
-            head -c 500 /tmp/qwen-test-$$.json 2>/dev/null; echo ""
+            head -c 500 /tmp/omni-test-$$.json 2>/dev/null; echo ""
         fi
-        rm -f /tmp/qwen-test-$$.json
+        rm -f /tmp/omni-test-$$.json
     else
         echo -e "${c_y}curl no disponible, skip test${c_n}"
     fi
 fi
 
 echo ""
-echo -e "${c_g}Listo!${c_n} Arranca Qwen con:"
-echo "  export \$(grep -v '^#' $QWEN_DIR/.env | xargs) && qwen"
+echo -e "${c_g}Listo!${c_n} Arranca OmniCoder con:"
+echo "  export \$(grep -v '^#' $OMNI_DIR/.env | xargs) && omnicoder"

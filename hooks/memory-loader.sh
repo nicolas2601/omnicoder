@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Memory Loader (SessionStart)
-# Inyecta memoria global (~/.qwen/memory/) y memoria de proyecto
-# (./.qwen/memory/) como contexto inicial.
+# OmniCoder - Memory Loader (SessionStart)
+# Inyecta memoria global (~/.omnicoder/memory/) y memoria de proyecto
+# (./.omnicoder/memory/) como contexto inicial.
 # ============================================================
 set -euo pipefail
 
 INPUT=$(cat)
 CWD=$(echo "$INPUT" | jq -r '.cwd // ""' 2>/dev/null || pwd)
 
-GLOBAL_MEM_DIR="$HOME/.qwen/memory"
-PROJECT_MEM_DIR="$CWD/.qwen/memory"
+GLOBAL_MEM_DIR="$HOME/.omnicoder/memory"
+PROJECT_MEM_DIR="$CWD/.omnicoder/memory"
 
 CONTEXT=""
 
@@ -67,7 +67,7 @@ STACK=""
 [[ -f "$CWD/Gemfile" ]] && STACK+="Ruby "
 
 if [[ -n "$CONTEXT" ]] || [[ -n "$STACK" ]]; then
-    HEADER="[CONTEXTO PERSISTENTE] Memoria cargada desde ~/.qwen/memory/ y ./.qwen/memory/. Stack: ${STACK:-desconocido}. Usa esta memoria para no repetir errores, respetar preferencias del usuario y entender el proyecto. Si aprendes algo nuevo o el usuario te corrige, actualiza la memoria con /learn o escribe en ~/.qwen/memory/learned.md."
+    HEADER="[CONTEXTO PERSISTENTE] Memoria cargada desde ~/.omnicoder/memory/ y ./.omnicoder/memory/. Stack: ${STACK:-desconocido}. Usa esta memoria para no repetir errores, respetar preferencias del usuario y entender el proyecto. Si aprendes algo nuevo o el usuario te corrige, actualiza la memoria con /learn o escribe en ~/.omnicoder/memory/learned.md."
     FULL="$HEADER$CONTEXT"
     jq -n --arg ctx "$FULL" '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":$ctx}}'
 else

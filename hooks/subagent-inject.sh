@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Subagent Contract Injector (PreToolUse matcher=Task)
+# OmniCoder - Subagent Contract Injector (PreToolUse matcher=Task)
 # v3.5: agrega reglas anti-400 ("function.arguments must be JSON")
 #       para el modelo gratuito qwen3-coder.
 #

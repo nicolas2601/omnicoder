@@ -1,5 +1,5 @@
 {
-  "$schema": "https://qwen-code.ai/settings-schema.json",
+  "$schema": "https://omnicoder.dev/settings-schema.json",
   "$version": 3,
   "model": {
     "name": "coder-model",
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.qwen/hooks/security-guard.sh"
+            "command": "bash ~/.omnicoder/hooks/security-guard.sh"
           }
         ]
       }
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.qwen/hooks/notify-desktop.sh"
+            "command": "bash ~/.omnicoder/hooks/notify-desktop.sh"
           }
         ]
       }

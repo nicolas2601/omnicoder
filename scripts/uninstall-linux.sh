@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes v2 - Desinstalador para Linux/macOS
+# OmniCoder v4.0 - Desinstalador para Linux/macOS
 # ============================================================
 set -euo pipefail
 
 echo ""
-echo "=== Qwen Con Poderes v2 - Desinstalador ==="
+echo "=== OmniCoder v4.0 - Desinstalador ==="
 echo ""
 echo "Esto eliminara:"
-echo "  - Todos los agentes de ~/.qwen/agents/"
-echo "  - Todas las skills de ~/.qwen/skills/"
-echo "  - Todos los hooks de ~/.qwen/hooks/"
-echo "  - Todos los commands de ~/.qwen/commands/"
-echo "  - El archivo QWEN.md de ~/.qwen/"
-echo "  - Los logs de ~/.qwen/logs/"
+echo "  - Todos los agentes de ~/.omnicoder/agents/"
+echo "  - Todas las skills de ~/.omnicoder/skills/"
+echo "  - Todos los hooks de ~/.omnicoder/hooks/"
+echo "  - Todos los commands de ~/.omnicoder/commands/"
+echo "  - El archivo OMNICODER.md de ~/.omnicoder/"
+echo "  - Los logs de ~/.omnicoder/logs/"
 echo ""
 echo "NO eliminara:"
 echo "  - Qwen Code CLI"
@@ -27,21 +27,21 @@ if [[ "$confirm" != "s" && "$confirm" != "S" ]]; then
     exit 0
 fi
 
-[[ -d "$HOME/.qwen/agents" ]] && rm -rf "$HOME/.qwen/agents" && echo "  OK Agentes eliminados"
-[[ -d "$HOME/.qwen/skills" ]] && rm -rf "$HOME/.qwen/skills" && echo "  OK Skills eliminadas"
-[[ -d "$HOME/.qwen/hooks" ]] && rm -rf "$HOME/.qwen/hooks" && echo "  OK Hooks eliminados"
-[[ -d "$HOME/.qwen/commands" ]] && rm -rf "$HOME/.qwen/commands" && echo "  OK Commands eliminados"
-[[ -f "$HOME/.qwen/QWEN.md" ]] && rm "$HOME/.qwen/QWEN.md" && echo "  OK QWEN.md eliminado"
-[[ -d "$HOME/.qwen/logs" ]] && rm -rf "$HOME/.qwen/logs" && echo "  OK Logs eliminados"
+[[ -d "$HOME/.omnicoder/agents" ]] && rm -rf "$HOME/.omnicoder/agents" && echo "  OK Agentes eliminados"
+[[ -d "$HOME/.omnicoder/skills" ]] && rm -rf "$HOME/.omnicoder/skills" && echo "  OK Skills eliminadas"
+[[ -d "$HOME/.omnicoder/hooks" ]] && rm -rf "$HOME/.omnicoder/hooks" && echo "  OK Hooks eliminados"
+[[ -d "$HOME/.omnicoder/commands" ]] && rm -rf "$HOME/.omnicoder/commands" && echo "  OK Commands eliminados"
+[[ -f "$HOME/.omnicoder/OMNICODER.md" ]] && rm "$HOME/.omnicoder/OMNICODER.md" && echo "  OK OMNICODER.md eliminado"
+[[ -d "$HOME/.omnicoder/logs" ]] && rm -rf "$HOME/.omnicoder/logs" && echo "  OK Logs eliminados"
 
 # Limpiar hooks de settings.json si jq disponible
-if command -v jq &>/dev/null && [[ -f "$HOME/.qwen/settings.json" ]]; then
-    if jq 'del(.hooks)' "$HOME/.qwen/settings.json" > "$HOME/.qwen/settings.json.tmp" 2>/dev/null; then
-        mv "$HOME/.qwen/settings.json.tmp" "$HOME/.qwen/settings.json"
+if command -v jq &>/dev/null && [[ -f "$HOME/.omnicoder/settings.json" ]]; then
+    if jq 'del(.hooks)' "$HOME/.omnicoder/settings.json" > "$HOME/.omnicoder/settings.json.tmp" 2>/dev/null; then
+        mv "$HOME/.omnicoder/settings.json.tmp" "$HOME/.omnicoder/settings.json"
         echo "  OK Hooks removidos de settings.json"
     fi
 fi
 
 echo ""
 echo "Desinstalacion completada."
-echo "Para desinstalar Qwen Code CLI: npm uninstall -g @qwen-code/qwen-code"
+echo "Para desinstalar OmniCoder CLI: npm uninstall -g @qwen-code/qwen-code"

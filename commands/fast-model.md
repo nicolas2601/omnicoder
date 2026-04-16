@@ -26,7 +26,7 @@ curl -fsSL https://ollama.com/install.sh | sh
 ollama pull qwen2.5-coder:7b
 ```
 
-Agregar a `~/.qwen/settings.json`:
+Agregar a `~/.omnicoder/settings.json`:
 ```json
 {
   "modelProviders": {
@@ -52,7 +52,7 @@ Agregar a `~/.qwen/settings.json`:
 }
 ```
 
-Luego cambiar con `/model` dentro de Qwen Code.
+Luego cambiar con `/model` dentro de OmniCoder.
 
 ### Opcion 3: OpenRouter (muchos modelos, paga por uso)
 ```json

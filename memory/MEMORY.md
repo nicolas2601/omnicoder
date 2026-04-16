@@ -1,8 +1,8 @@
-# Memoria Global de Qwen Con Poderes
+# Memoria Global de OmniCoder
 
 Este archivo es el indice maestro de memoria persistente. Lo carga `memory-loader.sh` en cada `SessionStart`.
 
-## Archivos en ~/.qwen/memory/
+## Archivos en ~/.omnicoder/memory/
 
 - `MEMORY.md` (este) - Indice maestro, < 200 lineas
 - `feedback.md` - Preferencias explicitas del usuario (editable a mano)
@@ -25,11 +25,11 @@ Este archivo es el indice maestro de memoria persistente. Lo carga `memory-loade
 ## Como actualizarla
 
 - **Automatico**: errores -> `learned.md` (via hook), sugerencias de skills se registran implicitamente
-- **Semi-automatico**: `/learn` analiza el proyecto y escribe `./.qwen/memory/project.md`
+- **Semi-automatico**: `/learn` analiza el proyecto y escribe `./.omnicoder/memory/project.md`
 - **Manual**: edita `feedback.md` directamente o usa `/memory`
 
 ## Principios
 
 1. Memoria = contexto inyectado al inicio de cada sesion. Mantenerla corta.
-2. Si una regla esta en memoria, Qwen debe respetarla sin que el usuario la repita.
+2. Si una regla esta en memoria, OmniCoder debe respetarla sin que el usuario la repita.
 3. Memoria obsoleta es peor que memoria ausente: limpia con `/memory clean`.

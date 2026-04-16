@@ -1,12 +1,12 @@
 # ============================================================
-# Qwen Con Poderes v3.5 - Instalador para Windows (PowerShell)
+# OmniCoder v4.0 - Instalador para Windows (PowerShell)
 # 168 agentes + 193 skills + 16 hooks + 20 commands + settings
 # ============================================================
 $ErrorActionPreference = "Stop"
 
 Write-Host ""
 Write-Host "========================================================" -ForegroundColor Cyan
-Write-Host "    QWEN CON PODERES v3.5.1 - INSTALADOR WINDOWS         " -ForegroundColor Cyan
+Write-Host "    OMNICODER v4.0.0 - INSTALADOR WINDOWS                  " -ForegroundColor Cyan
 Write-Host "    168 Agentes + 193 Skills + 16 Hooks + 20 Commands    " -ForegroundColor Cyan
 Write-Host "    Multi-provider | Cognitive routing | Subagent verify " -ForegroundColor Cyan
 Write-Host "========================================================" -ForegroundColor Cyan
@@ -38,43 +38,43 @@ Write-Host "  [OK] Repo detectado" -ForegroundColor Green
 
 # ── PASO 4: Agentes ──
 Write-Host "`n[4/8] Instalando agentes..." -ForegroundColor Blue
-$AgentsDir = "$env:USERPROFILE\.qwen\agents"
+$AgentsDir = "$env:USERPROFILE\.omnicoder\agents"
 New-Item -ItemType Directory -Path $AgentsDir -Force | Out-Null
 $ac = 0; Get-ChildItem "$RepoDir\agents\*.md" | ForEach-Object { Copy-Item $_.FullName "$AgentsDir\$($_.Name)" -Force; $ac++ }
 Write-Host "  [OK] $ac agentes" -ForegroundColor Green
 
 # ── PASO 5: Skills ──
 Write-Host "`n[5/8] Instalando skills..." -ForegroundColor Blue
-$SkillsDir = "$env:USERPROFILE\.qwen\skills"
+$SkillsDir = "$env:USERPROFILE\.omnicoder\skills"
 New-Item -ItemType Directory -Path $SkillsDir -Force | Out-Null
 $sc = 0; Get-ChildItem "$RepoDir\skills" -Directory | ForEach-Object { Copy-Item $_.FullName "$SkillsDir\$($_.Name)" -Recurse -Force; $sc++ }
 Write-Host "  [OK] $sc skills" -ForegroundColor Green
 
 # ── PASO 6: Hooks ──
 Write-Host "`n[6/8] Instalando hooks..." -ForegroundColor Blue
-$HooksDir = "$env:USERPROFILE\.qwen\hooks"
+$HooksDir = "$env:USERPROFILE\.omnicoder\hooks"
 New-Item -ItemType Directory -Path $HooksDir -Force | Out-Null
 $hc = 0; Get-ChildItem "$RepoDir\hooks\*.sh" | ForEach-Object { Copy-Item $_.FullName "$HooksDir\$($_.Name)" -Force; $hc++ }
 Write-Host "  [OK] $hc hooks" -ForegroundColor Green
 
 # ── PASO 7: Commands ──
 Write-Host "`n[7/8] Instalando commands..." -ForegroundColor Blue
-$CmdsDir = "$env:USERPROFILE\.qwen\commands"
+$CmdsDir = "$env:USERPROFILE\.omnicoder\commands"
 New-Item -ItemType Directory -Path $CmdsDir -Force | Out-Null
 $cc = 0; Get-ChildItem "$RepoDir\commands\*.md" | ForEach-Object { Copy-Item $_.FullName "$CmdsDir\$($_.Name)" -Force; $cc++ }
 Write-Host "  [OK] $cc commands" -ForegroundColor Green
 
 # ── PASO 8: Config ──
 Write-Host "`n[8/8] Configurando..." -ForegroundColor Blue
-if (Test-Path "$RepoDir\QWEN.md") { Copy-Item "$RepoDir\QWEN.md" "$env:USERPROFILE\.qwen\QWEN.md" -Force; Write-Host "  [OK] QWEN.md" -ForegroundColor Green }
-if (Test-Path "$RepoDir\config\settings.json") { Copy-Item "$RepoDir\config\settings.json" "$env:USERPROFILE\.qwen\settings.json" -Force; Write-Host "  [OK] settings.json" -ForegroundColor Green }
-New-Item -ItemType Directory -Path "$env:USERPROFILE\.qwen\logs" -Force | Out-Null
+if (Test-Path "$RepoDir\OMNICODER.md") { Copy-Item "$RepoDir\OMNICODER.md" "$env:USERPROFILE\.omnicoder\OMNICODER.md" -Force; Write-Host "  [OK] OMNICODER.md" -ForegroundColor Green }
+if (Test-Path "$RepoDir\config\settings.json") { Copy-Item "$RepoDir\config\settings.json" "$env:USERPROFILE\.omnicoder\settings.json" -Force; Write-Host "  [OK] settings.json" -ForegroundColor Green }
+New-Item -ItemType Directory -Path "$env:USERPROFILE\.omnicoder\logs" -Force | Out-Null
 
 # ── PASO 9: Setup de provider (API key) ──
 Write-Host "`n[9/9] Setup de provider (API key)..." -ForegroundColor Blue
-$activeEnv = "$env:USERPROFILE\.qwen\.env"
+$activeEnv = "$env:USERPROFILE\.omnicoder\.env"
 if (Test-Path $activeEnv) {
-    Write-Host "  [!!] Ya existe ~/.qwen/.env (provider configurado)" -ForegroundColor Yellow
+    Write-Host "  [!!] Ya existe ~/.omnicoder/.env (provider configurado)" -ForegroundColor Yellow
     Write-Host "       Para cambiar: powershell -ExecutionPolicy Bypass -File scripts\setup-provider.ps1"
 } else {
     $setupNow = Read-Host "  Configurar API key ahora? [Y/n]"
@@ -92,7 +92,7 @@ if (Test-Path $activeEnv) {
 
 # ── Resumen ──
 Write-Host "`n========================================================" -ForegroundColor Green
-Write-Host "           INSTALACION COMPLETADA v3.5.1                  " -ForegroundColor Green
+Write-Host "           INSTALACION COMPLETADA v4.0.0                  " -ForegroundColor Green
 Write-Host "========================================================" -ForegroundColor Green
 Write-Host "`n  Agentes: $ac | Skills: $sc | Hooks: $hc | Commands: $cc"
 if (Test-Path $activeEnv) {
@@ -102,7 +102,7 @@ if (Test-Path $activeEnv) {
     Write-Host "  Provider: NO configurado -> setup-provider.ps1" -ForegroundColor Red
 }
 Write-Host "`n  PARA EMPEZAR:" -ForegroundColor Yellow
-Write-Host "    qwen                   Iniciar Qwen Code"
+Write-Host "    qwen                   Iniciar OmniCoder"
 Write-Host "    /agents manage         Ver agentes"
 Write-Host "    /skills                Ver skills"
 Write-Host "    /review                Code review"

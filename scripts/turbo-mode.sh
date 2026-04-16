@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Turbo Mode Toggle
+# OmniCoder - Turbo Mode Toggle
 # Alterna entre settings normal (todos los hooks) y turbo
 # (solo security-guard, maxima velocidad)
 # ============================================================
 set -euo pipefail
 
-SETTINGS="$HOME/.qwen/settings.json"
-SETTINGS_FULL="$HOME/.qwen/settings-full.json"
-SETTINGS_TURBO="$HOME/.qwen/settings-turbo.json"
+SETTINGS="$HOME/.omnicoder/settings.json"
+SETTINGS_FULL="$HOME/.omnicoder/settings-full.json"
+SETTINGS_TURBO="$HOME/.omnicoder/settings-turbo.json"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -33,7 +33,7 @@ case "${1:-toggle}" in
         echo -e "  Cache: ${GREEN}habilitado${NC}"
         echo -e "  Temperature: ${GREEN}0.2${NC} (respuestas mas directas)"
         echo ""
-        echo -e "  ${YELLOW}Reinicia Qwen Code para aplicar cambios${NC}"
+        echo -e "  ${YELLOW}Reinicia OmniCoder para aplicar cambios${NC}"
         echo -e "  Restaurar: $0 off"
         ;;
     off|normal)
@@ -44,7 +44,7 @@ case "${1:-toggle}" in
             cp "$REPO_DIR/config/settings.json" "$SETTINGS"
             echo -e "${GREEN}NORMAL MODE${NC} - Settings por defecto restaurado"
         fi
-        echo -e "  ${YELLOW}Reinicia Qwen Code para aplicar cambios${NC}"
+        echo -e "  ${YELLOW}Reinicia OmniCoder para aplicar cambios${NC}"
         ;;
     status)
         if [[ -f "$SETTINGS" ]]; then

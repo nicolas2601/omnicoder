@@ -5,7 +5,7 @@ description: Gestionar patrones semanticos aprendidos. Ver, editar, eliminar, pr
 
 # /patterns — Gestión de patrones semánticos
 
-Gestiona `~/.qwen/memory/patterns.md`: las reglas destiladas que el router carga en contexto.
+Gestiona `~/.omnicoder/memory/patterns.md`: las reglas destiladas que el router carga en contexto.
 
 ## Subcomandos
 

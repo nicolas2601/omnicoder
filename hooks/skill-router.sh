@@ -3,7 +3,7 @@
 # Claude Code - Skill Router v3.3 (UserPromptSubmit)
 #
 # NOVEDAD v3.3: Project Context Awareness. Escanea archivos del
-# cwd (AGENTS.md, QWEN.md, CLAUDE.md, README.md, package.json,
+# cwd (AGENTS.md, OMNICODER.md, QWEN.md, CLAUDE.md, README.md, package.json,
 # go.mod, Cargo.toml, requirements.txt, composer.json, Gemfile,
 # pubspec.yaml) para detectar tech aunque el prompt no la mencione.
 # Cache por hash de cwd + mtime de archivos.
@@ -20,10 +20,10 @@ CWD=$(echo "$INPUT" | jq -r '.cwd // ""' 2>/dev/null || echo "")
 
 [[ ${#PROMPT} -lt 10 ]] && { echo '{}'; exit 0; }
 
-SKILLS_DIR="$HOME/.qwen/skills"
-AGENTS_DIR="$HOME/.qwen/agents"
-CACHE_DIR="$HOME/.qwen/.cache"
-MEM_DIR="$HOME/.qwen/memory"
+SKILLS_DIR="$HOME/.omnicoder/skills"
+AGENTS_DIR="$HOME/.omnicoder/agents"
+CACHE_DIR="$HOME/.omnicoder/.cache"
+MEM_DIR="$HOME/.omnicoder/memory"
 SKILL_INDEX="$CACHE_DIR/skills-index.tsv"
 AGENT_INDEX="$CACHE_DIR/agents-index.tsv"
 SUGG_LOG="$CACHE_DIR/last-suggestion.json"
@@ -138,7 +138,7 @@ scan_project_context() {
     cache="$PROJ_CACHE/$hash"
 
     local files=(
-        "$cwd/AGENTS.md" "$cwd/QWEN.md" "$cwd/CLAUDE.md"
+        "$cwd/AGENTS.md" "$cwd/OMNICODER.md" "$cwd/QWEN.md" "$cwd/CLAUDE.md"
         "$cwd/README.md" "$cwd/README.MD" "$cwd/readme.md"
         "$cwd/package.json" "$cwd/go.mod" "$cwd/Cargo.toml"
         "$cwd/requirements.txt" "$cwd/pyproject.toml"

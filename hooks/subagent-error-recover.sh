@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Subagent Error Recovery (PostToolUse matcher=Task)
+# OmniCoder - Subagent Error Recovery (PostToolUse matcher=Task)
 # v3.5: detecta el error 400 "function.arguments must be JSON" del
 #       modelo gratuito qwen3-coder y emite instrucciones de retry
 #       acortando el prompt, en vez de dejar que el agente principal
@@ -27,7 +27,7 @@ SUB_PROMPT=$(echo "$INPUT" | jq -r '.tool_input.prompt // ""' 2>/dev/null || ech
 PROMPT_LEN=${#SUB_PROMPT}
 SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // "unknown"')
 
-LOG_DIR="$HOME/.qwen/logs"
+LOG_DIR="$HOME/.omnicoder/logs"
 mkdir -p "$LOG_DIR"
 ERR_LOG="$LOG_DIR/subagent-400-errors.log"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
@@ -72,13 +72,13 @@ if [[ "$RECENT_COUNT" -ge 3 ]]; then
 5. ⚠️ Detectados ${RECENT_COUNT} errores '$DETECTED' recientes. Considera:
    - Activar turbo-mode (scripts/turbo-mode.sh on) para desactivar hooks pesados
    - Usar qwen-plus o qwen3-max en vez de qwen3-coder para orquestacion
-   - Revisar ~/.qwen/logs/subagent-400-errors.log"
+   - Revisar ~/.omnicoder/logs/subagent-400-errors.log"
 fi
 
 CTX="🚨 [SUBAGENT-400-DETECTADO] Tipo: $DETECTED
 
 El subagent '$SUB_AGENT' (${PROMPT_LEN} chars) fallo con un error del modelo
-coder gratuito. Esto NO es bug de Qwen Con Poderes — es limitacion conocida
+coder gratuito. Esto NO es bug de OmniCoder — es limitacion conocida
 del endpoint DashScope con qwen3-coder cuando recibe tool_calls anidados
 largos o mal formados.
 
@@ -86,6 +86,6 @@ NO reportes al usuario 'listo'. Plan de recuperacion OBLIGATORIO:
 
 $PLAN
 
-Log detallado: ~/.qwen/logs/subagent-400-errors.log"
+Log detallado: ~/.omnicoder/logs/subagent-400-errors.log"
 
 jq -n --arg ctx "$CTX" '{hookSpecificOutput:{hookEventName:"PostToolUse", additionalContext:$ctx}}'

@@ -9,12 +9,12 @@ Dispara una reflexión estilo Reflexion (Shinn et al. 2023) sobre la sesión act
 
 ## Qué hago
 
-1. Leo `~/.qwen/memory/learned.md` (errores recientes).
-2. Leo `~/.qwen/memory/trajectories.md` (éxitos recientes).
-3. Leo `~/.qwen/memory/ignored-skills.md` (skills que ignoré).
+1. Leo `~/.omnicoder/memory/learned.md` (errores recientes).
+2. Leo `~/.omnicoder/memory/trajectories.md` (éxitos recientes).
+3. Leo `~/.omnicoder/memory/ignored-skills.md` (skills que ignoré).
 4. Extraigo 3-5 lecciones concretas.
-5. Las anexo a `~/.qwen/memory/reflections.md`.
-6. Si la lección es generalizable → la promuevo a `~/.qwen/memory/patterns.md`.
+5. Las anexo a `~/.omnicoder/memory/reflections.md`.
+6. Si la lección es generalizable → la promuevo a `~/.omnicoder/memory/patterns.md`.
 
 ## Formato de salida
 

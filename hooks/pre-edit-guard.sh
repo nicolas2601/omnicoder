@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Pre-Edit Guard Hook (PreToolUse: Edit|Write)
+# OmniCoder - Pre-Edit Guard Hook (PreToolUse: Edit|Write)
 # Previene edicion de archivos sensibles y protege secrets
 # ============================================================
 set -euo pipefail

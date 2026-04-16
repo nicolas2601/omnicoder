@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================
-REM Qwen Con Poderes v3.5 - Instalador para Windows (CMD)
+REM OmniCoder v4.0 - Instalador para Windows (CMD)
 REM 168 agentes + 193 skills + 16 hooks + 20 commands + settings
 REM ============================================================
 chcp 65001 >nul 2>&1
@@ -8,7 +8,7 @@ setlocal EnableDelayedExpansion
 
 echo.
 echo ========================================================
-echo    QWEN CON PODERES v3.5.1 - INSTALADOR WINDOWS
+echo    OMNICODER v4.0.0 - INSTALADOR WINDOWS
 echo    168 Agentes + 193 Skills + 16 Hooks + 20 Commands
 echo    Multi-provider ^| Cognitive routing ^| Subagent verify
 echo ========================================================
@@ -64,51 +64,51 @@ echo   [OK] Repo detectado
 REM ── PASO 4: Instalar Agentes ──
 echo.
 echo [4/8] Instalando agentes...
-set "QWEN_AGENTS=%USERPROFILE%\.qwen\agents"
-if not exist "%QWEN_AGENTS%" mkdir "%QWEN_AGENTS%"
+set "OMNI_AGENTS=%USERPROFILE%\.omnicoder\agents"
+if not exist "%OMNI_AGENTS%" mkdir "%OMNI_AGENTS%"
 set AC=0
-for %%f in ("%REPO_DIR%\agents\*.md") do ( copy /y "%%f" "%QWEN_AGENTS%\%%~nxf" >nul & set /a AC+=1 )
+for %%f in ("%REPO_DIR%\agents\*.md") do ( copy /y "%%f" "%OMNI_AGENTS%\%%~nxf" >nul & set /a AC+=1 )
 echo   [OK] !AC! agentes instalados
 
 REM ── PASO 5: Instalar Skills ──
 echo.
 echo [5/8] Instalando skills...
-set "QWEN_SKILLS=%USERPROFILE%\.qwen\skills"
-if not exist "%QWEN_SKILLS%" mkdir "%QWEN_SKILLS%"
+set "OMNI_SKILLS=%USERPROFILE%\.omnicoder\skills"
+if not exist "%OMNI_SKILLS%" mkdir "%OMNI_SKILLS%"
 set SC=0
-for /d %%d in ("%REPO_DIR%\skills\*") do ( xcopy /e /i /y "%%d" "%QWEN_SKILLS%\%%~nxd" >nul 2>&1 & set /a SC+=1 )
+for /d %%d in ("%REPO_DIR%\skills\*") do ( xcopy /e /i /y "%%d" "%OMNI_SKILLS%\%%~nxd" >nul 2>&1 & set /a SC+=1 )
 echo   [OK] !SC! skills instaladas
 
 REM ── PASO 6: Instalar Hooks ──
 echo.
 echo [6/8] Instalando hooks...
-set "QWEN_HOOKS=%USERPROFILE%\.qwen\hooks"
-if not exist "%QWEN_HOOKS%" mkdir "%QWEN_HOOKS%"
+set "OMNI_HOOKS=%USERPROFILE%\.omnicoder\hooks"
+if not exist "%OMNI_HOOKS%" mkdir "%OMNI_HOOKS%"
 set HC=0
-for %%f in ("%REPO_DIR%\hooks\*.sh") do ( copy /y "%%f" "%QWEN_HOOKS%\%%~nxf" >nul & set /a HC+=1 )
+for %%f in ("%REPO_DIR%\hooks\*.sh") do ( copy /y "%%f" "%OMNI_HOOKS%\%%~nxf" >nul & set /a HC+=1 )
 echo   [OK] !HC! hooks instalados
 
 REM ── PASO 7: Instalar Commands ──
 echo.
 echo [7/8] Instalando slash commands...
-set "QWEN_CMDS=%USERPROFILE%\.qwen\commands"
-if not exist "%QWEN_CMDS%" mkdir "%QWEN_CMDS%"
+set "OMNI_CMDS=%USERPROFILE%\.omnicoder\commands"
+if not exist "%OMNI_CMDS%" mkdir "%OMNI_CMDS%"
 set CC=0
-for %%f in ("%REPO_DIR%\commands\*.md") do ( copy /y "%%f" "%QWEN_CMDS%\%%~nxf" >nul & set /a CC+=1 )
+for %%f in ("%REPO_DIR%\commands\*.md") do ( copy /y "%%f" "%OMNI_CMDS%\%%~nxf" >nul & set /a CC+=1 )
 echo   [OK] !CC! commands instalados
 
 REM ── PASO 8: Config ──
 echo.
 echo [8/8] Configurando...
-if exist "%REPO_DIR%\QWEN.md" ( copy /y "%REPO_DIR%\QWEN.md" "%USERPROFILE%\.qwen\QWEN.md" >nul & echo   [OK] QWEN.md )
-if exist "%REPO_DIR%\config\settings.json" ( copy /y "%REPO_DIR%\config\settings.json" "%USERPROFILE%\.qwen\settings.json" >nul & echo   [OK] settings.json )
-if not exist "%USERPROFILE%\.qwen\logs" mkdir "%USERPROFILE%\.qwen\logs"
+if exist "%REPO_DIR%\OMNICODER.md" ( copy /y "%REPO_DIR%\OMNICODER.md" "%USERPROFILE%\.omnicoder\OMNICODER.md" >nul & echo   [OK] OMNICODER.md )
+if exist "%REPO_DIR%\config\settings.json" ( copy /y "%REPO_DIR%\config\settings.json" "%USERPROFILE%\.omnicoder\settings.json" >nul & echo   [OK] settings.json )
+if not exist "%USERPROFILE%\.omnicoder\logs" mkdir "%USERPROFILE%\.omnicoder\logs"
 
 REM ── PASO 9: Setup de provider (API key) ──
 echo.
 echo [9/9] Setup de provider (API key)...
-if exist "%USERPROFILE%\.qwen\.env" (
-    echo   [!!] Ya existe %USERPROFILE%\.qwen\.env
+if exist "%USERPROFILE%\.omnicoder\.env" (
+    echo   [!!] Ya existe %USERPROFILE%\.omnicoder\.env
     echo        Para cambiar: powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%setup-provider.ps1"
 ) else (
     set /p "SETUPNOW=  Configurar API key ahora? [Y/n]: "
@@ -126,14 +126,14 @@ if exist "%USERPROFILE%\.qwen\.env" (
 REM ── Resumen ──
 echo.
 echo ========================================================
-echo           INSTALACION COMPLETADA v3.5.1
+echo           INSTALACION COMPLETADA v4.0.0
 echo ========================================================
 echo.
 echo   Agentes:  !AC!    Skills:  !SC!
 echo   Hooks:    !HC!    Commands: !CC!
 echo.
 echo   PARA EMPEZAR:
-echo     qwen                    Iniciar Qwen Code
+echo     qwen                    Iniciar OmniCoder
 echo     /agents manage          Ver agentes
 echo     /skills                 Ver skills
 echo     /review                 Code review

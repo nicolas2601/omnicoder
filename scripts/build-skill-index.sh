@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Build Skill Index
+# OmniCoder - Build Skill Index
 # Construye cache de skills y agentes para skill-router.sh v2.
 # Uso: ./scripts/build-skill-index.sh
 # ============================================================
 set -euo pipefail
 
-SKILLS_DIR="$HOME/.qwen/skills"
-AGENTS_DIR="$HOME/.qwen/agents"
-CACHE_DIR="$HOME/.qwen/.cache"
+SKILLS_DIR="$HOME/.omnicoder/skills"
+AGENTS_DIR="$HOME/.omnicoder/agents"
+CACHE_DIR="$HOME/.omnicoder/.cache"
 SKILL_INDEX="$CACHE_DIR/skills-index.tsv"
 AGENT_INDEX="$CACHE_DIR/agents-index.tsv"
 

@@ -8,8 +8,8 @@ Comando manual para auditar la ultima invocacion de subagent cuando dudas de su 
 
 ## Proceso
 
-1. Lee `~/.qwen/logs/subagent-verify.log` (ultimas 5 lineas) para ver el estado.
-2. Lee `~/.qwen/logs/operations.log` (ultimas 50 lineas) para ver tools ejecutados en la sesion actual.
+1. Lee `~/.omnicoder/logs/subagent-verify.log` (ultimas 5 lineas) para ver el estado.
+2. Lee `~/.omnicoder/logs/operations.log` (ultimas 50 lineas) para ver tools ejecutados en la sesion actual.
 3. Para cada archivo que el subagent dijo modificar:
    - `git diff --stat HEAD` en el cwd del proyecto
    - `stat -c '%y %n' <archivo>` para verificar mtime

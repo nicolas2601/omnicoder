@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Security Guard Hook (PreToolUse: Bash)
+# OmniCoder - Security Guard Hook (PreToolUse: Bash)
 # Bloquea comandos peligrosos y protege secrets
 # ============================================================
 set -euo pipefail

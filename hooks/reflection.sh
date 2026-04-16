@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Reflection Hook (Stop)
+# OmniCoder - Reflection Hook (Stop)
 # Al terminar la sesión, genera una auto-reflexión (Reflexion
 # pattern, Shinn et al. 2023) sobre:
 #  - Skills sugeridos vs usados
@@ -12,8 +12,8 @@ set -euo pipefail
 
 INPUT=$(cat 2>/dev/null || echo "{}")
 
-MEM_DIR="$HOME/.qwen/memory"
-CACHE_DIR="$HOME/.qwen/.cache"
+MEM_DIR="$HOME/.omnicoder/memory"
+CACHE_DIR="$HOME/.omnicoder/.cache"
 mkdir -p "$MEM_DIR"
 
 REFLECTIONS_FILE="$MEM_DIR/reflections.md"

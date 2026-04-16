@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes v3.5 - Instalador para Linux/macOS
+# OmniCoder v4.0 - Instalador para Linux/macOS
 # 168 agentes + 193 skills + 16 hooks + 20 commands + settings
 # ============================================================
 set -euo pipefail
 
-VERSION="3.5.1"
+VERSION="4.0.0"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -22,12 +22,12 @@ NC='\033[0m'
 echo -e "${CYAN}${BOLD}"
 cat << 'BANNER'
 
-   ___                          ____              ____            __
-  / _ \__    _____  ____       / ___|___  _ __   |  _ \ ___   __| | ___ _ __ ___  ___
- | | | \ \ /\ / / _ \ '_ \    | |   / _ \| '_ \  | |_) / _ \ / _` |/ _ \ '__/ _ \/ __|
- | |_| |\ V  V /  __/ | | |   | |__| (_) | | | | |  __/ (_) | (_| |  __/ | |  __/\__ \
-  \__\_\ \_/\_/ \___|_| |_|    \____\___/|_| |_| |_|   \___/ \__,_|\___|_|  \___||___/
-                                                                               v3.5.1
+   ____                  _ ______          __
+  / __ \____ ___  ____  (_) ____/___  ____/ /__  _____
+ / / / / __ `__ \/ __ \/ / /   / __ \/ __  / _ \/ ___/
+/ /_/ / / / / / / / / / / /___/ /_/ / /_/ /  __/ /
+\____/_/ /_/ /_/_/ /_/_/\____/\____/\__,_/\___/_/
+                                                v4.0.0
 
 BANNER
 echo -e "${NC}"
@@ -57,7 +57,7 @@ for arg in "$@"; do
             echo "Uso: ./install-linux.sh [opciones]"
             echo ""
             echo "Opciones:"
-            echo "  --skip-cli   No instalar/actualizar Qwen Code CLI"
+            echo "  --skip-cli   No instalar/actualizar OmniCoder CLI"
             echo "  --force      Sobreescribir todo sin preguntar"
             echo "  --doctor     Solo ejecutar diagnostico (no instalar)"
             echo "  --help       Mostrar esta ayuda"
@@ -70,7 +70,7 @@ done
 # Doctor mode
 # ─────────────────────��────────────────────────────────────
 doctor() {
-    echo -e "${BLUE}${BOLD}=== Qwen Con Poderes - Doctor ===${NC}"
+    echo -e "${BLUE}${BOLD}=== OmniCoder - Doctor ===${NC}"
     echo ""
     ISSUES=0
 
@@ -88,16 +88,16 @@ doctor() {
         ISSUES=$((ISSUES + 1))
     fi
 
-    # Check Qwen CLI
+    # Check OmniCoder CLI
     if command -v qwen &>/dev/null; then
-        echo -e "  ${GREEN}OK${NC} Qwen Code CLI instalado"
+        echo -e "  ${GREEN}OK${NC} OmniCoder CLI instalado"
     else
-        echo -e "  ${RED}!!${NC} Qwen Code CLI no encontrado"
+        echo -e "  ${RED}!!${NC} OmniCoder CLI no encontrado"
         ISSUES=$((ISSUES + 1))
     fi
 
     # Check agents
-    AGENT_COUNT=$(ls "$HOME/.qwen/agents/"*.md 2>/dev/null | wc -l || echo 0)
+    AGENT_COUNT=$(ls "$HOME/.omnicoder/agents/"*.md 2>/dev/null | wc -l || echo 0)
     if [[ "$AGENT_COUNT" -gt 100 ]]; then
         echo -e "  ${GREEN}OK${NC} $AGENT_COUNT agentes instalados"
     elif [[ "$AGENT_COUNT" -gt 0 ]]; then
@@ -109,7 +109,7 @@ doctor() {
     fi
 
     # Check skills
-    SKILL_COUNT=$(ls -d "$HOME/.qwen/skills/"*/ 2>/dev/null | wc -l || echo 0)
+    SKILL_COUNT=$(ls -d "$HOME/.omnicoder/skills/"*/ 2>/dev/null | wc -l || echo 0)
     if [[ "$SKILL_COUNT" -gt 150 ]]; then
         echo -e "  ${GREEN}OK${NC} $SKILL_COUNT skills instaladas"
     elif [[ "$SKILL_COUNT" -gt 0 ]]; then
@@ -121,7 +121,7 @@ doctor() {
     fi
 
     # Check hooks
-    HOOK_COUNT=$(ls "$HOME/.qwen/hooks/"*.sh 2>/dev/null | wc -l || echo 0)
+    HOOK_COUNT=$(ls "$HOME/.omnicoder/hooks/"*.sh 2>/dev/null | wc -l || echo 0)
     if [[ "$HOOK_COUNT" -ge 16 ]]; then
         echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados (v3.5 con subagent-verify + error-recover)"
     elif [[ "$HOOK_COUNT" -gt 0 ]]; then
@@ -133,24 +133,24 @@ doctor() {
     fi
 
     # Check memory
-    if [[ -d "$HOME/.qwen/memory" ]]; then
-        MEM_COUNT=$(ls "$HOME/.qwen/memory/"*.md 2>/dev/null | wc -l || echo 0)
-        echo -e "  ${GREEN}OK${NC} Memoria persistente: $MEM_COUNT archivos en ~/.qwen/memory/"
+    if [[ -d "$HOME/.omnicoder/memory" ]]; then
+        MEM_COUNT=$(ls "$HOME/.omnicoder/memory/"*.md 2>/dev/null | wc -l || echo 0)
+        echo -e "  ${GREEN}OK${NC} Memoria persistente: $MEM_COUNT archivos en ~/.omnicoder/memory/"
     else
         echo -e "  ${YELLOW}!!${NC} No hay memoria persistente (reinstala para activarla)"
         ISSUES=$((ISSUES + 1))
     fi
 
     # Check skill index cache
-    if [[ -f "$HOME/.qwen/.cache/skills-index.tsv" ]]; then
-        IDX_COUNT=$(wc -l < "$HOME/.qwen/.cache/skills-index.tsv")
+    if [[ -f "$HOME/.omnicoder/.cache/skills-index.tsv" ]]; then
+        IDX_COUNT=$(wc -l < "$HOME/.omnicoder/.cache/skills-index.tsv")
         echo -e "  ${GREEN}OK${NC} Indice de skills cacheado ($IDX_COUNT entradas)"
     else
         echo -e "  ${YELLOW}!!${NC} Sin indice de skills (ejecuta scripts/build-skill-index.sh)"
     fi
 
     # Check commands
-    CMD_COUNT=$(ls "$HOME/.qwen/commands/"*.md 2>/dev/null | wc -l || echo 0)
+    CMD_COUNT=$(ls "$HOME/.omnicoder/commands/"*.md 2>/dev/null | wc -l || echo 0)
     if [[ "$CMD_COUNT" -ge 20 ]]; then
         echo -e "  ${GREEN}OK${NC} $CMD_COUNT commands instalados"
     elif [[ "$CMD_COUNT" -gt 0 ]]; then
@@ -161,17 +161,17 @@ doctor() {
         ISSUES=$((ISSUES + 1))
     fi
 
-    # Check QWEN.md
-    if [[ -f "$HOME/.qwen/QWEN.md" ]]; then
-        echo -e "  ${GREEN}OK${NC} QWEN.md configurado"
+    # Check OMNICODER.md
+    if [[ -f "$HOME/.omnicoder/OMNICODER.md" ]]; then
+        echo -e "  ${GREEN}OK${NC} OMNICODER.md configurado"
     else
-        echo -e "  ${RED}!!${NC} QWEN.md no encontrado"
+        echo -e "  ${RED}!!${NC} OMNICODER.md no encontrado"
         ISSUES=$((ISSUES + 1))
     fi
 
     # Check settings.json has hooks
-    if [[ -f "$HOME/.qwen/settings.json" ]]; then
-        if grep -q '"hooks"' "$HOME/.qwen/settings.json" 2>/dev/null; then
+    if [[ -f "$HOME/.omnicoder/settings.json" ]]; then
+        if grep -q '"hooks"' "$HOME/.omnicoder/settings.json" 2>/dev/null; then
             echo -e "  ${GREEN}OK${NC} settings.json con hooks configurados"
         else
             echo -e "  ${YELLOW}!!${NC} settings.json sin hooks"
@@ -193,7 +193,7 @@ doctor() {
 
     echo ""
     if [[ "$ISSUES" -eq 0 ]]; then
-        echo -e "  ${GREEN}${BOLD}Todo OK - Qwen Con Poderes v3.5.1 funcionando correctamente${NC}"
+        echo -e "  ${GREEN}${BOLD}Todo OK - OmniCoder v4.0.0 funcionando correctamente${NC}"
     else
         echo -e "  ${YELLOW}${BOLD}$ISSUES issues encontrados${NC}"
         echo -e "  ${DIM}Ejecuta: ./install-linux.sh --force para reparar${NC}"
@@ -251,10 +251,10 @@ else
 fi
 
 # ───��───────────────────────────��──────────────────────────
-# PASO 2: Instalar Qwen Code CLI
+# PASO 2: Instalar OmniCoder CLI
 # ────────���─────────────────────────────────────────────────
 echo ""
-echo -e "${BLUE}[2/8]${NC} Qwen Code CLI..."
+echo -e "${BLUE}[2/8]${NC} OmniCoder CLI..."
 
 if [[ "$SKIP_CLI" == true ]]; then
     echo -e "  ${DIM}Saltado (--skip-cli)${NC}"
@@ -294,15 +294,15 @@ echo -e "  ${GREEN}OK${NC} $AGENT_COUNT agentes, $SKILL_COUNT skills, $HOOK_COUN
 echo ""
 echo -e "${BLUE}[4/8]${NC} Instalando agentes..."
 
-QWEN_AGENTS_DIR="$HOME/.qwen/agents"
-mkdir -p "$QWEN_AGENTS_DIR"
+OMNI_AGENTS_DIR="$HOME/.omnicoder/agents"
+mkdir -p "$OMNI_AGENTS_DIR"
 
 INSTALLED=0
 for f in "$REPO_DIR/agents/"*.md; do
-    cp "$f" "$QWEN_AGENTS_DIR/$(basename "$f")"
+    cp "$f" "$OMNI_AGENTS_DIR/$(basename "$f")"
     INSTALLED=$((INSTALLED + 1))
 done
-echo -e "  ${GREEN}OK${NC} $INSTALLED agentes -> ~/.qwen/agents/"
+echo -e "  ${GREEN}OK${NC} $INSTALLED agentes -> ~/.omnicoder/agents/"
 
 # ────────────────────────────��─────────────────────────────
 # PASO 5: Instalar Skills
@@ -310,15 +310,15 @@ echo -e "  ${GREEN}OK${NC} $INSTALLED agentes -> ~/.qwen/agents/"
 echo ""
 echo -e "${BLUE}[5/8]${NC} Instalando skills..."
 
-QWEN_SKILLS_DIR="$HOME/.qwen/skills"
-mkdir -p "$QWEN_SKILLS_DIR"
+OMNI_SKILLS_DIR="$HOME/.omnicoder/skills"
+mkdir -p "$OMNI_SKILLS_DIR"
 
 INSTALLED=0
 for d in "$REPO_DIR/skills/"*/; do
-    cp -r "$d" "$QWEN_SKILLS_DIR/$(basename "$d")"
+    cp -r "$d" "$OMNI_SKILLS_DIR/$(basename "$d")"
     INSTALLED=$((INSTALLED + 1))
 done
-echo -e "  ${GREEN}OK${NC} $INSTALLED skills -> ~/.qwen/skills/"
+echo -e "  ${GREEN}OK${NC} $INSTALLED skills -> ~/.omnicoder/skills/"
 
 # ──────────────────────────────────────────────────────────
 # PASO 6: Instalar Hooks
@@ -326,16 +326,16 @@ echo -e "  ${GREEN}OK${NC} $INSTALLED skills -> ~/.qwen/skills/"
 echo ""
 echo -e "${BLUE}[6/8]${NC} Instalando hooks inteligentes..."
 
-QWEN_HOOKS_DIR="$HOME/.qwen/hooks"
-mkdir -p "$QWEN_HOOKS_DIR"
+OMNI_HOOKS_DIR="$HOME/.omnicoder/hooks"
+mkdir -p "$OMNI_HOOKS_DIR"
 
 INSTALLED=0
 for f in "$REPO_DIR/hooks/"*.sh; do
-    cp "$f" "$QWEN_HOOKS_DIR/$(basename "$f")"
-    chmod +x "$QWEN_HOOKS_DIR/$(basename "$f")"
+    cp "$f" "$OMNI_HOOKS_DIR/$(basename "$f")"
+    chmod +x "$OMNI_HOOKS_DIR/$(basename "$f")"
     INSTALLED=$((INSTALLED + 1))
 done
-echo -e "  ${GREEN}OK${NC} $INSTALLED hooks -> ~/.qwen/hooks/"
+echo -e "  ${GREEN}OK${NC} $INSTALLED hooks -> ~/.omnicoder/hooks/"
 
 # ──────────────────────────���───────────────────────────────
 # PASO 7: Instalar Commands (Slash Commands)
@@ -343,30 +343,30 @@ echo -e "  ${GREEN}OK${NC} $INSTALLED hooks -> ~/.qwen/hooks/"
 echo ""
 echo -e "${BLUE}[7/8]${NC} Instalando slash commands..."
 
-QWEN_CMDS_DIR="$HOME/.qwen/commands"
-mkdir -p "$QWEN_CMDS_DIR"
+OMNI_CMDS_DIR="$HOME/.omnicoder/commands"
+mkdir -p "$OMNI_CMDS_DIR"
 
 INSTALLED=0
 for f in "$REPO_DIR/commands/"*.md; do
-    cp "$f" "$QWEN_CMDS_DIR/$(basename "$f")"
+    cp "$f" "$OMNI_CMDS_DIR/$(basename "$f")"
     INSTALLED=$((INSTALLED + 1))
 done
-echo -e "  ${GREEN}OK${NC} $INSTALLED commands -> ~/.qwen/commands/"
+echo -e "  ${GREEN}OK${NC} $INSTALLED commands -> ~/.omnicoder/commands/"
 
 # ───��────────────────────────────────────────��─────────────
-# PASO 8: Instalar Config (QWEN.md + settings.json)
+# PASO 8: Instalar Config (OMNICODER.md + settings.json)
 # ──────────────────────────────────────────────────────────
 echo ""
 echo -e "${BLUE}[8/8]${NC} Configurando..."
 
-# QWEN.md
-if [[ -f "$REPO_DIR/QWEN.md" ]]; then
-    cp "$REPO_DIR/QWEN.md" "$HOME/.qwen/QWEN.md"
-    echo -e "  ${GREEN}OK${NC} QWEN.md (instrucciones globales optimizadas)"
+# OMNICODER.md
+if [[ -f "$REPO_DIR/OMNICODER.md" ]]; then
+    cp "$REPO_DIR/OMNICODER.md" "$HOME/.omnicoder/OMNICODER.md"
+    echo -e "  ${GREEN}OK${NC} OMNICODER.md (instrucciones globales optimizadas)"
 fi
 
 # settings.json - merge hooks si ya existe
-SETTINGS_FILE="$HOME/.qwen/settings.json"
+SETTINGS_FILE="$HOME/.omnicoder/settings.json"
 if [[ -f "$SETTINGS_FILE" ]] && [[ "$FORCE" != true ]]; then
     # Verificar si ya tiene hooks
     if grep -q '"hooks"' "$SETTINGS_FILE" 2>/dev/null; then
@@ -388,7 +388,7 @@ else
 fi
 
 # Crear directorio de logs
-mkdir -p "$HOME/.qwen/logs"
+mkdir -p "$HOME/.omnicoder/logs"
 
 # ──────────────────────────────────────────────────────────
 # PASO 9: Instalar memoria persistente (skeleton)
@@ -396,19 +396,19 @@ mkdir -p "$HOME/.qwen/logs"
 echo ""
 echo -e "${BLUE}[9/10]${NC} Instalando memoria persistente..."
 
-QWEN_MEM_DIR="$HOME/.qwen/memory"
-mkdir -p "$QWEN_MEM_DIR"
+OMNI_MEM_DIR="$HOME/.omnicoder/memory"
+mkdir -p "$OMNI_MEM_DIR"
 
 if [[ -d "$REPO_DIR/memory" ]]; then
     for f in "$REPO_DIR/memory/"*.md; do
         [[ -f "$f" ]] || continue
-        DEST="$QWEN_MEM_DIR/$(basename "$f")"
+        DEST="$OMNI_MEM_DIR/$(basename "$f")"
         # No sobreescribir memoria existente salvo con --force
         if [[ -f "$DEST" ]] && [[ "$FORCE" != true ]]; then
             echo -e "  ${YELLOW}!!${NC} $(basename "$f") ya existe (no sobreescrito)"
         else
             cp "$f" "$DEST"
-            echo -e "  ${GREEN}OK${NC} $(basename "$f") -> ~/.qwen/memory/"
+            echo -e "  ${GREEN}OK${NC} $(basename "$f") -> ~/.omnicoder/memory/"
         fi
     done
 fi
@@ -432,8 +432,8 @@ fi
 echo ""
 echo -e "${BLUE}[11/11]${NC} Setup de provider (API key)..."
 
-if [[ -f "$HOME/.qwen/.env" ]] && [[ "$FORCE" != true ]]; then
-    echo -e "  ${YELLOW}!!${NC} Ya existe ~/.qwen/.env (provider configurado)"
+if [[ -f "$HOME/.omnicoder/.env" ]] && [[ "$FORCE" != true ]]; then
+    echo -e "  ${YELLOW}!!${NC} Ya existe ~/.omnicoder/.env (provider configurado)"
     echo -e "     ${DIM}Para cambiar: bash scripts/setup-provider.sh${NC}"
 else
     echo ""
@@ -457,20 +457,20 @@ echo ""
 echo -e "${GREEN}${BOLD}"
 cat << 'DONE'
   ╔══════════════════════════════════════════════════╗
-  ║         INSTALACION COMPLETADA v3.5.1            ║
+  ║         INSTALACION COMPLETADA v4.0.0            ║
   ╚══════════════════════════════════════════════════╝
 DONE
 echo -e "${NC}"
 
 echo -e "  ${CYAN}Componentes instalados:${NC}"
-echo -e "    Agentes:      ${BOLD}$(ls "$HOME/.qwen/agents/"*.md 2>/dev/null | wc -l)${NC} -> ~/.qwen/agents/"
-echo -e "    Skills:       ${BOLD}$(ls -d "$HOME/.qwen/skills/"*/ 2>/dev/null | wc -l)${NC} -> ~/.qwen/skills/"
-echo -e "    Hooks:        ${BOLD}$(ls "$HOME/.qwen/hooks/"*.sh 2>/dev/null | wc -l)${NC} -> ~/.qwen/hooks/"
-echo -e "    Commands:     ${BOLD}$(ls "$HOME/.qwen/commands/"*.md 2>/dev/null | wc -l)${NC} -> ~/.qwen/commands/"
-echo -e "    Config:       ${BOLD}QWEN.md + settings.json${NC}"
+echo -e "    Agentes:      ${BOLD}$(ls "$HOME/.omnicoder/agents/"*.md 2>/dev/null | wc -l)${NC} -> ~/.omnicoder/agents/"
+echo -e "    Skills:       ${BOLD}$(ls -d "$HOME/.omnicoder/skills/"*/ 2>/dev/null | wc -l)${NC} -> ~/.omnicoder/skills/"
+echo -e "    Hooks:        ${BOLD}$(ls "$HOME/.omnicoder/hooks/"*.sh 2>/dev/null | wc -l)${NC} -> ~/.omnicoder/hooks/"
+echo -e "    Commands:     ${BOLD}$(ls "$HOME/.omnicoder/commands/"*.md 2>/dev/null | wc -l)${NC} -> ~/.omnicoder/commands/"
+echo -e "    Config:       ${BOLD}OMNICODER.md + settings.json${NC}"
 echo ""
 echo -e "  ${YELLOW}${BOLD}Para empezar:${NC}"
-echo -e "    ${BOLD}qwen${NC}                          # Iniciar Qwen Code"
+echo -e "    ${BOLD}qwen${NC}                          # Iniciar OmniCoder"
 echo -e "    ${BOLD}/agents manage${NC}                 # Ver agentes disponibles"
 echo -e "    ${BOLD}/skills${NC}                        # Ver skills disponibles"
 echo -e "    ${BOLD}/review${NC}                        # Code review del diff actual"
@@ -493,8 +493,8 @@ echo -e "    ${DIM}subagent-error-recover${NC}  Detecta errores 400 en subagents
 echo -e "    ${DIM}+ 6 hooks de aprendizaje (trajectories/learned/patterns/...)${NC}"
 echo ""
 echo -e "  ${YELLOW}${BOLD}Provider activo:${NC}"
-if [[ -f "$HOME/.qwen/.env" ]]; then
-    grep "^OPENAI_MODEL=" "$HOME/.qwen/.env" 2>/dev/null | sed 's/^/    /'
+if [[ -f "$HOME/.omnicoder/.env" ]]; then
+    grep "^OPENAI_MODEL=" "$HOME/.omnicoder/.env" 2>/dev/null | sed 's/^/    /'
 else
     echo -e "    ${RED}(no configurado)${NC} -> bash scripts/setup-provider.sh"
 fi

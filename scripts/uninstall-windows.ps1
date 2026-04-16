@@ -1,5 +1,5 @@
 # ============================================================
-# Qwen Con Poderes v2 - Desinstalador para Windows (PowerShell)
+# OmniCoder v4.0 - Desinstalador para Windows (PowerShell)
 # ============================================================
 # Uso: .\scripts\uninstall-windows.ps1 [-Force]
 #   -Force : No pide confirmacion
@@ -12,19 +12,19 @@ param(
 $ErrorActionPreference = "Stop"
 
 Write-Host ""
-Write-Host "=== Qwen Con Poderes v2 - Desinstalador (Windows) ===" -ForegroundColor Cyan
+Write-Host "=== OmniCoder v4.0 - Desinstalador (Windows) ===" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Esto eliminara:" -ForegroundColor Yellow
-Write-Host "  - Todos los agentes de %USERPROFILE%\.qwen\agents\"
-Write-Host "  - Todas las skills de %USERPROFILE%\.qwen\skills\"
-Write-Host "  - Todos los hooks de %USERPROFILE%\.qwen\hooks\"
-Write-Host "  - Todos los commands de %USERPROFILE%\.qwen\commands\"
-Write-Host "  - El archivo QWEN.md de %USERPROFILE%\.qwen\"
-Write-Host "  - Los logs de %USERPROFILE%\.qwen\logs\"
+Write-Host "  - Todos los agentes de %USERPROFILE%\.omnicoder\agents\"
+Write-Host "  - Todas las skills de %USERPROFILE%\.omnicoder\skills\"
+Write-Host "  - Todos los hooks de %USERPROFILE%\.omnicoder\hooks\"
+Write-Host "  - Todos los commands de %USERPROFILE%\.omnicoder\commands\"
+Write-Host "  - El archivo OMNICODER.md de %USERPROFILE%\.omnicoder\"
+Write-Host "  - Los logs de %USERPROFILE%\.omnicoder\logs\"
 Write-Host "  - La seccion 'hooks' de settings.json (si existe)"
 Write-Host ""
 Write-Host "NO eliminara:" -ForegroundColor Green
-Write-Host "  - Qwen Code CLI"
+Write-Host "  - OmniCoder CLI"
 Write-Host "  - settings.json (solo limpia la seccion hooks)"
 Write-Host "  - Tus handoff documents"
 Write-Host ""
@@ -37,7 +37,7 @@ if (-not $Force) {
     }
 }
 
-$QwenDir = "$env:USERPROFILE\.qwen"
+$OmniDir = "$env:USERPROFILE\.omnicoder"
 
 function Remove-IfExists {
     param([string]$Path, [string]$Label)
@@ -47,15 +47,15 @@ function Remove-IfExists {
     }
 }
 
-Remove-IfExists "$QwenDir\agents"   "Agentes"
-Remove-IfExists "$QwenDir\skills"   "Skills"
-Remove-IfExists "$QwenDir\hooks"    "Hooks"
-Remove-IfExists "$QwenDir\commands" "Commands"
-Remove-IfExists "$QwenDir\logs"     "Logs"
-Remove-IfExists "$QwenDir\QWEN.md"  "QWEN.md"
+Remove-IfExists "$OmniDir\agents"   "Agentes"
+Remove-IfExists "$OmniDir\skills"   "Skills"
+Remove-IfExists "$OmniDir\hooks"    "Hooks"
+Remove-IfExists "$OmniDir\commands" "Commands"
+Remove-IfExists "$OmniDir\logs"     "Logs"
+Remove-IfExists "$OmniDir\OMNICODER.md"  "OMNICODER.md"
 
 # Limpiar hooks del settings.json (causa del timeout en Windows sin bash)
-$SettingsPath = "$QwenDir\settings.json"
+$SettingsPath = "$OmniDir\settings.json"
 if (Test-Path $SettingsPath) {
     try {
         $json = Get-Content $SettingsPath -Raw | ConvertFrom-Json
@@ -72,15 +72,15 @@ if (Test-Path $SettingsPath) {
 Write-Host ""
 Write-Host "Desinstalacion completada." -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Para desinstalar Qwen Code CLI:" -ForegroundColor Yellow
+Write-Host "Para desinstalar OmniCoder CLI:" -ForegroundColor Yellow
 Write-Host "  npm uninstall -g @qwen-code/qwen-code"
 Write-Host ""
 Write-Host "Para reinstalar desde Git Bash (RECOMENDADO en Windows):" -ForegroundColor Yellow
 Write-Host "  1. Instala Git for Windows: https://git-scm.com/download/win"
 Write-Host "  2. Abre 'Git Bash' (no PowerShell ni CMD)"
 Write-Host "  3. Ejecuta:"
-Write-Host "     git clone https://github.com/nicolas2601/qwen-con-poderes-.git"
-Write-Host "     cd qwen-con-poderes-"
+Write-Host "     git clone https://github.com/nicolas2601/omnicoder.git"
+Write-Host "     cd omnicoder"
 Write-Host "     chmod +x scripts/install-linux.sh"
 Write-Host "     ./scripts/install-linux.sh"
 Write-Host ""

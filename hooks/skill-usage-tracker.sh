@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Skill Usage Tracker (PostToolUse)
+# OmniCoder - Skill Usage Tracker (PostToolUse)
 # Detecta cuando el router sugirió un skill con score alto y
-# Qwen NO lo usó. Registra en ignored-skills.md para que la
+# el agente NO lo usó. Registra en ignored-skills.md para que la
 # próxima vez el router lo haga OBLIGATORIO.
 #
 # Esto cierra el loop: si ignoras 3+ veces un skill con score>=3,
@@ -12,8 +12,8 @@ set -euo pipefail
 
 INPUT=$(cat)
 
-CACHE_DIR="$HOME/.qwen/.cache"
-MEM_DIR="$HOME/.qwen/memory"
+CACHE_DIR="$HOME/.omnicoder/.cache"
+MEM_DIR="$HOME/.omnicoder/memory"
 SUGGESTIONS_LOG="$CACHE_DIR/last-suggestions.json"
 
 # No hay sugerencia previa -> nada que trackear
@@ -79,7 +79,7 @@ if [[ "$ELAPSED" -gt 30 ]] && [[ "$TOOL_NAME" =~ ^(Bash|Edit|Write)$ ]]; then
         cat > "$IGNORED_FILE" <<'EOF'
 # Skills Ignorados (tracking para enforcement)
 
-Cada vez que el router sugiere un skill con score>=3 y Qwen NO lo usa,
+Cada vez que el router sugiere un skill con score>=3 y el agente NO lo usa,
 se registra aquí. Si un skill se ignora 3+ veces, el router lo eleva a
 OBLIGATORIO automáticamente.
 

@@ -5,16 +5,16 @@ description: "Gestiona la memoria persistente: listar, ver, editar, limpiar o ex
 
 # /memory - Gestor de Memoria Persistente
 
-Herramienta para inspeccionar y mantener la memoria que Qwen Con Poderes carga en cada sesion.
+Herramienta para inspeccionar y mantener la memoria que OmniCoder carga en cada sesion.
 
 ## Ubicaciones
 
-- **Global**: `~/.qwen/memory/`
+- **Global**: `~/.omnicoder/memory/`
   - `MEMORY.md` - indice maestro
   - `feedback.md` - preferencias del usuario
   - `learned.md` - errores aprendidos (auto-generado por error-learner.sh)
   - `project_*.md` - memoria de proyectos especificos
-- **Proyecto actual**: `./.qwen/memory/*.md`
+- **Proyecto actual**: `./.omnicoder/memory/*.md`
 
 ## Subcomandos
 
@@ -22,8 +22,8 @@ Herramienta para inspeccionar y mantener la memoria que Qwen Con Poderes carga e
 Muestra todos los archivos de memoria con tamano y fecha de modificacion.
 
 ```bash
-ls -lh ~/.qwen/memory/ 2>/dev/null
-ls -lh ./.qwen/memory/ 2>/dev/null
+ls -lh ~/.omnicoder/memory/ 2>/dev/null
+ls -lh ./.omnicoder/memory/ 2>/dev/null
 ```
 
 ### `/memory show <archivo>`
@@ -42,7 +42,7 @@ Elimina entradas de `learned.md` con mas de 30 dias o con sig duplicado.
 Cuenta entradas por archivo, errores mas frecuentes, skills mas sugeridos.
 
 ### `/memory export`
-Crea un tar.gz en `~/.qwen/memory-export-{fecha}.tar.gz` con toda la memoria (para backup).
+Crea un tar.gz en `~/.omnicoder/memory-export-{fecha}.tar.gz` con toda la memoria (para backup).
 
 ### `/memory import <archivo.tar.gz>`
 Restaura un export previo (merge, no sobreescribe).

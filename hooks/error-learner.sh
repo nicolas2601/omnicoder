@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Error Learner (PostToolUse)
+# OmniCoder - Error Learner (PostToolUse)
 # Detecta fallas en tools (exit != 0, stderr con error/exception)
-# y registra patrones en ~/.qwen/memory/learned.md para evitar
+# y registra patrones en ~/.omnicoder/memory/learned.md para evitar
 # repetir los mismos errores en el futuro.
 # ============================================================
 set -euo pipefail
@@ -27,7 +27,7 @@ fi
 
 [[ "$IS_ERROR" == "0" ]] && exit 0
 
-MEM_DIR="$HOME/.qwen/memory"
+MEM_DIR="$HOME/.omnicoder/memory"
 mkdir -p "$MEM_DIR"
 LEARNED_FILE="$MEM_DIR/learned.md"
 

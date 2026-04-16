@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Session Init (SessionStart)
+# OmniCoder - Session Init (SessionStart)
 # Carga automaticamente el ultimo handoff y contexto del proyecto
 # ============================================================
 set -euo pipefail
@@ -11,7 +11,7 @@ CWD=$(echo "$INPUT" | jq -r '.cwd // ""')
 CONTEXT=""
 
 # Buscar ultimo handoff del proyecto actual
-HANDOFF_DIR="$CWD/.qwen"
+HANDOFF_DIR="$CWD/.omnicoder"
 if [[ -d "$HANDOFF_DIR" ]]; then
     LATEST_HANDOFF=$(ls -t "$HANDOFF_DIR"/handoff-*.md 2>/dev/null | head -1)
     if [[ -n "$LATEST_HANDOFF" ]]; then

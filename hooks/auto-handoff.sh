@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Auto Handoff (Stop)
+# OmniCoder - Auto Handoff (Stop)
 # Genera recordatorio de handoff al finalizar sesiones productivas
 # ============================================================
 set -euo pipefail
@@ -9,7 +9,7 @@ INPUT=$(cat)
 CWD=$(echo "$INPUT" | jq -r '.cwd // ""')
 
 # Contar operaciones de la sesion actual
-LOG_FILE="$HOME/.qwen/logs/operations.log"
+LOG_FILE="$HOME/.omnicoder/logs/operations.log"
 SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // ""')
 
 if [[ -f "$LOG_FILE" ]] && [[ -n "$SESSION_ID" ]]; then

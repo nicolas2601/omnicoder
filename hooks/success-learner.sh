@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Success Learner (PostToolUse)
+# OmniCoder - Success Learner (PostToolUse)
 # Captura trayectorias EXITOSAS (tests pasan, build ok, commits
 # limpios) y las destila en memory/trajectories.md como patrones
 # reutilizables (ExpeL / ReasoningBank pattern).
@@ -44,7 +44,7 @@ fi
 
 [[ -z "$SIGNAL" ]] && exit 0
 
-MEM_DIR="$HOME/.qwen/memory"
+MEM_DIR="$HOME/.omnicoder/memory"
 mkdir -p "$MEM_DIR"
 TRAJ_FILE="$MEM_DIR/trajectories.md"
 

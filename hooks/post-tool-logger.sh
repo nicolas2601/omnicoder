@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Post-Tool Logger (PostToolUse)
+# OmniCoder - Post-Tool Logger (PostToolUse)
 # Registra operaciones para auditoria y metricas
 # ============================================================
 set -euo pipefail
 
 INPUT=$(cat)
 
-LOG_DIR="$HOME/.qwen/logs"
+LOG_DIR="$HOME/.omnicoder/logs"
 mkdir -p "$LOG_DIR"
 
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')

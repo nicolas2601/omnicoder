@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================
-REM Qwen Con Poderes v2 - Desinstalador para Windows (CMD)
+REM OmniCoder v4.0 - Desinstalador para Windows (CMD)
 REM Wrapper que invoca uninstall-windows.ps1
 REM ============================================================
 

@@ -10,7 +10,7 @@ Genera un documento de handoff para que la proxima sesion pueda retomar sin perd
 ## Instrucciones
 
 1. Analiza la conversacion actual y los cambios realizados
-2. Crea el archivo `.qwen/handoff-{YYYYMMDD-HHmm}.md` con este formato:
+2. Crea el archivo `.omnicoder/handoff-{YYYYMMDD-HHmm}.md` con este formato:
 
 ```markdown
 # Handoff - [fecha y hora]

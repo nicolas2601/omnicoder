@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Subagent Verifier (PostToolUse matcher=Task)
+# OmniCoder - Subagent Verifier (PostToolUse matcher=Task)
 #
 # Verifica que los subagentes declararon evidencia real de su trabajo.
 # Parsea el bloque <verification>...</verification> del output del
@@ -23,7 +23,7 @@ SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // "unknown"')
 CWD=$(echo "$INPUT" | jq -r '.cwd // ""')
 [[ -z "$CWD" ]] && CWD="$PWD"
 
-LOG_DIR="$HOME/.qwen/logs"
+LOG_DIR="$HOME/.omnicoder/logs"
 VERIFY_LOG="$LOG_DIR/subagent-verify.log"
 mkdir -p "$LOG_DIR"
 

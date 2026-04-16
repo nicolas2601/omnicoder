@@ -1,4 +1,4 @@
-# Qwen Code - Instrucciones Globales (Qwen Con Poderes v2)
+# OmniCoder - Instrucciones Globales (v4)
 
 ## Idioma
 Siempre responde en Espanol.
@@ -28,7 +28,7 @@ Reglas:
 
 ### Handoff Documents
 Cuando el contexto se acerque al limite o antes de /compress:
-1. Crea un archivo `.qwen/handoff-{timestamp}.md` con:
+1. Crea un archivo `.omnicoder/handoff-{timestamp}.md` con:
    - Objetivo actual
    - Lo que funciono y lo que no
    - Proximos pasos concretos
@@ -42,10 +42,10 @@ Cuando el contexto se acerque al limite o antes de /compress:
 
 ## Skills y Agentes Disponibles
 
-### 193 Skills Instaladas (`~/.qwen/skills/`)
+### 193 Skills Instaladas (`~/.omnicoder/skills/`)
 Invoca con `/skills <nombre>` o deja que se active automaticamente.
 
-### 168 SubAgentes Instalados (`~/.qwen/agents/`)
+### 168 SubAgentes Instalados (`~/.omnicoder/agents/`)
 Gestiona con `/agents manage` o `/agents create`.
 
 ### Catalogo Rapido por Dominio
@@ -108,9 +108,9 @@ summary: resumen breve
 3. Si falta trabajo real, re-invoca el subagent con instrucciones especificas de lo que falta.
 4. Comando manual de auditoria: `/verify-last`.
 
-## Sistema Cognitivo v3 — Aprendizaje Adaptativo
+## Sistema Cognitivo v4 — Aprendizaje Adaptativo
 
-Qwen Con Poderes v3 implementa un sistema cognitivo completo inspirado en
+OmniCoder v4 implementa un sistema cognitivo completo inspirado en
 **ReasoningBank** (2025), **Reflexion** (Shinn et al. 2023), **ExpeL**, y
 **AgentBank** (NeurIPS 2024). No solo tiene memoria: aprende, reflexiona,
 destila patrones y ajusta comportamiento adaptativamente.
@@ -118,23 +118,23 @@ destila patrones y ajusta comportamiento adaptativamente.
 ### Arquitectura de Memoria (Dual: Episodic + Semantic)
 
 **Memoria Episódica** (casos específicos):
-- `~/.qwen/memory/trajectories.md` — Secuencias de tools exitosas (success-learner.sh)
-- `~/.qwen/memory/learned.md` — Errores con contexto (error-learner.sh)
-- `~/.qwen/memory/ignored-skills.md` — Skills sugeridos que no usaste
-- `~/.qwen/memory/causal-edges.md` — Pares "si X falla → probar Y" (causal-learner.sh)
+- `~/.omnicoder/memory/trajectories.md` — Secuencias de tools exitosas (success-learner.sh)
+- `~/.omnicoder/memory/learned.md` — Errores con contexto (error-learner.sh)
+- `~/.omnicoder/memory/ignored-skills.md` — Skills sugeridos que no usaste
+- `~/.omnicoder/memory/causal-edges.md` — Pares "si X falla → probar Y" (causal-learner.sh)
 
 **Memoria Semántica** (reglas generalizables):
-- `~/.qwen/memory/patterns.md` — Reglas destiladas (auto-promovidas cada 5 reflexiones)
-- `~/.qwen/memory/feedback.md` — Feedback explícito del usuario
-- `~/.qwen/memory/reflections.md` — Auto-reflexiones de sesión
-- `~/.qwen/memory/skill-stats.json` — Contadores usado/ignorado por skill
-- `~/.qwen/memory/MEMORY.md` — Índice maestro
+- `~/.omnicoder/memory/patterns.md` — Reglas destiladas (auto-promovidas cada 5 reflexiones)
+- `~/.omnicoder/memory/feedback.md` — Feedback explícito del usuario
+- `~/.omnicoder/memory/reflections.md` — Auto-reflexiones de sesión
+- `~/.omnicoder/memory/skill-stats.json` — Contadores usado/ignorado por skill
+- `~/.omnicoder/memory/MEMORY.md` — Índice maestro
 
 **Regla dura:** si la memoria dice algo, ASUME. No preguntes lo ya sabido.
 
-### Router v3 — Hybrid Scoring con Enforcement Adaptativo
+### Router v4 — Hybrid Scoring con Enforcement Adaptativo
 
-`skill-router.sh` v3 usa scoring BM25-like + bigramas + memoria feedback:
+`skill-router.sh` v4 usa scoring BM25-like + bigramas + memoria feedback:
 
 ```
 Score base = Σ(term_freq_en_desc) + 3×(token_en_nombre) + 2×(bigrama_match)
@@ -214,18 +214,18 @@ Ajustes:
 | `/deps` | Dependencias: outdated, vulnerables, unused |
 | `/plan` | Planificación estructurada |
 | `/compact` | Compresión + handoff automático |
-| `/learn` | Analiza proyecto → `./.qwen/memory/project.md` |
+| `/learn` | Analiza proyecto → `./.omnicoder/memory/project.md` |
 | `/memory` | Gestión memoria: list/show/forget/clean/stats |
-| `/reflect` | **v3** Reflexión manual sobre sesión actual |
-| `/patterns` | **v3** Gestión patrones semánticos (list/add/forget/distill) |
-| `/skills-stats` | **v3** Dashboard: skills usados/ignorados/zombies |
-| `/meta` | **v3** Meta-análisis semanal del aprendizaje |
+| `/reflect` | **v4** Reflexión manual sobre sesión actual |
+| `/patterns` | **v4** Gestión patrones semánticos (list/add/forget/distill) |
+| `/skills-stats` | **v4** Dashboard: skills usados/ignorados/zombies |
+| `/meta` | **v4** Meta-análisis semanal del aprendizaje |
 
-## Hooks Activos (v3)
+## Hooks Activos (v4)
 
 **PreToolUse**: security-guard + pre-edit-guard
 **PostToolUse**: post-tool-logger + error-learner + **success-learner** + **skill-usage-tracker** + **causal-learner**
-**UserPromptSubmit**: **skill-router v3** (hybrid scoring + enforcement)
+**UserPromptSubmit**: **skill-router v4** (hybrid scoring + enforcement)
 **SessionStart**: session-init + memory-loader (carga patterns + feedback + learned)
 **Stop**: auto-handoff + **reflection** (auto-destila cada 5 sesiones)
 **Notification**: notify-desktop

@@ -16,14 +16,14 @@ Comprime el contexto de forma inteligente preservando el progreso.
 
 ### 2. Generar handoff automatico
 Antes de comprimir, crea un handoff con todo el contexto critico:
-- Archivo: `.qwen/handoff-{timestamp}.md`
+- Archivo: `.omnicoder/handoff-{timestamp}.md`
 - Contenido: objetivo, progreso, decisiones, proximos pasos
 
 ### 3. Comprimir
 Ejecuta `/compress` con un resumen que incluya:
 - Objetivo principal de la sesion
 - Estado actual del trabajo
-- Referencia al handoff: "Ver .qwen/handoff-{timestamp}.md para contexto completo"
+- Referencia al handoff: "Ver .omnicoder/handoff-{timestamp}.md para contexto completo"
 
 ### 4. Confirmar
 Informa al usuario:

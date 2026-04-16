@@ -1,46 +1,49 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.0.0-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/version-4.0.0-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/agents-168-green?style=flat-square" alt="Agents">
   <img src="https://img.shields.io/badge/skills-193-green?style=flat-square" alt="Skills">
-  <img src="https://img.shields.io/badge/hooks-13-orange?style=flat-square" alt="Hooks">
-  <img src="https://img.shields.io/badge/commands-17-purple?style=flat-square" alt="Commands">
+  <img src="https://img.shields.io/badge/hooks-16-orange?style=flat-square" alt="Hooks">
+  <img src="https://img.shields.io/badge/commands-20-purple?style=flat-square" alt="Commands">
   <img src="https://img.shields.io/badge/aprendizaje-adaptativo-red?style=flat-square" alt="Learning">
   <img src="https://img.shields.io/badge/memoria-dual-yellow?style=flat-square" alt="Memory">
   <img src="https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform">
 </p>
 
-<h1 align="center">Qwen Con Poderes v3</h1>
+<h1 align="center">⚡ OmniCoder v4</h1>
+<p align="center"><em>Tu terminal, 168 expertos. Cero suscripciones.</em></p>
 
 <p align="center">
   <strong>168 agentes + 193 skills + 16 hooks + 20 commands</strong> para <a href="https://github.com/QwenLM/qwen-code">Qwen Code CLI</a><br>
-  Sistema cognitivo completo: memoria dual, aprendizaje adaptativo, router con enforcement, y destilación automática de patrones.
+  Sistema cognitivo completo: memoria dual, aprendizaje adaptativo, router con enforcement, y destilacion automatica de patrones.<br>
+  <strong>Model-agnostic</strong>: funciona con cualquier API compatible con OpenAI (NVIDIA, Gemini, MiniMax, DeepSeek, OpenRouter, Ollama).
 </p>
 
-## Novedades v3.5 — Fix Error 400 en Subagentes (modelo gratuito)
+## Novedades v4.0 — Model-Agnostic + Multi-Provider
 
-El modelo `qwen3-coder` gratuito falla con `InternalError.Algo.InvalidParameter:
-function.arguments must be JSON` cuando recibe tool_calls anidados con prompts
-largos o code-blocks embebidos. v3.5 lo resuelve sin cambiar de modelo:
+OmniCoder v4 es completamente **model-agnostic**. Ya no dependes de un solo proveedor:
 
+- **Multi-provider nativo**: NVIDIA NIM, Google Gemini, MiniMax, DeepSeek, OpenRouter, Ollama, y cualquier API compatible con OpenAI.
+- **Switch de proveedor en caliente**: cambia entre proveedores sin reiniciar la sesion.
+- **Sin suscripciones obligatorias**: usa modelos locales (Ollama), tiers gratuitos, o tu API key preferida.
 - **`subagent-inject.sh`** ahora detecta prompts >4000 chars o con >6 backticks y
-  advierte al orquestador ANTES de spawnear (evita el error preventivamente).
-- **`subagent-error-recover.sh`** (nuevo, PostToolUse Task) detecta 4 patrones
+  advierte al orquestador ANTES de spawnear (evita errores preventivamente).
+- **`subagent-error-recover.sh`** (PostToolUse Task) detecta 4 patrones
   de error 400 y emite `[SUBAGENT-400-DETECTADO]` con plan de recuperacion:
   acortar prompt, quitar code-fences, usar Edit directo, o secuencial en vez
   de paralelo con 3+ subagents.
-- Contador de errores en `~/.qwen/logs/subagent-400-errors.log`. Tras 3+ errores
+- Contador de errores en `~/.omnicoder/logs/subagent-400-errors.log`. Tras 3+ errores
   sugiere `turbo-mode on` o modelo alternativo.
 - El agente principal ya NO puede reportar "listo" tras un fallo silencioso.
 
-## Novedades v3.0 — Sistema Cognitivo Adaptativo
+## Sistema Cognitivo Adaptativo
 
 Basado en papers **ReasoningBank** (2025), **Reflexion** (NeurIPS 2023), **ExpeL** y **AgentBank** (NeurIPS 2024):
 
-### Router v3 — Hybrid Scoring + Enforcement Adaptativo
+### Router v4 — Hybrid Scoring + Enforcement Adaptativo
 - BM25-like scoring + bigramas + nombre + memoria feedback
-- 3 niveles: **HARD** (score≥6, obligatorio), **SOFT** (3-5, sugerido), **HINT** (<3)
-- Feedback loop: skill ignorado 3+ veces → router lo eleva a HARD automáticamente
+- 3 niveles: **HARD** (score>=6, obligatorio), **SOFT** (3-5, sugerido), **HINT** (<3)
+- Feedback loop: skill ignorado 3+ veces -> router lo eleva a HARD automaticamente
 
 ### Memoria Dual (Episodic + Semantic)
 - **Episodic**: `trajectories.md`, `learned.md`, `causal-edges.md`, `ignored-skills.md`
@@ -48,16 +51,16 @@ Basado en papers **ReasoningBank** (2025), **Reflexion** (NeurIPS 2023), **ExpeL
 
 ### 5 Hooks de Aprendizaje
 - `error-learner.sh` — Fallas con dedup md5
-- `success-learner.sh` — **NUEVO** captura `tests-pass`, `build-ok`, `commit`
-- `skill-usage-tracker.sh` — **NUEVO** detecta si ignoraste sugerencia del router
-- `causal-learner.sh` — **NUEVO** aprende "si X falla → probar Y"
-- `reflection.sh` — **NUEVO** auto-reflexión al cerrar sesión + destila cada 5
+- `success-learner.sh` — Captura `tests-pass`, `build-ok`, `commit`
+- `skill-usage-tracker.sh` — Detecta si ignoraste sugerencia del router
+- `causal-learner.sh` — Aprende "si X falla -> probar Y"
+- `reflection.sh` — Auto-reflexion al cerrar sesion + destila cada 5
 
-### 4 Nuevos Slash Commands
-- `/reflect` — Reflexión manual estilo Reflexion
-- `/patterns` — Gestión de patrones semánticos
+### 4 Slash Commands Cognitivos
+- `/reflect` — Reflexion manual estilo Reflexion
+- `/patterns` — Gestion de patrones semanticos
 - `/skills-stats` — Dashboard de uso (usados/ignorados/zombies)
-- `/meta` — Meta-análisis semanal del aprendizaje
+- `/meta` — Meta-analisis semanal del aprendizaje
 
 ### Fix Timeout
 - Config `contentGenerator.timeout: 180000` (3 min) evita el error "Streaming request timeout after 45s"
@@ -72,33 +75,6 @@ Basado en papers **ReasoningBank** (2025), **Reflexion** (NeurIPS 2023), **ExpeL
   <a href="#commands">Commands</a> &bull;
   <a href="#comparativa">Comparativa</a>
 </p>
-
----
-
-## Novedades v2.1 (Memoria + Razonamiento)
-
-- **Skill Router v2**: scoring semantico por keywords contra las 193 descriptions de skills + 168 agentes (indice cacheado en `~/.qwen/.cache/`). Antes era regex con 12 patterns; ahora descubre skills nuevas sin tocar codigo.
-- **Memoria persistente** (`~/.qwen/memory/`): MEMORY.md, feedback.md, learned.md, project_*.md. Se inyecta automaticamente al inicio de cada sesion via `memory-loader.sh`.
-- **Error Learner**: hook `error-learner.sh` detecta fallos en PostToolUse (exit != 0, stderr con error) y los registra en `learned.md` con deduplicacion por hash. Evita repetir los mismos errores.
-- **`/learn`**: comando que analiza el proyecto actual (package.json, README, git log) y escribe `./.qwen/memory/project.md` con stack, comandos, convenciones y archivos criticos.
-- **`/memory`**: gestor de memoria (list, show, forget, clean, stats, export, import).
-
-## Por que v2?
-
-La v1 era un paquete de agentes y skills. La v2 es un **sistema completo de optimizacion** inspirado en las mejores practicas del ecosistema de agentes AI:
-
-| Mejora | v1 | v2 | Impacto |
-|--------|----|----|---------|
-| Agentes | 168 | 168 | Misma cobertura |
-| Skills | 193 | 193 | Misma cobertura |
-| Hooks inteligentes | 0 | 7 | Seguridad + auto-routing |
-| Slash commands | 0 | 11 | Workflows profesionales |
-| Token optimization | No | Si | ~30-40% menos tokens |
-| Security hooks | No | Si | Bloqueo de secrets y comandos peligrosos |
-| Auto-routing de skills | No | Si | Sugiere skills automaticamente |
-| Handoff entre sesiones | No | Si | Continuidad sin perder contexto |
-| Doctor/diagnostico | No | Si | Auto-verificacion |
-| settings.json con hooks | No | Si | Zero-config |
 
 ---
 
@@ -155,7 +131,7 @@ El sistema optimiza tokens automaticamente clasificando cada tarea:
 
 **Linux / macOS:**
 ```bash
-git clone https://github.com/nicolas2601/qwen-con-poderes-.git && cd qwen-con-poderes- && chmod +x scripts/install-linux.sh && ./scripts/install-linux.sh
+git clone https://github.com/nicolas2601/omnicoder.git && cd omnicoder && chmod +x scripts/install-linux.sh && ./scripts/install-linux.sh
 ```
 
 **Windows (RECOMENDADO: Git Bash):**
@@ -164,29 +140,29 @@ git clone https://github.com/nicolas2601/qwen-con-poderes-.git && cd qwen-con-po
 
 ```bash
 # Abre "Git Bash" (NO PowerShell, NO CMD) y ejecuta:
-git clone https://github.com/nicolas2601/qwen-con-poderes-.git && cd qwen-con-poderes- && chmod +x scripts/install-linux.sh && ./scripts/install-linux.sh
+git clone https://github.com/nicolas2601/omnicoder.git && cd omnicoder && chmod +x scripts/install-linux.sh && ./scripts/install-linux.sh
 ```
 
 **Windows (CMD) — solo si ya tienes bash/WSL en PATH:**
 ```cmd
-git clone https://github.com/nicolas2601/qwen-con-poderes-.git && cd qwen-con-poderes- && scripts\install-windows.bat
+git clone https://github.com/nicolas2601/omnicoder.git && cd omnicoder && scripts\install-windows.bat
 ```
 
 **Windows (PowerShell) — solo si ya tienes bash/WSL en PATH:**
 ```powershell
-git clone https://github.com/nicolas2601/qwen-con-poderes-.git; cd qwen-con-poderes-; .\scripts\install-windows.ps1
+git clone https://github.com/nicolas2601/omnicoder.git; cd omnicoder; .\scripts\install-windows.ps1
 ```
 
 > Si instalaste con `.bat` o `.ps1` y ves `Request timed out waiting for hook-execution-response`, significa que falta `bash`. Desinstala (ver seccion [Desinstalar](#desinstalar)) y reinstala desde Git Bash.
 
 Eso es todo. El instalador hace todo automaticamente:
 1. Verifica Node.js v20+, npm, git, jq
-2. Instala Qwen Code CLI si no esta
-3. Copia 168 agentes a `~/.qwen/agents/`
-4. Copia 193 skills a `~/.qwen/skills/`
-5. Copia 7 hooks a `~/.qwen/hooks/`
-6. Copia 13 commands a `~/.qwen/commands/`
-7. Configura QWEN.md + settings.json con hooks
+2. Instala Qwen Code CLI si no esta (upstream: `@qwen-code/qwen-code`)
+3. Copia 168 agentes a `~/.omnicoder/agents/`
+4. Copia 193 skills a `~/.omnicoder/skills/`
+5. Copia 16 hooks a `~/.omnicoder/hooks/`
+6. Copia 20 commands a `~/.omnicoder/commands/`
+7. Configura OMNICODER.md + settings.json con hooks
 8. Crea directorio de logs
 
 ### Requisitos previos
@@ -224,18 +200,27 @@ chmod +x scripts/turbo-mode.sh && ./scripts/turbo-mode.sh on
 ## Que se instala
 
 ```
-~/.qwen/
+~/.omnicoder/
 ├── agents/          168 archivos .md de subagentes
 ├── skills/          193 carpetas con SKILL.md
-├── hooks/           7 hooks de automatizacion
+├── hooks/           16 hooks de automatizacion
 │   ├── security-guard.sh      Bloquea comandos peligrosos
 │   ├── pre-edit-guard.sh      Protege archivos sensibles
 │   ├── post-tool-logger.sh    Logging de operaciones
 │   ├── skill-router.sh        Auto-routing de skills
 │   ├── session-init.sh        Carga contexto anterior
 │   ├── auto-handoff.sh        Guarda progreso al salir
-│   └── notify-desktop.sh      Notificaciones nativas
-├── commands/        11 slash commands profesionales
+│   ├── notify-desktop.sh      Notificaciones nativas
+│   ├── error-learner.sh       Aprende de fallas
+│   ├── success-learner.sh     Aprende de exitos
+│   ├── skill-usage-tracker.sh Tracking de skills ignoradas
+│   ├── causal-learner.sh      Aprendizaje causal
+│   ├── reflection.sh          Auto-reflexion
+│   ├── subagent-inject.sh     Validacion pre-spawn
+│   ├── subagent-error-recover.sh  Recuperacion de errores 400
+│   ├── memory-loader.sh       Carga memoria al inicio
+│   └── provider-switch.sh     Cambio de proveedor en caliente
+├── commands/        20 slash commands profesionales
 │   ├── review.md              Code review P0-P3
 │   ├── ship.md                Test+lint+commit+push
 │   ├── handoff.md             Continuidad entre sesiones
@@ -246,8 +231,17 @@ chmod +x scripts/turbo-mode.sh && ./scripts/turbo-mode.sh on
 │   ├── perf.md                Analisis de performance
 │   ├── compact.md             Compresion inteligente
 │   ├── doc-sync.md            Sincronizar documentacion
-│   └── plan.md                Planificacion estructurada
-├── QWEN.md          Instrucciones globales optimizadas
+│   ├── plan.md                Planificacion estructurada
+│   ├── reflect.md             Reflexion manual
+│   ├── patterns.md            Gestion de patrones
+│   ├── skills-stats.md        Dashboard de uso
+│   ├── meta.md                Meta-analisis semanal
+│   ├── learn.md               Aprende del proyecto actual
+│   ├── memory.md              Gestor de memoria
+│   ├── agents.md              Gestor de agentes
+│   ├── provider.md            Cambio de proveedor
+│   └── turbo.md               Toggle turbo mode
+├── OMNICODER.md     Instrucciones globales optimizadas
 ├── settings.json    Config con hooks pre-configurados
 └── logs/            Directorio de auditoria
 ```
@@ -258,13 +252,13 @@ chmod +x scripts/turbo-mode.sh && ./scripts/turbo-mode.sh on
 
 ### Hooks Inteligentes
 
-Los hooks se ejecutan automaticamente en puntos clave del ciclo de Qwen Code:
+Los hooks se ejecutan automaticamente en puntos clave del ciclo de OmniCoder:
 
 | Hook | Evento | Funcion |
 |------|--------|---------|
 | `security-guard` | PreToolUse (Bash) | Bloquea `rm -rf /`, fork bombs, `curl\|sh` y otros comandos peligrosos |
 | `pre-edit-guard` | PreToolUse (Edit/Write) | Impide edicion de `.env`, `credentials.json`, keys SSH. Detecta API keys en contenido |
-| `post-tool-logger` | PostToolUse | Registra cada operacion en `~/.qwen/logs/` con rotacion automatica |
+| `post-tool-logger` | PostToolUse | Registra cada operacion en `~/.omnicoder/logs/` con rotacion automatica |
 | `skill-router` | UserPromptSubmit | Analiza tu prompt y sugiere el skill/agente mas relevante automaticamente |
 | `session-init` | SessionStart | Detecta handoff previo, stack del proyecto, y branch actual |
 | `auto-handoff` | Stop | Si la sesion fue productiva (5+ operaciones), sugiere crear handoff |
@@ -285,10 +279,19 @@ Los hooks se ejecutan automaticamente en puntos clave del ciclo de Qwen Code:
 | `/compact` | Comprime contexto con handoff automatico |
 | `/doc-sync` | Sincroniza documentacion con el codigo actual |
 | `/plan` | Descompone tareas complejas en pasos ejecutables |
+| `/reflect` | Reflexion manual estilo Reflexion |
+| `/patterns` | Gestion de patrones semanticos |
+| `/skills-stats` | Dashboard de uso de skills |
+| `/meta` | Meta-analisis semanal del aprendizaje |
+| `/learn` | Analiza proyecto y escribe contexto en memoria |
+| `/memory` | Gestor de memoria (list, show, forget, stats) |
+| `/agents` | Gestor de agentes (list, create, manage) |
+| `/provider` | Cambiar proveedor de API en caliente |
+| `/turbo` | Toggle turbo mode on/off |
 
 ### Optimizacion de Tokens
 
-Tecnicas integradas en el `QWEN.md`:
+Tecnicas integradas en el `OMNICODER.md`:
 
 1. **Routing por complejidad** - No lanza subagents para tareas simples
 2. **Lectura parcial** - Usa offset+limit en archivos grandes
@@ -323,7 +326,7 @@ Tecnicas integradas en el `QWEN.md`:
 ### Uso
 
 ```bash
-# Dentro de Qwen Code:
+# Dentro de OmniCoder:
 /agents manage                    # Ver todos los agentes
 /agents create                    # Crear uno nuevo
 
@@ -356,42 +359,45 @@ Tecnicas integradas en el `QWEN.md`:
 /skills code-review
 /skills audit-website
 
-# O simplemente describe tu tarea — Qwen selecciona automaticamente
+# O simplemente describe tu tarea — OmniCoder selecciona automaticamente
 ```
 
 ---
 
 ## Comparativa
 
-### Qwen Code Solo vs Qwen Con Poderes v2
+### CLI Base vs OmniCoder v4
 
-| Feature | Qwen Code Base | Con Poderes v1 | Con Poderes v2 |
-|---------|---------------|----------------|----------------|
-| Agentes especializados | 0 | 168 | 168 |
-| Skills profesionales | 0 | 193 | 193 |
-| Security hooks | 0 | 0 | 7 |
-| Slash commands pro | 0 | 0 | 11 |
-| Token optimization | Basico | Basico | Avanzado (3 niveles) |
-| Auto-routing de skills | No | No | Si |
-| Handoff entre sesiones | No | No | Si |
-| Auditoria de operaciones | No | No | Si |
-| Doctor/diagnostico | No | No | Si |
-| Notificaciones desktop | No | No | Si |
-| settings.json pre-config | No | No | Si |
+| Feature | Qwen Code CLI | OmniCoder v4 |
+|---------|---------------|--------------|
+| Agentes especializados | 0 | 168 |
+| Skills profesionales | 0 | 193 |
+| Security hooks | 0 | 16 |
+| Slash commands pro | 0 | 20 |
+| Token optimization | Basico | Avanzado (3 niveles) |
+| Auto-routing de skills | No | Si |
+| Handoff entre sesiones | No | Si |
+| Auditoria de operaciones | No | Si |
+| Doctor/diagnostico | No | Si |
+| Notificaciones desktop | No | Si |
+| settings.json pre-config | No | Si |
+| Multi-provider | Manual | Nativo (6+ proveedores) |
+| Memoria dual | No | Si (Episodic + Semantic) |
+| Aprendizaje adaptativo | No | Si (5 hooks cognitivos) |
 
 ### vs Alternativas de pago
 
-| Feature | Alternativas de pago | Qwen Con Poderes v2 |
-|---------|---------------------|---------------------|
-| Costo del CLI | $100-200/mes | **Gratis** (1000 req/dia) |
+| Feature | Alternativas de pago | OmniCoder v4 |
+|---------|---------------------|--------------|
+| Costo del CLI | $100-200/mes | **Gratis** (usa tu proveedor) |
 | Agentes | 100+ | **168** |
 | Skills | 130+ | **193** |
-| Security hooks | Si | Si |
-| Auto-routing | Q-Learning | Pattern matching |
-| Slash commands | Via MCP | **13 nativos** |
+| Security hooks | Si | Si (16) |
+| Auto-routing | Q-Learning | Pattern matching + BM25 |
+| Slash commands | Via MCP | **20 nativos** |
 | Token optimization | 3-tier + WASM | **3 niveles + turbo mode** |
 | Handoff documents | No nativo | **Si** |
-| Multi-provider | Si | Si (OpenAI, Anthropic, Gemini, Ollama) |
+| Multi-provider | Si | **Si** (NVIDIA, Gemini, MiniMax, DeepSeek, OpenRouter, Ollama) |
 | Open source | Si | **Si** |
 
 ---
@@ -416,12 +422,12 @@ Eres un experto en [dominio]...
 2. Nunca hagas Y
 ```
 
-Guardar en `~/.qwen/agents/mi-agente.md`
+Guardar en `~/.omnicoder/agents/mi-agente.md`
 
 ### Skill custom
 
 ```bash
-mkdir -p ~/.qwen/skills/mi-skill
+mkdir -p ~/.omnicoder/skills/mi-skill
 ```
 
 ```markdown
@@ -451,17 +457,17 @@ description: "Mi slash command para [workflow]"
 2. Paso 2
 ```
 
-Guardar en `~/.qwen/commands/mi-command.md`
+Guardar en `~/.omnicoder/commands/mi-command.md`
 
 ### Hook custom
 
-Crear script en `~/.qwen/hooks/mi-hook.sh` y registrar en `settings.json`.
+Crear script en `~/.omnicoder/hooks/mi-hook.sh` y registrar en `settings.json`.
 
 ---
 
 ## Velocidad - Turbo Mode
 
-Qwen Code con OAuth puede ser lento en tareas grandes. Aqui hay varias formas de acelerarlo:
+OmniCoder con providers remotos puede ser lento en tareas grandes. Aqui hay varias formas de acelerarlo:
 
 ### Turbo Mode (un comando)
 
@@ -491,7 +497,7 @@ curl -fsSL https://ollama.com/install.sh | sh
 # Descargar modelo rapido para coding
 ollama pull qwen2.5-coder:7b
 
-# Dentro de Qwen Code, cambiar modelo:
+# Dentro de OmniCoder, cambiar modelo:
 /model
 # Seleccionar el modelo local
 ```
@@ -506,15 +512,16 @@ qwen -p "Crea un server Express basico en src/server.js" --yolo
 cat src/auth.js | qwen -p "Review de seguridad" > review.txt
 ```
 
-### Token caching (API Key > OAuth)
+### Proveedores recomendados
 
-OAuth no soporta cache de tokens. Con API key puedes lograr ~90% cache hit:
-```bash
-# Dentro de Qwen Code:
-/auth
-# Seleccionar: Alibaba Cloud Coding Plan
-# Obtener key: https://bailian.console.aliyun.com/
-```
+| Proveedor | Modelos destacados | Tier gratuito | Notas |
+|-----------|-------------------|---------------|-------|
+| **NVIDIA NIM** | qwen2.5-coder, llama-3.1 | Si (1000 req/dia) | Baja latencia |
+| **Google Gemini** | gemini-2.5-flash, gemini-2.5-pro | Si (limitado) | Contexto grande |
+| **MiniMax** | MiniMax-M2.7 | $10/mes plan | Buena relacion costo/calidad |
+| **DeepSeek** | deepseek-coder-v2 | Si (limitado) | Especializado en codigo |
+| **OpenRouter** | Multiples modelos | Varia | Agregador multi-modelo |
+| **Ollama** | qwen2.5-coder:7b, codellama | Gratis (local) | Sin internet, maxima privacidad |
 
 ### Tips de prompts rapidos
 
@@ -537,15 +544,15 @@ Bueno: "Crea el backend: server.js, routes/auth.js, routes/tasks.js, db.js"
 
 | Config | Velocidad | Costo |
 |--------|-----------|-------|
-| OAuth + hooks full | Lenta | Gratis |
-| OAuth + turbo mode | Media | Gratis |
-| API Key + turbo | Rapida | ~$0.01/req |
+| API remota + hooks full | Lenta | Varia |
+| API remota + turbo mode | Media | Varia |
+| API key dedicada + turbo | Rapida | ~$0.01/req |
 | Ollama local + turbo | Ultra rapida | Gratis |
 | Headless + Ollama | Maxima | Gratis |
 
 ### Bug conocido: Scroll
 
-En algunas terminales (especialmente en Linux/Windows), el scroll hacia arriba no funciona bien dentro de Qwen Code. Workarounds:
+En algunas terminales (especialmente en Linux/Windows), el scroll hacia arriba no funciona bien dentro del CLI. Workarounds:
 
 - **Shift+PgUp/PgDn** en vez de scroll con mouse
 - **tmux**: `Ctrl+B` luego `[` para entrar en modo scroll
@@ -557,7 +564,7 @@ En algunas terminales (especialmente en Linux/Windows), el scroll hacia arriba n
 ## Actualizar
 
 ```bash
-cd qwen-con-poderes-
+cd omnicoder
 git pull
 ./scripts/install-linux.sh --force
 ```
@@ -581,7 +588,7 @@ git pull
 scripts\uninstall-windows.bat
 ```
 
-El desinstalador elimina agentes, skills, hooks, commands, logs y limpia la seccion `hooks` del `settings.json` (causa comun del error `Request timed out waiting for hook-execution-response` en Windows sin bash). NO toca Qwen Code CLI ni tu `settings.json` completo.
+El desinstalador elimina agentes, skills, hooks, commands, logs y limpia la seccion `hooks` del `settings.json` (causa comun del error `Request timed out waiting for hook-execution-response` en Windows sin bash). NO toca el CLI base ni tu `settings.json` completo.
 
 ### Reinstalacion limpia desde Git Bash (fix del timeout en Windows)
 
@@ -595,8 +602,8 @@ Si instalaste con `.bat` o `.ps1` y tienes timeouts de hooks, sigue estos pasos:
 #    https://git-scm.com/download/win
 
 # 3. Abre "Git Bash" y reinstala con el script de Linux:
-git clone https://github.com/nicolas2601/qwen-con-poderes-.git
-cd qwen-con-poderes-
+git clone https://github.com/nicolas2601/omnicoder.git
+cd omnicoder
 chmod +x scripts/install-linux.sh
 ./scripts/install-linux.sh
 ```
@@ -606,25 +613,28 @@ chmod +x scripts/install-linux.sh
 ## FAQ
 
 **Necesito algun servicio de pago?**
-No. Funciona 100% con Qwen Code CLI y OAuth gratis (1000 req/dia).
+No. OmniCoder funciona con cualquier API compatible con OpenAI. Hay multiples proveedores con tiers gratuitos (NVIDIA NIM, DeepSeek, Gemini) o puedes usar Ollama 100% local y gratis.
 
 **Es gratis?**
-Si. Qwen Code + OAuth = gratis. Los agentes, skills, hooks y commands son archivos locales.
+Si. OmniCoder es open source. El CLI base (Qwen Code) es gratuito. Los agentes, skills, hooks y commands son archivos locales. Solo pagas si eliges un proveedor de API de pago.
 
 **Puedo usar otros modelos?**
-Si. Qwen Code soporta APIs compatibles con OpenAI, Anthropic, Gemini y mas.
+Si. OmniCoder es model-agnostic. Soporta NVIDIA NIM, Google Gemini, MiniMax, DeepSeek, OpenRouter, Ollama, y cualquier API compatible con OpenAI/Anthropic.
 
-**Los hooks ralentizan a Qwen?**
-No. Los hooks son scripts bash livianos (<50ms de ejecucion).
+**Los hooks ralentizan al CLI?**
+No. Los hooks son scripts bash livianos (<50ms de ejecucion). Usa turbo mode si quieres desactivar los no esenciales.
 
 **Necesito jq?**
 Recomendado para los hooks. Sin jq, los hooks no funcionaran pero el resto si.
+
+**Que relacion tiene con Qwen Code?**
+OmniCoder es un fork (bajo Apache 2.0) de [Qwen Code CLI](https://github.com/QwenLM/qwen-code). El comando `qwen` y el paquete `@qwen-code/qwen-code` son del proyecto upstream. OmniCoder agrega el sistema cognitivo completo (agentes, skills, hooks, commands, memoria) encima del CLI base.
 
 ---
 
 ## Creditos
 
-- [Qwen Code](https://github.com/QwenLM/qwen-code) - CLI base de Alibaba/Qwen
+- [Qwen Code](https://github.com/QwenLM/qwen-code) - CLI base (fork bajo Apache 2.0)
 - [Ruflo](https://github.com/ruvnet/ruflo) - Inspiracion para hooks y routing
 - [Awesome Qwen/AI Code](https://github.com/hesreallyhim/awesome-claude-code) - Inspiracion para commands y workflows
 - [Context Engineering Kit](https://github.com/NeoLabHQ/context-engineering-kit) - Tecnicas de token optimization
@@ -634,3 +644,5 @@ Creado por [@nicolas2601](https://github.com/nicolas2601)
 ## Licencia
 
 MIT
+
+> **Nota:** El CLI base ([Qwen Code](https://github.com/QwenLM/qwen-code)) esta licenciado bajo Apache 2.0 por Alibaba/Qwen. OmniCoder (agentes, skills, hooks, commands, configuracion) esta bajo licencia MIT. Se mantiene la atribucion requerida por Apache 2.0 para el codigo upstream.

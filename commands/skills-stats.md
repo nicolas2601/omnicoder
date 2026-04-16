@@ -5,7 +5,7 @@ description: Estadisticas de uso de skills: cuales se usan, cuales se ignoran, c
 
 # /skills-stats — Estadísticas de skills
 
-Analiza `~/.qwen/memory/skill-stats.json` + `ignored-skills.md` para mostrar:
+Analiza `~/.omnicoder/memory/skill-stats.json` + `ignored-skills.md` para mostrar:
 
 ## Reporte
 

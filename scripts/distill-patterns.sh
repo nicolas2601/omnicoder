@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # ============================================================
-# Qwen Con Poderes - Pattern Distiller (Standalone / Cron)
+# OmniCoder - Pattern Distiller (Standalone / Cron)
 # Destila trajectories.md + learned.md + reflections.md en
 # patterns.md (reglas semanticas reutilizables).
 #
 # Ejecutar periódicamente (weekly cron) o manualmente:
-#   bash ~/.qwen/scripts/distill-patterns.sh
+#   bash ~/.omnicoder/scripts/distill-patterns.sh
 #
 # Lógica:
 #  1. Agrupa trajectories por SIGNAL. Si N >= 3 → patrón confiable.
@@ -15,7 +15,7 @@
 # ============================================================
 set -euo pipefail
 
-MEM_DIR="$HOME/.qwen/memory"
+MEM_DIR="$HOME/.omnicoder/memory"
 mkdir -p "$MEM_DIR"
 
 PATTERNS_FILE="$MEM_DIR/patterns.md"

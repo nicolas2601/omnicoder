@@ -1,6 +1,6 @@
-# MEGA PROMPT DE PRUEBA - Qwen Con Poderes v2
+# MEGA PROMPT DE PRUEBA - OmniCoder v2
 
-Copia y pega este prompt completo dentro de Qwen Code para probar
+Copia y pega este prompt completo dentro de OmniCoder para probar
 todos los componentes: agentes, skills, hooks, commands, y token optimization.
 
 ---

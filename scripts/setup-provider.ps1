@@ -1,7 +1,7 @@
 # ============================================================
-# Qwen Con Poderes - Setup Provider Interactivo (v1.0) - Windows
+# OmniCoder - Setup Provider Interactivo (v1.0) - Windows
 #
-# Pide la API key, genera %USERPROFILE%\.qwen\.env.<provider>
+# Pide la API key, genera %USERPROFILE%\.omnicoder\.env.<provider>
 # y activa el provider.
 #
 # Uso (PowerShell):
@@ -18,10 +18,10 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$QwenDir = Join-Path $env:USERPROFILE '.qwen'
-$SettingsFile = Join-Path $QwenDir 'settings.json'
+$OmniDir = Join-Path $env:USERPROFILE '.omnicoder'
+$SettingsFile = Join-Path $OmniDir 'settings.json'
 
-if (-not (Test-Path $QwenDir)) { New-Item -ItemType Directory -Path $QwenDir | Out-Null }
+if (-not (Test-Path $OmniDir)) { New-Item -ItemType Directory -Path $OmniDir | Out-Null }
 
 $Providers = @{
     nvidia     = @{ Url='https://integrate.api.nvidia.com/v1';                          Model='minimaxai/minimax-m2.7';            Signup='https://build.nvidia.com/  (gratis 40 RPM)' }
@@ -33,7 +33,7 @@ $Providers = @{
 
 function Show-Menu {
     Write-Host ""
-    Write-Host "=== Qwen Con Poderes - Setup Provider ===" -ForegroundColor Cyan
+    Write-Host "=== OmniCoder - Setup Provider ===" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "Providers disponibles:"
     Write-Host "  1) nvidia      MiniMax M2.7 via NVIDIA NIM   [FREE 40 RPM] " -NoNewline
@@ -58,9 +58,9 @@ function Show-Menu {
 if ([string]::IsNullOrWhiteSpace($Provider)) { $Provider = Show-Menu }
 
 $cfg = $Providers[$Provider]
-$envFile = Join-Path $QwenDir ".env.$Provider"
-$activeEnv = Join-Path $QwenDir '.env'
-$backupEnv = Join-Path $QwenDir '.env.backup'
+$envFile = Join-Path $OmniDir ".env.$Provider"
+$activeEnv = Join-Path $OmniDir '.env'
+$backupEnv = Join-Path $OmniDir '.env.backup'
 
 Write-Host ""
 Write-Host "Provider: $Provider" -ForegroundColor Cyan
@@ -123,7 +123,7 @@ if (Test-Path $SettingsFile) {
         $json = Get-Content $SettingsFile -Raw | ConvertFrom-Json
         if (-not $json.model) { $json | Add-Member -NotePropertyName model -NotePropertyValue ([PSCustomObject]@{}) -Force }
         $json.model | Add-Member -NotePropertyName name -NotePropertyValue $cfg.Model -Force
-        # CRITICO: forzar selectedType=openai (sino Qwen pide OAuth al arrancar)
+        # CRITICO: forzar selectedType=openai (sino OmniCoder pide OAuth al arrancar)
         if (-not $json.security) { $json | Add-Member -NotePropertyName security -NotePropertyValue ([PSCustomObject]@{}) -Force }
         if (-not $json.security.auth) { $json.security | Add-Member -NotePropertyName auth -NotePropertyValue ([PSCustomObject]@{}) -Force }
         $json.security.auth | Add-Member -NotePropertyName selectedType -NotePropertyValue 'openai' -Force
@@ -135,10 +135,10 @@ if (Test-Path $SettingsFile) {
 }
 
 # Eliminar OAuth cacheado (sino prioriza sobre la API key)
-$oauthCreds = Join-Path $QwenDir 'oauth_creds.json'
+$oauthCreds = Join-Path $OmniDir 'oauth_creds.json'
 if (Test-Path $oauthCreds) {
     Write-Host ""
-    $rm = Read-Host "Encontre OAuth cacheado de Qwen. Eliminar para usar tu API key? [Y/n]"
+    $rm = Read-Host "Encontre OAuth cacheado. Eliminar para usar tu API key? [Y/n]"
     if ($rm.ToLower() -ne 'n') {
         Remove-Item $oauthCreds -Force
         Write-Host "OK OAuth eliminado" -ForegroundColor Green
@@ -165,6 +165,6 @@ if ($test.ToLower() -ne 'n') {
 }
 
 Write-Host ""
-Write-Host "Listo! Arranca Qwen con:" -ForegroundColor Green
-Write-Host "  qwen" -ForegroundColor Cyan
-Write-Host "(Qwen Code lee automaticamente $activeEnv)"
+Write-Host "Listo! Arranca OmniCoder con:" -ForegroundColor Green
+Write-Host "  omnicoder" -ForegroundColor Cyan
+Write-Host "(OmniCoder lee automaticamente $activeEnv)"

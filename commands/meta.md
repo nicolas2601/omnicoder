@@ -1,16 +1,16 @@
 ---
 name: meta
-description: Meta-analisis semanal. Que aprendio Qwen, que mejoro, que sigue fallando.
+description: Meta-analisis semanal. Que aprendio OmniCoder, que mejoro, que sigue fallando.
 ---
 
 # /meta — Meta-análisis de aprendizaje
 
-Dashboard cognitivo: qué aprendió Qwen, cómo evoluciona, dónde sigue fallando.
+Dashboard cognitivo: qué aprendió OmniCoder, cómo evoluciona, dónde sigue fallando.
 
 ## Reporte generado
 
 ```
-🧠 META-ANÁLISIS QWEN CON PODERES — Semana del YYYY-MM-DD
+🧠 META-ANÁLISIS OMNICODER — Semana del YYYY-MM-DD
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 ACTIVIDAD
