@@ -49,7 +49,14 @@
           { "type": "command", "command": "bash ~/.omnicoder/hooks/error-learner.sh" },
           { "type": "command", "command": "bash ~/.omnicoder/hooks/success-learner.sh" },
           { "type": "command", "command": "bash ~/.omnicoder/hooks/skill-usage-tracker.sh" },
-          { "type": "command", "command": "bash ~/.omnicoder/hooks/causal-learner.sh" }
+          { "type": "command", "command": "bash ~/.omnicoder/hooks/causal-learner.sh" },
+          { "type": "command", "command": "bash ~/.omnicoder/hooks/token-tracker.sh" }
+        ]
+      },
+      {
+        "matcher": "Bash|Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "bash ~/.omnicoder/hooks/provider-failover.sh" }
         ]
       },
       {

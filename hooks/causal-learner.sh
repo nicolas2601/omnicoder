@@ -8,6 +8,7 @@
 # y tool[N] tuvo éxito con signature similar -> causal edge.
 # ============================================================
 set -euo pipefail
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 MEM_DIR="$HOME/.omnicoder/memory"
@@ -75,7 +76,7 @@ EOF
 
             SIG=$(echo "${PREV_CMD}${CMD_HEAD}" | md5sum | cut -d' ' -f1)
             if ! grep -q "sig:$SIG" "$CAUSAL_FILE" 2>/dev/null; then
-                echo "- Si falla \`$PREV_CMD\` → probar \`$CMD_HEAD\` ($(date -Iseconds)) sig:$SIG" >> "$CAUSAL_FILE"
+                (flock -w 2 200; echo "- Si falla \`$PREV_CMD\` → probar \`$CMD_HEAD\` ($(date -Iseconds)) sig:$SIG" >> "$CAUSAL_FILE") 200>"$CAUSAL_FILE.lock"
             fi
         fi
     fi

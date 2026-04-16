@@ -52,6 +52,7 @@ for arg in "$@"; do
     case "$arg" in
         --skip-cli) SKIP_CLI=true ;;
         --force) FORCE=true ;;
+        --update) FORCE=true ;;  # Alias for --force during upgrades
         --doctor) DOCTOR_ONLY=true ;;
         --help|-h)
             echo "Uso: ./install-linux.sh [opciones]"
@@ -59,12 +60,82 @@ for arg in "$@"; do
             echo "Opciones:"
             echo "  --skip-cli   No instalar/actualizar OmniCoder CLI"
             echo "  --force      Sobreescribir todo sin preguntar"
+            echo "  --update     Actualizar a la version mas reciente"
             echo "  --doctor     Solo ejecutar diagnostico (no instalar)"
             echo "  --help       Mostrar esta ayuda"
             exit 0
             ;;
     esac
 done
+
+# ──────────────────────────────────────────────────────────
+# Upgrade detection
+# ──────────────────────────────────────────────────────────
+check_upgrade() {
+    local INSTALLED_VER=""
+    local VERSION_FILE="$HOME/.omnicoder/.version"
+
+    if [[ -f "$VERSION_FILE" ]]; then
+        INSTALLED_VER=$(cat "$VERSION_FILE" 2>/dev/null | tr -d '[:space:]')
+    elif [[ -f "$HOME/.omnicoder/OMNICODER.md" ]]; then
+        # Old installation without version file
+        INSTALLED_VER="unknown"
+    elif [[ -d "$HOME/.qwen/agents" ]]; then
+        # Legacy "Qwen Con Poderes" installation detected
+        INSTALLED_VER="legacy-qwen"
+    fi
+
+    if [[ -z "$INSTALLED_VER" ]]; then
+        return 0  # Fresh install
+    fi
+
+    echo -e "${CYAN}${BOLD}Instalacion existente detectada${NC}"
+    echo ""
+
+    if [[ "$INSTALLED_VER" == "legacy-qwen" ]]; then
+        echo -e "  ${YELLOW}Version:${NC} Qwen Con Poderes (legacy en ~/.qwen/)"
+        echo -e "  ${GREEN}Nueva:${NC}   OmniCoder v${VERSION} (en ~/.omnicoder/)"
+        echo ""
+        echo -e "  ${BOLD}Cambios principales:${NC}"
+        echo "    - Rebranding: Qwen Con Poderes → OmniCoder"
+        echo "    - Nueva ruta: ~/.qwen/ → ~/.omnicoder/"
+        echo "    - Wrapper CLI: comando 'omnicoder' disponible"
+        echo "    - 19 hooks de seguridad (era 10)"
+        echo "    - Sistema de aprendizaje activado (5 hooks faltaban)"
+        echo "    - Auto-failover de provider"
+        echo "    - Token usage tracking"
+        echo ""
+        echo -e "  ${YELLOW}Tu memoria en ~/.qwen/memory/ NO se eliminara.${NC}"
+        echo -e "  ${DIM}Puedes migrarla manualmente despues: cp ~/.qwen/memory/* ~/.omnicoder/memory/${NC}"
+    else
+        if [[ "$INSTALLED_VER" == "$VERSION" ]]; then
+            echo -e "  ${GREEN}Ya tienes la version actual (v${VERSION})${NC}"
+            if [[ "$FORCE" != true ]]; then
+                echo -e "  ${DIM}Usa --force para reinstalar${NC}"
+                echo ""
+                exit 0
+            fi
+        else
+            echo -e "  ${YELLOW}Version instalada:${NC} v${INSTALLED_VER}"
+            echo -e "  ${GREEN}Version nueva:${NC}     v${VERSION}"
+        fi
+    fi
+
+    echo ""
+    if [[ "$FORCE" != true ]]; then
+        read -rp "  Actualizar? [Y/n]: " upgrade_confirm
+        if [[ "${upgrade_confirm,,}" == "n" ]]; then
+            echo "Cancelado."
+            exit 0
+        fi
+    fi
+    echo ""
+}
+
+# Run upgrade check (skip in doctor mode)
+if [[ "$DOCTOR_ONLY" != true ]]; then
+    check_upgrade
+fi
 
 # ───��──────────────────────────────────��───────────────────
 # Doctor mode
@@ -123,7 +194,7 @@ doctor() {
     # Check hooks
     HOOK_COUNT=$(ls "$HOME/.omnicoder/hooks/"*.sh 2>/dev/null | wc -l || true)
     if [[ "$HOOK_COUNT" -ge 16 ]]; then
-        echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados (v3.5 con subagent-verify + error-recover)"
+        echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados (v4.0 con aprendizaje adaptativo + failover)"
     elif [[ "$HOOK_COUNT" -gt 0 ]]; then
         echo -e "  ${YELLOW}!!${NC} Solo $HOOK_COUNT hooks (esperado: 16+)"
         ISSUES=$((ISSUES + 1))
@@ -467,6 +538,11 @@ else
         echo -e "  ${DIM}Saltado. Cuando quieras: bash scripts/setup-provider.sh${NC}"
     fi
 fi
+
+# ──────────────────────────────────────────────────────────
+# Save version marker
+# ──────────────────────────────────────────────────────────
+echo "$VERSION" > "$HOME/.omnicoder/.version"
 
 # ──────────────────────────────────────────────────────────
 # Resumen

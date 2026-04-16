@@ -10,6 +10,7 @@
 #   2. Reglas de construccion de prompt para evitar el 400 del coder model
 # ============================================================
 set -euo pipefail
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')

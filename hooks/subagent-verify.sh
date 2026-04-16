@@ -13,6 +13,7 @@
 # para que el agente principal re-invoque o confirme manualmente.
 # ============================================================
 set -euo pipefail
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')

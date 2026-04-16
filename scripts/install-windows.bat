@@ -14,6 +14,27 @@ echo    Multi-provider ^| Cognitive routing ^| Subagent verify
 echo ========================================================
 echo.
 
+REM ── Upgrade detection ──
+if exist "%USERPROFILE%\.omnicoder\.version" (
+    set /p INSTALLED_VER=<"%USERPROFILE%\.omnicoder\.version"
+    echo   Version instalada: !INSTALLED_VER!
+    echo   Version nueva:     4.0.0
+    if "!INSTALLED_VER!"=="4.0.0" (
+        echo   Ya tienes la version actual.
+        echo   Usa scripts\install-windows.bat --force para reinstalar.
+        pause & exit /b 0
+    )
+    set /p "UPGRADE=  Actualizar? [Y/n]: "
+    if /i "!UPGRADE!"=="n" ( echo Cancelado. & pause & exit /b 0 )
+) else if exist "%USERPROFILE%\.qwen\agents" (
+    echo   [!!] Instalacion legacy detectada: Qwen Con Poderes en %%USERPROFILE%%\.qwen\
+    echo   Esta actualizacion instalara OmniCoder v4.0 en %%USERPROFILE%%\.omnicoder\
+    echo   Tu memoria en .qwen\ NO se eliminara.
+    set /p "UPGRADE=  Continuar? [Y/n]: "
+    if /i "!UPGRADE!"=="n" ( echo Cancelado. & pause & exit /b 0 )
+)
+echo.
+
 REM ── PASO 1: Verificar requisitos ──
 echo [1/8] Verificando requisitos...
 
@@ -97,12 +118,32 @@ set CC=0
 for %%f in ("%REPO_DIR%\commands\*.md") do ( copy /y "%%f" "%OMNI_CMDS%\%%~nxf" >nul & set /a CC+=1 )
 echo   [OK] !CC! commands instalados
 
-REM ── PASO 8: Config ──
+REM ── PASO 8: Config y CLI wrapper ──
 echo.
 echo [8/8] Configurando...
 if exist "%REPO_DIR%\OMNICODER.md" ( copy /y "%REPO_DIR%\OMNICODER.md" "%USERPROFILE%\.omnicoder\OMNICODER.md" >nul & echo   [OK] OMNICODER.md )
 if exist "%REPO_DIR%\config\settings.json" ( copy /y "%REPO_DIR%\config\settings.json" "%USERPROFILE%\.omnicoder\settings.json" >nul & echo   [OK] settings.json )
 if not exist "%USERPROFILE%\.omnicoder\logs" mkdir "%USERPROFILE%\.omnicoder\logs"
+
+REM Instalar CLI wrapper (omnicoder.bat)
+if exist "%REPO_DIR%\scripts\omnicoder.bat" (
+    copy /y "%REPO_DIR%\scripts\omnicoder.bat" "%USERPROFILE%\.omnicoder\omnicoder.bat" >nul
+    echo   [OK] omnicoder.bat (CLI wrapper)
+)
+if exist "%REPO_DIR%\scripts\omnicoder.ps1" (
+    copy /y "%REPO_DIR%\scripts\omnicoder.ps1" "%USERPROFILE%\.omnicoder\omnicoder.ps1" >nul
+    echo   [OK] omnicoder.ps1 (CLI wrapper)
+)
+
+REM Verificar si %USERPROFILE%\.omnicoder esta en PATH
+echo %PATH% | findstr /i ".omnicoder" >nul
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo   [!!] Para usar el comando "omnicoder" desde cualquier terminal:
+    echo        Agrega %USERPROFILE%\.omnicoder al PATH del sistema.
+    echo        Ejecuta en PowerShell como Admin:
+    echo        [Environment]::SetEnvironmentVariable("Path", $env:Path + ";%USERPROFILE%\.omnicoder", "User"^)
+)
 
 REM ── PASO 9: Setup de provider (API key) ──
 echo.
@@ -122,6 +163,9 @@ if exist "%USERPROFILE%\.omnicoder\.env" (
         echo   Saltado. Cuando quieras: powershell -ExecutionPolicy Bypass -File "%SCRIPT_DIR%setup-provider.ps1"
     )
 )
+
+REM ── Save version marker ──
+echo 4.0.0> "%USERPROFILE%\.omnicoder\.version"
 
 REM ── Resumen ──
 echo.

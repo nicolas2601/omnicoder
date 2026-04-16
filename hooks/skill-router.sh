@@ -12,6 +12,7 @@
 # `npx skills find <tech>` con cache.
 # ============================================================
 set -euo pipefail
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 PROMPT=$(echo "$INPUT" | jq -r '.user_prompt // .prompt // ""' 2>/dev/null || echo "")

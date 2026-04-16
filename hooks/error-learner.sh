@@ -6,6 +6,7 @@
 # repetir los mismos errores en el futuro.
 # ============================================================
 set -euo pipefail
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 
@@ -63,20 +64,23 @@ if [[ -n "$SIG" ]] && grep -q "sig:$SIG" "$LEARNED_FILE" 2>/dev/null; then
     exit 0
 fi
 
-cat >> "$LEARNED_FILE" <<EOF
+(flock -w 2 200; cat >> "$LEARNED_FILE" <<EOF
 
 ### $TIMESTAMP | $TOOL_NAME
 - **Target**: \`$TARGET\`
 - **Error**: $ERROR_SNIPPET
 - sig:$SIG
 EOF
+) 200>"$LEARNED_FILE.lock"
 
 # Trimmear si pasa 500 entradas (mantener solo ultimas 200)
 LINE_COUNT=$(wc -l < "$LEARNED_FILE")
 if [[ "$LINE_COUNT" -gt 2500 ]]; then
+    (flock -w 2 200
     HEADER=$(head -n 7 "$LEARNED_FILE")
     TAIL=$(tail -n 1000 "$LEARNED_FILE")
     echo -e "$HEADER\n\n$TAIL" > "$LEARNED_FILE"
+    ) 200>"$LEARNED_FILE.lock"
 fi
 
 exit 0

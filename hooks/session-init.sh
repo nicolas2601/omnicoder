@@ -4,6 +4,7 @@
 # Carga automaticamente el ultimo handoff y contexto del proyecto
 # ============================================================
 set -euo pipefail
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 CWD=$(echo "$INPUT" | jq -r '.cwd // ""')

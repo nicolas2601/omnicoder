@@ -15,6 +15,28 @@ Write-Host ""
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoDir = Split-Path -Parent $ScriptDir
 
+# ── Upgrade detection ──
+$VersionFile = Join-Path $env:USERPROFILE '.omnicoder\.version'
+$LegacyDir = Join-Path $env:USERPROFILE '.qwen\agents'
+$CurrentVersion = "4.0.0"
+
+if (Test-Path $VersionFile) {
+    $InstalledVer = (Get-Content $VersionFile -Raw).Trim()
+    Write-Host "  Version instalada: $InstalledVer" -ForegroundColor Yellow
+    Write-Host "  Version nueva:     $CurrentVersion" -ForegroundColor Green
+    if ($InstalledVer -eq $CurrentVersion) {
+        Write-Host "  Ya tienes la version actual. Reinstala con -Force." -ForegroundColor Green
+        exit 0
+    }
+    $confirm = Read-Host "  Actualizar? [Y/n]"
+    if ($confirm -eq 'n') { exit 0 }
+} elseif (Test-Path $LegacyDir) {
+    Write-Host "  Legacy detectado: Qwen Con Poderes en $env:USERPROFILE\.qwen\" -ForegroundColor Yellow
+    Write-Host "  OmniCoder v$CurrentVersion se instalara en $env:USERPROFILE\.omnicoder\" -ForegroundColor Green
+    $confirm = Read-Host "  Continuar? [Y/n]"
+    if ($confirm -eq 'n') { exit 0 }
+}
+
 # ── PASO 1: Requisitos ──
 Write-Host "[1/8] Verificando requisitos..." -ForegroundColor Blue
 try {
@@ -70,6 +92,26 @@ if (Test-Path "$RepoDir\OMNICODER.md") { Copy-Item "$RepoDir\OMNICODER.md" "$env
 if (Test-Path "$RepoDir\config\settings.json") { Copy-Item "$RepoDir\config\settings.json" "$env:USERPROFILE\.omnicoder\settings.json" -Force; Write-Host "  [OK] settings.json" -ForegroundColor Green }
 New-Item -ItemType Directory -Path "$env:USERPROFILE\.omnicoder\logs" -Force | Out-Null
 
+# Instalar CLI wrappers (omnicoder.bat y omnicoder.ps1)
+$wrapperBat = Join-Path $RepoDir 'scripts\omnicoder.bat'
+$wrapperPs1 = Join-Path $RepoDir 'scripts\omnicoder.ps1'
+if (Test-Path $wrapperBat) {
+    Copy-Item $wrapperBat "$env:USERPROFILE\.omnicoder\omnicoder.bat" -Force
+    Write-Host "  [OK] omnicoder.bat (CLI wrapper)" -ForegroundColor Green
+}
+if (Test-Path $wrapperPs1) {
+    Copy-Item $wrapperPs1 "$env:USERPROFILE\.omnicoder\omnicoder.ps1" -Force
+    Write-Host "  [OK] omnicoder.ps1 (CLI wrapper)" -ForegroundColor Green
+}
+
+# Verificar si ~/.omnicoder esta en PATH, sugerir agregarlo
+$omniPath = "$env:USERPROFILE\.omnicoder"
+if ($env:PATH -notlike "*$omniPath*") {
+    Write-Host ""
+    Write-Host "  [!!] Para usar 'omnicoder' desde cualquier terminal, agrega al PATH:" -ForegroundColor Yellow
+    Write-Host "       [Environment]::SetEnvironmentVariable('Path', `$env:Path + ';$omniPath', 'User')" -ForegroundColor DarkGray
+}
+
 # ── PASO 9: Setup de provider (API key) ──
 Write-Host "`n[9/9] Setup de provider (API key)..." -ForegroundColor Blue
 $activeEnv = "$env:USERPROFILE\.omnicoder\.env"
@@ -89,6 +131,9 @@ if (Test-Path $activeEnv) {
         Write-Host "  Saltado. Cuando quieras: powershell -ExecutionPolicy Bypass -File scripts\setup-provider.ps1"
     }
 }
+
+# ── Save version marker ──
+$CurrentVersion | Set-Content $VersionFile
 
 # ── Resumen ──
 Write-Host "`n========================================================" -ForegroundColor Green

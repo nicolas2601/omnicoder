@@ -15,6 +15,7 @@
 # Cuando los detecta, aprende (error-learner.sh) y pide retry controlado.
 # ============================================================
 set -euo pipefail
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')

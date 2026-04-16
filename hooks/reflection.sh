@@ -9,6 +9,7 @@
 #  - Destila lecciones a patterns.md (semantic memory)
 # ============================================================
 set -euo pipefail
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat 2>/dev/null || echo "{}")
 

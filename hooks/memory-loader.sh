@@ -5,6 +5,7 @@
 # (./.omnicoder/memory/) como contexto inicial.
 # ============================================================
 set -euo pipefail
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 CWD=$(echo "$INPUT" | jq -r '.cwd // ""' 2>/dev/null || pwd)

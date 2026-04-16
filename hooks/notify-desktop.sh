@@ -4,6 +4,7 @@
 # Envia notificaciones nativas cuando OmniCoder necesita atencion
 # ============================================================
 set -euo pipefail
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 MESSAGE=$(echo "$INPUT" | jq -r '.message // "OmniCoder necesita tu atencion"')

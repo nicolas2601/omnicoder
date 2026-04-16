@@ -4,6 +4,7 @@
 # Genera recordatorio de handoff al finalizar sesiones productivas
 # ============================================================
 set -euo pipefail
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 CWD=$(echo "$INPUT" | jq -r '.cwd // ""')
