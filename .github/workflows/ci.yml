@@ -202,28 +202,32 @@ jobs:
       - name: Run installer in DOCTOR mode (no side-effects)
         shell: cmd
         run: |
-          REM v4.3.1: doctor mode diagnostica. En runner limpio sin instalacion
-          REM previa devuelve errorlevel 1 (issues encontrados). Esto es ESPERADO
-          REM y NO debe fallar el CI. Solo errorlevel >= 2 es bug real.
-          scripts\install-windows.bat /DOCTOR
+          REM v4.3.2: CRITICO usar 'call' - sin call, el .bat hijo REEMPLAZA al
+          REM padre y cuando sale con exit /b 1 termina todo el step.
+          REM Doctor en runner limpio devuelve errorlevel 1 (issues esperados).
+          call scripts\install-windows.bat /DOCTOR
           set "DOCTOR_RC=%errorlevel%"
           if %DOCTOR_RC% GEQ 2 (
-            echo ::error::DOCTOR retorno errorlevel %DOCTOR_RC% (bug real)
+            echo ::error::DOCTOR retorno errorlevel %DOCTOR_RC% ^(bug real^)
             exit /b %DOCTOR_RC%
           )
-          echo DOCTOR OK con errorlevel %DOCTOR_RC% (1 es esperado en runner limpio)
+          echo DOCTOR OK con errorlevel %DOCTOR_RC% ^(1 es esperado en runner limpio^)
           exit /b 0
 
       - name: Run full installer with /SKIP_CLI /FORCE
         shell: cmd
         run: |
-          REM Test end-to-end: instala sin qwen (/SKIP_CLI) y sin prompts (/FORCE).
-          REM El runner windows-latest tiene node, npm, git. jq se auto-descarga.
-          scripts\install-windows.bat /SKIP_CLI /FORCE
-          if errorlevel 1 (
-            echo ::error::Installer fallo con errorlevel %errorlevel%
-            exit /b %errorlevel%
+          REM v4.3.2: usar 'call' para preservar el flujo del step tras el .bat.
+          REM /SKIP_CLI omite qwen (ya instalado globalmente tomaria tiempo).
+          REM /FORCE omite prompts interactivos.
+          call scripts\install-windows.bat /SKIP_CLI /FORCE
+          set "INSTALL_RC=%errorlevel%"
+          if %INSTALL_RC% NEQ 0 (
+            echo ::error::Installer fallo con errorlevel %INSTALL_RC%
+            exit /b %INSTALL_RC%
           )
+          echo Installer OK
+          exit /b 0
 
       - name: Verify PATH was persisted for user
         shell: pwsh
