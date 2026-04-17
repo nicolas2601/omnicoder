@@ -45,18 +45,7 @@
       {
         "matcher": "Bash|Edit|Write",
         "hooks": [
-          { "type": "command", "command": "bash ~/.omnicoder/hooks/post-tool-logger.sh" },
-          { "type": "command", "command": "bash ~/.omnicoder/hooks/error-learner.sh" },
-          { "type": "command", "command": "bash ~/.omnicoder/hooks/success-learner.sh" },
-          { "type": "command", "command": "bash ~/.omnicoder/hooks/skill-usage-tracker.sh" },
-          { "type": "command", "command": "bash ~/.omnicoder/hooks/causal-learner.sh" },
-          { "type": "command", "command": "bash ~/.omnicoder/hooks/token-tracker.sh" }
-        ]
-      },
-      {
-        "matcher": "Bash|Edit|Write",
-        "hooks": [
-          { "type": "command", "command": "bash ~/.omnicoder/hooks/provider-failover.sh" }
+          { "type": "command", "command": "bash ~/.omnicoder/hooks/post-tool-dispatcher.sh" }
         ]
       },
       {
@@ -71,7 +60,7 @@
       {
         "matcher": "",
         "hooks": [
-          { "type": "command", "command": "bash ~/.omnicoder/hooks/skill-router.sh" }
+          { "type": "command", "command": "bash ~/.omnicoder/hooks/skill-router-lite.sh" }
         ]
       }
     ],
@@ -80,7 +69,8 @@
         "matcher": "",
         "hooks": [
           { "type": "command", "command": "bash ~/.omnicoder/hooks/session-init.sh" },
-          { "type": "command", "command": "bash ~/.omnicoder/hooks/memory-loader.sh" }
+          { "type": "command", "command": "bash ~/.omnicoder/hooks/memory-loader.sh" },
+          { "type": "command", "command": "bash ~/.omnicoder/hooks/token-budget.sh" }
         ]
       }
     ],

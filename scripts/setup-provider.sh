@@ -15,7 +15,16 @@ OMNI_DIR="$HOME/.omnicoder"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SWITCHER="$SCRIPT_DIR/switch-provider.sh"
 
-c_g='\033[0;32m'; c_y='\033[1;33m'; c_r='\033[0;31m'; c_b='\033[0;36m'; c_n='\033[0m'
+# Paleta compartida (compat con aliases c_g, c_y, c_r, c_b, c_n usados aqui)
+if [[ -f "$SCRIPT_DIR/_colors.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "$SCRIPT_DIR/_colors.sh"
+    c_g="$OMNI_GREEN"; c_y="$OMNI_YELLOW"; c_r="$OMNI_RED"
+    c_b="$OMNI_CYAN";  c_n="$OMNI_NC"
+else
+    c_g='\033[0;32m'; c_y='\033[1;33m'; c_r='\033[0;31m'
+    c_b='\033[0;36m'; c_n='\033[0m'
+fi
 
 mkdir -p "$OMNI_DIR"
 chmod 700 "$OMNI_DIR" 2>/dev/null || true

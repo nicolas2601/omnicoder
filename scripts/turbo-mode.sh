@@ -10,14 +10,17 @@ SETTINGS="$HOME/.omnicoder/settings.json"
 SETTINGS_FULL="$HOME/.omnicoder/settings-full.json"
 SETTINGS_TURBO="$HOME/.omnicoder/settings-turbo.json"
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Paleta compartida
+if [[ -f "$SCRIPT_DIR/_colors.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "$SCRIPT_DIR/_colors.sh"
+else
+    RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
+    CYAN='\033[0;36m'; NC='\033[0m'
+fi
 
 case "${1:-toggle}" in
     on|turbo)

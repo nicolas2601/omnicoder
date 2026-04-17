@@ -1,0 +1,83 @@
+name: Release
+
+# Auto-publish a GitHub Release when a semver tag is pushed.
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: "release-${{ github.ref }}"
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: "Publish GitHub Release"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # fetch-depth: 0 is required so the changelog parser can see history.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Derive version from tag
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          ref="${GITHUB_REF#refs/tags/}"
+          version="${ref#v}"
+          echo "tag=${ref}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "Releasing tag=${ref} version=${version}"
+
+      # Extract changelog entry for this version from CHANGELOG.md.
+      # Delegates parsing to scripts/parse-changelog.sh so logic is testable
+      # and reusable from release runbooks.
+      - name: Extract changelog entry
+        id: changelog
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f CHANGELOG.md ]]; then
+            echo "::warning::CHANGELOG.md not found, using fallback body."
+            body="Release ${{ steps.version.outputs.tag }}"
+          elif [[ ! -x scripts/parse-changelog.sh ]]; then
+            echo "::warning::scripts/parse-changelog.sh not executable, using fallback."
+            body="Release ${{ steps.version.outputs.tag }}"
+          else
+            body="$(scripts/parse-changelog.sh "${{ steps.version.outputs.version }}" CHANGELOG.md || echo "Release ${{ steps.version.outputs.tag }}")"
+          fi
+          {
+            echo 'body<<OMNICODER_EOF'
+            echo "$body"
+            echo 'OMNICODER_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      # Build release tarball, excluding VCS metadata and node_modules.
+      - name: Create release tarball
+        id: tarball
+        shell: bash
+        run: |
+          set -euo pipefail
+          name="omnicoder-${{ steps.version.outputs.version }}.tar.gz"
+          tar \
+            --exclude='./.git' \
+            --exclude='./node_modules' \
+            --exclude="./${name}" \
+            -czf "${name}" .
+          ls -lh "${name}"
+          echo "path=${name}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "OmniCoder ${{ steps.version.outputs.tag }}"
+          body: ${{ steps.changelog.outputs.body }}
+          files: ${{ steps.tarball.outputs.path }}
+          draft: false
+          prerelease: false

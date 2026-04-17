@@ -8,6 +8,10 @@
 set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
+# Portable lock helper (flock on Linux/macOS, mkdir fallback on Git Bash Windows)
+# shellcheck source=_flock-compat.sh
+. "$(dirname "${BASH_SOURCE[0]}")/_flock-compat.sh" 2>/dev/null || true
+
 INPUT=$(cat | tr '\n' ' ' | tr '\r' ' ')
 
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null || echo "")
@@ -64,23 +68,38 @@ if [[ -n "$SIG" ]] && grep -q "sig:$SIG" "$LEARNED_FILE" 2>/dev/null; then
     exit 0
 fi
 
-(flock -w 2 200; cat >> "$LEARNED_FILE" <<EOF
+if command -v oc_locked_heredoc >/dev/null 2>&1; then
+    oc_locked_heredoc "$LEARNED_FILE" <<EOF
 
 ### $TIMESTAMP | $TOOL_NAME
 - **Target**: \`$TARGET\`
 - **Error**: $ERROR_SNIPPET
 - sig:$SIG
 EOF
-) 200>"$LEARNED_FILE.lock"
+else
+    (flock -w 2 200; cat >> "$LEARNED_FILE" <<EOF
+
+### $TIMESTAMP | $TOOL_NAME
+- **Target**: \`$TARGET\`
+- **Error**: $ERROR_SNIPPET
+- sig:$SIG
+EOF
+    ) 200>"$LEARNED_FILE.lock"
+fi
 
 # Trimmear si pasa 500 entradas (mantener solo ultimas 200)
 LINE_COUNT=$(wc -l < "$LEARNED_FILE")
 if [[ "$LINE_COUNT" -gt 2500 ]]; then
-    (flock -w 2 200
-    HEADER=$(head -n 7 "$LEARNED_FILE")
-    TAIL=$(tail -n 1000 "$LEARNED_FILE")
-    echo -e "$HEADER\n\n$TAIL" > "$LEARNED_FILE"
-    ) 200>"$LEARNED_FILE.lock"
+    _trim_fn() {
+        HEADER=$(head -n 7 "$LEARNED_FILE")
+        TAIL=$(tail -n 1000 "$LEARNED_FILE")
+        printf '%s\n\n%s\n' "$HEADER" "$TAIL" > "$LEARNED_FILE"
+    }
+    if command -v oc_with_lock >/dev/null 2>&1; then
+        oc_with_lock "$LEARNED_FILE" _trim_fn
+    else
+        (flock -w 2 200; _trim_fn) 200>"$LEARNED_FILE.lock"
+    fi
 fi
 
 exit 0

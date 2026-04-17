@@ -1,0 +1,163 @@
+name: PR Check
+
+# Lightweight gate for pull requests: branding hygiene, hook syntax, secrets, size.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: "pr-check-${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  check-branding:
+    name: "Branding Hygiene"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Need both sides of the diff.
+          fetch-depth: 0
+
+      # Reject forbidden aliases ("claude code", "qwen code") in markdown files
+      # changed by this PR. docs/providers.md and CHANGELOG.md are allowed since
+      # they legitimately reference upstream product names.
+      - name: Check for forbidden branding strings
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+
+          mapfile -t changed_md < <(
+            git diff --name-only --diff-filter=AM "${base}" "${head}" \
+              | { grep -E '\.md$' || true; } \
+              | { grep -v -E '^(docs/providers\.md|CHANGELOG\.md)$' || true; }
+          )
+
+          if [[ ${#changed_md[@]} -eq 0 ]]; then
+            echo "No markdown files to scan."
+            exit 0
+          fi
+
+          echo "Scanning ${#changed_md[@]} markdown file(s) for forbidden aliases..."
+          printf '  - %s\n' "${changed_md[@]}"
+
+          failed=0
+          for f in "${changed_md[@]}"; do
+            [[ -f "$f" ]] || continue
+            if grep -n -E -i '(claude code|qwen code)' "$f" > /tmp/hits 2>/dev/null; then
+              echo "::error file=${f}::Forbidden branding string detected. Normalize references to 'OmniCoder'. Only docs/providers.md and CHANGELOG.md may mention upstream product names."
+              cat /tmp/hits
+              failed=1
+            fi
+          done
+
+          if [[ $failed -eq 1 ]]; then
+            echo ""
+            echo "Fix: replace 'claude code' / 'qwen code' with 'OmniCoder' in the offending files."
+            exit 1
+          fi
+          echo "No forbidden branding strings detected."
+
+  check-hooks-syntax:
+    name: "Hook Syntax (bash -n)"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate bash syntax of changed shell scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+
+          mapfile -t changed_sh < <(
+            git diff --name-only --diff-filter=AM "${base}" "${head}" \
+              | { grep -E '\.sh$' || true; }
+          )
+
+          if [[ ${#changed_sh[@]} -eq 0 ]]; then
+            echo "No .sh files changed in this PR."
+            exit 0
+          fi
+
+          echo "Running bash -n on ${#changed_sh[@]} file(s):"
+          printf '  - %s\n' "${changed_sh[@]}"
+
+          failed=0
+          for f in "${changed_sh[@]}"; do
+            [[ -f "$f" ]] || continue
+            if ! bash -n "$f"; then
+              echo "::error file=${f}::bash -n reported a syntax error"
+              failed=1
+            fi
+          done
+          [[ $failed -eq 0 ]] || exit 1
+
+  no-secrets:
+    name: "Secret Scan (gitleaks)"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          # GITHUB_TOKEN is required by the action to post checks/annotations.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  size-check:
+    name: "PR Size Check"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Non-blocking: only emit a warning when a single commit adds >1000 lines.
+      - name: Warn on large single-commit additions
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+
+          mapfile -t commits < <(git rev-list "${base}..${head}")
+          if [[ ${#commits[@]} -eq 0 ]]; then
+            echo "No commits to inspect."
+            exit 0
+          fi
+
+          threshold=1000
+          big=0
+          for c in "${commits[@]}"; do
+            added="$(git show --numstat --format= "$c" | awk '$1 ~ /^[0-9]+$/ {s+=$1} END {print s+0}')"
+            if [[ "${added:-0}" -gt "$threshold" ]]; then
+              echo "::warning::Commit ${c} adds ${added} lines (> ${threshold}). Consider splitting it."
+              big=$((big + 1))
+            fi
+          done
+          echo "Commits over threshold: ${big}/${#commits[@]} (non-blocking)."

@@ -21,6 +21,16 @@ CWD=$(echo "$INPUT" | jq -r '.cwd // ""' 2>/dev/null || echo "")
 
 [[ ${#PROMPT} -lt 10 ]] && { echo '{}'; exit 0; }
 
+# v4.3: early-exit para prompts conversacionales cortos
+# (saludos, confirmaciones, reacciones). Evita overhead + context bloat.
+PROMPT_LC_TRIMMED=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]' | xargs)
+if [[ ${#PROMPT_LC_TRIMMED} -lt 40 ]]; then
+    case "$PROMPT_LC_TRIMMED" in
+        hola|holi|holis|ok|okay|listo|gracias|genial|perfecto|sigue|continua|continuar|si|no|dale|vale|bien|mal|hola\ *|buenas*|buen\ dia*|buenos\ dias*|buenas\ tardes*|buenas\ noches*|que\ tal*|como\ estas*|como\ vas*|y\ ahora*|y\ bueno*)
+            echo '{}'; exit 0 ;;
+    esac
+fi
+
 SKILLS_DIR="$HOME/.omnicoder/skills"
 AGENTS_DIR="$HOME/.omnicoder/agents"
 CACHE_DIR="$HOME/.omnicoder/.cache"
@@ -33,6 +43,16 @@ PROJ_CACHE="$CACHE_DIR/project-ctx"
 
 mkdir -p "$CACHE_DIR" "$NPX_CACHE" "$PROJ_CACHE"
 
+# v4.3.1: stopword stripping + truncate 80 chars. Coherente con build-skill-index.sh.
+_STOPWORDS_RE='\b(the|for|with|this|that|and|or|a|an|of|in|on|to|from|by|as|is|are|be|use|used|when|how|what|which|you|your|via|into|at|it|its|not|has|have|all|any|can|will|should|would|could|may|one|two|three|other|using|also|etc|only|just|each|per|es|de|la|el|los|las|un|una|y|o|que|como|para|por|con|sin|en|sobre|este|esta|esto|estos|estas|son|ser|estar)\b'
+_compress_desc() {
+    tr '[:upper:]' '[:lower:]' \
+      | sed -E "s/${_STOPWORDS_RE}//g" \
+      | tr -s '[:space:]' ' ' \
+      | sed 's/^ //;s/ $//' \
+      | cut -c1-80
+}
+
 build_skill_index() {
     : > "$SKILL_INDEX"
     for d in "$SKILLS_DIR"/*/; do
@@ -40,8 +60,9 @@ build_skill_index() {
         [[ -f "$f" ]] || continue
         local name desc
         name=$(basename "$d")
-        desc=$(awk '/^description:/{sub(/^description:[[:space:]]*/,""); gsub(/"/,""); print; exit}' "$f" 2>/dev/null | tr '\n' ' ' | tr '[:upper:]' '[:lower:]')
-        [[ -z "$desc" ]] && desc="$name"
+        desc=$(awk '/^description:/{sub(/^description:[[:space:]]*/,""); gsub(/"/,""); print; exit}' "$f" 2>/dev/null | tr '\n' ' ')
+        desc=$(echo "$desc" | _compress_desc)
+        [[ -z "$desc" ]] && desc=$(echo "$name" | tr '-' ' ')
         printf "%s\t%s\n" "$name" "$desc" >> "$SKILL_INDEX"
     done
 }
@@ -51,8 +72,9 @@ build_agent_index() {
     while IFS= read -r f; do
         local name desc
         name=$(basename "$f" .md)
-        desc=$(awk '/^description:/{sub(/^description:[[:space:]]*/,""); gsub(/"/,""); print; exit}' "$f" 2>/dev/null | tr '\n' ' ' | tr '[:upper:]' '[:lower:]')
-        [[ -z "$desc" ]] && desc="$name"
+        desc=$(awk '/^description:/{sub(/^description:[[:space:]]*/,""); gsub(/"/,""); print; exit}' "$f" 2>/dev/null | tr '\n' ' ')
+        desc=$(echo "$desc" | _compress_desc)
+        [[ -z "$desc" ]] && desc=$(echo "$name" | tr '-' ' ')
         printf "%s\t%s\n" "$name" "$desc" >> "$AGENT_INDEX"
     done < <(find "$AGENTS_DIR" -name "*.md" -type f 2>/dev/null)
 }
@@ -66,8 +88,23 @@ needs_rebuild() {
     [[ -n "$s" ]]
 }
 
-[[ -d "$SKILLS_DIR" ]] && needs_rebuild "$SKILLS_DIR" "$SKILL_INDEX" && build_skill_index
-[[ -d "$AGENTS_DIR" ]] && needs_rebuild "$AGENTS_DIR" "$AGENT_INDEX" && build_agent_index
+# v4.4: memoize needs_rebuild por 60s. Evita escanear 360+ archivos cada
+# prompt. En sesiones largas reduce el router de ~200ms a ~15ms cuando
+# tech cacheada. Si el usuario agrega un skill nuevo, espera hasta 60s
+# (aceptable para un sistema interactivo).
+REBUILD_CHECK="$CACHE_DIR/.rebuild-check"
+_NOW_TS=$(date +%s)
+_LAST_CHECK=$(cat "$REBUILD_CHECK" 2>/dev/null || echo 0)
+_SKIP_REBUILD_CHECK=0
+if [[ $((_NOW_TS - _LAST_CHECK)) -lt 60 ]] && [[ -s "$SKILL_INDEX" ]] && [[ -s "$AGENT_INDEX" ]]; then
+    _SKIP_REBUILD_CHECK=1
+fi
+
+if [[ "$_SKIP_REBUILD_CHECK" != "1" ]]; then
+    [[ -d "$SKILLS_DIR" ]] && needs_rebuild "$SKILLS_DIR" "$SKILL_INDEX" && build_skill_index
+    [[ -d "$AGENTS_DIR" ]] && needs_rebuild "$AGENTS_DIR" "$AGENT_INDEX" && build_agent_index
+    echo "$_NOW_TS" > "$REBUILD_CHECK" 2>/dev/null || true
+fi
 
 # --------------------------------------------------------
 # Detección de tecnologías/dominios conocidos
@@ -280,8 +317,11 @@ adjust() {
     esac
     if [[ -f "$MEM_DIR/ignored-skills.md" ]]; then
         local c
-        c=$(grep -c "^$name |" "$MEM_DIR/ignored-skills.md" 2>/dev/null || echo 0)
-        [[ "$c" -ge 3 ]] && adj=$((adj + 2))
+        # v4.3.1 fix: grep -c || echo 0 concatenaba "0\n0" con set -e,
+        # rompiendo la aritmetica. Usar :- default + head -n1.
+        c=$(grep -c "^$name |" "$MEM_DIR/ignored-skills.md" 2>/dev/null || true)
+        c=$(echo "${c:-0}" | head -n1 | tr -cd '0-9')
+        [[ "${c:-0}" -ge 3 ]] && adj=$((adj + 2))
     fi
     echo $((base + adj))
 }
@@ -328,10 +368,12 @@ fi
 # no hay match local fuerte. Cache 1 hora.
 # --------------------------------------------------------
 NPX_RESULTS=""
-if [[ -n "$DETECTED_TECH" ]] && [[ "$MAX_SKILL_SCORE" -lt 6 ]]; then
+# v4.3: cache 24h (era 1h), timeout 3s (era 10s), flag OMNICODER_SKIP_NPX
+# para desactivar por completo en entornos lentos. Refresco en background.
+if [[ -n "$DETECTED_TECH" ]] && [[ "$MAX_SKILL_SCORE" -lt 6 ]] && [[ "${OMNICODER_SKIP_NPX:-0}" != "1" ]]; then
     CACHE_KEY=$(echo "$DETECTED_TECH" | md5sum | cut -d' ' -f1)
     CACHE_FILE="$NPX_CACHE/$CACHE_KEY"
-    CACHE_AGE_LIMIT=3600
+    CACHE_AGE_LIMIT=86400  # 24h
 
     USE_CACHE=0
     if [[ -f "$CACHE_FILE" ]]; then
@@ -344,15 +386,19 @@ if [[ -n "$DETECTED_TECH" ]] && [[ "$MAX_SKILL_SCORE" -lt 6 ]]; then
     if [[ "$USE_CACHE" == "1" ]]; then
         NPX_RESULTS=$(cat "$CACHE_FILE")
     elif command -v npx >/dev/null 2>&1; then
-        # Timeout 10s para no bloquear el prompt
-        NPX_RAW=$(timeout 10 npx --yes skills find "$DETECTED_TECH" 2>/dev/null | head -c 2500 || echo "")
-        if [[ -n "$NPX_RAW" ]]; then
-            # Strip ANSI color codes + tr cleanup
-            NPX_RESULTS=$(echo "$NPX_RAW" | sed 's/\x1b\[[0-9;]*m//g' | head -n 20 | tr -d '\r')
-            # Remove the ASCII banner (SKILLS logo)
-            NPX_RESULTS=$(echo "$NPX_RESULTS" | grep -v '█\|╔\|╗\|╚\|╝\|║\|═' | grep -v '^$' | head -n 15)
-            echo "$NPX_RESULTS" > "$CACHE_FILE"
+        # Cache stale: usar la version vieja si existe y refrescar en background.
+        # Asi NUNCA bloqueamos la respuesta del LLM con un npx cold-start.
+        if [[ -f "$CACHE_FILE" ]]; then
+            NPX_RESULTS=$(cat "$CACHE_FILE")
         fi
+        (
+            NPX_RAW=$(timeout 15 npx --yes skills find "$DETECTED_TECH" 2>/dev/null | head -c 2500 || echo "")
+            if [[ -n "$NPX_RAW" ]]; then
+                FRESH=$(echo "$NPX_RAW" | sed 's/\x1b\[[0-9;]*m//g' | head -n 20 | tr -d '\r' | grep -v '█\|╔\|╗\|╚\|╝\|║\|═' | grep -v '^$' | head -n 15)
+                echo "$FRESH" > "$CACHE_FILE"
+            fi
+        ) >/dev/null 2>&1 &
+        disown 2>/dev/null || true
     fi
 fi
 
@@ -379,35 +425,16 @@ TECH_SOURCE_LABEL=""
 [[ "$DETECTED_FROM" == "prompt" ]] && TECH_SOURCE_LABEL=" (mencionada en el prompt)"
 
 if [[ -n "$DETECTED_TECH" ]] && [[ -n "$NPX_RESULTS" ]]; then
-    CTX="═══════════════════════════════════════════════════════════
-🎯 TECNOLOGÍA DETECTADA: **$DETECTED_TECH**$TECH_SOURCE_LABEL
-═══════════════════════════════════════════════════════════
-
-⚠️  PROTOCOLO OBLIGATORIO (NO NEGOCIABLE):
-
-1. NO respondas con una lista genérica de pasos.
-2. Presenta al usuario las siguientes skills del ecosistema:
-
-$NPX_RESULTS
-
-3. Recomienda las 2-3 más relevantes e instala la mejor con:
-   \`npx skills add <owner/repo@skill> -g -y\`
-4. Después de instalar, USA la skill recién agregada para responder.
-
-Skills/agentes locales complementarios (usar TAMBIÉN):"
+    # v4.3: output compacto. Antes: ~1500 chars inyectados en cada prompt
+    # (rompia prompt cache del modelo). Ahora: resumen de 1 linea + top-3.
+    NPX_COMPACT=$(echo "$NPX_RESULTS" | head -n 5 | tr '\n' ' | ' | head -c 400)
+    CTX="[TECH:$DETECTED_TECH] Skills candidatas: $NPX_COMPACT"
     if [[ -n "$TOP_SKILLS" ]]; then
-        SLIST=$(echo "$TOP_SKILLS" | awk -F'\t' '{print "  - " $2 " (score " $1 ")"}')
-        CTX+="
-$SLIST"
-    fi
-    if [[ -n "$TOP_AGENTS" ]]; then
-        ALIST=$(echo "$TOP_AGENTS" | awk -F'\t' '{print "  - agent: " $2}')
-        CTX+="
-$ALIST"
+        SLIST=$(echo "$TOP_SKILLS" | awk -F'\t' '{printf "%s(%s), ", $2, $1}' | sed 's/, $//')
+        CTX+=" | Locales: $SLIST"
     fi
 elif [[ -n "$DETECTED_TECH" ]]; then
-    # Detectó tech pero npx no devolvió (offline/sin npx)
-    CTX="🎯 TECNOLOGÍA DETECTADA: **$DETECTED_TECH**$TECH_SOURCE_LABEL. OBLIGATORIO antes de responder: ejecuta \`npx skills find $DETECTED_TECH\` y presenta resultados. NO respondas genéricamente."
+    CTX="[TECH:$DETECTED_TECH] Considera \`npx skills find $DETECTED_TECH\` si no hay match local."
 elif [[ "$LEVEL" == "HARD" ]]; then
     if [[ "$MAX_SKILL_SCORE" -ge "$MAX_AGENT_SCORE" ]] && [[ -n "$TOP_SKILL" ]]; then
         CTX="$PREFIX Match FUERTE (score=$MAX_SKILL_SCORE) con skill '$TOP_SKILL'. USA /skills '$TOP_SKILL' antes de improvisar."
@@ -426,8 +453,10 @@ elif [[ "$LEVEL" == "SOFT" ]]; then
     }
 fi
 
-# Fallback final
-if [[ -z "$CTX" ]]; then
+# v4.3: fallback mucho mas silencioso. Antes forzaba [BUSCAR-SKILL] en
+# casi todos los prompts sin match, inflando el contexto. Ahora solo emite
+# si hay tokens relevantes Y el prompt es largo (sugiere tarea real).
+if [[ -z "$CTX" ]] && [[ ${#FILTERED[@]} -ge 3 ]] && [[ ${#PROMPT} -gt 80 ]]; then
     QUERY=""
     count=0
     for tok in "${FILTERED[@]}"; do
@@ -436,7 +465,10 @@ if [[ -z "$CTX" ]]; then
         count=$((count + 1))
     done
     QUERY=$(echo "$QUERY" | xargs)
-    CTX="[BUSCAR-SKILL] Sin match fuerte. OBLIGATORIO: invoca /skills find-skills') o ejecuta \`npx skills find $QUERY\`. NO respondas genéricamente."
+    CTX="[HINT] Sin skill con match fuerte. Si es dominio nuevo: \`npx skills find $QUERY\`."
 fi
+
+# Si sigue vacio, no inyectamos nada (evita context bloat en conversacional)
+[[ -z "$CTX" ]] && { echo '{}'; exit 0; }
 
 jq -n --arg ctx "$CTX" '{hookSpecificOutput:{hookEventName:"UserPromptSubmit", additionalContext:$ctx}}'

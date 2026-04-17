@@ -7,8 +7,9 @@ set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat | tr '\n' ' ' | tr '\r' ' ')
-# Parse the tool output for error patterns
-OUTPUT=$(echo "$INPUT" | jq -r '.tool_output // ""' 2>/dev/null || echo "")
+# v4.3 fix: el campo correcto es .tool_response. Antes leia .tool_output
+# (que no existe en claude-code-style hooks) y NUNCA detectaba 429/503.
+OUTPUT=$(echo "$INPUT" | jq -r '.tool_response // .tool_output // ""' 2>/dev/null || echo "")
 
 # Check for provider failure patterns
 FAILOVER_NEEDED=false

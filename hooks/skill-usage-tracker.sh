@@ -11,6 +11,10 @@
 set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
+# Portable lock helper (flock on Linux/macOS, mkdir fallback on Git Bash Windows)
+# shellcheck source=_flock-compat.sh
+. "$(dirname "${BASH_SOURCE[0]}")/_flock-compat.sh" 2>/dev/null || true
+
 INPUT=$(cat)
 
 CACHE_DIR="$HOME/.omnicoder/.cache"
@@ -59,11 +63,16 @@ if [[ "$USED" == "1" ]]; then
     STATS_FILE="$MEM_DIR/skill-stats.json"
     mkdir -p "$MEM_DIR"
     if [[ ! -f "$STATS_FILE" ]]; then echo '{}' > "$STATS_FILE"; fi
-    (flock -w 2 200
-    jq --arg s "$SUGGESTED_SKILL" '
-        .[$s] = ((.[$s] // {used:0, ignored:0}) | .used += 1)
-    ' "$STATS_FILE" > "${STATS_FILE}.tmp" && mv "${STATS_FILE}.tmp" "$STATS_FILE" 2>/dev/null || true
-    ) 200>"$STATS_FILE.lock"
+    _bump_used() {
+        jq --arg s "$SUGGESTED_SKILL" '
+            .[$s] = ((.[$s] // {used:0, ignored:0}) | .used += 1)
+        ' "$STATS_FILE" > "${STATS_FILE}.tmp" && mv "${STATS_FILE}.tmp" "$STATS_FILE" 2>/dev/null || true
+    }
+    if command -v oc_with_lock >/dev/null 2>&1; then
+        oc_with_lock "$STATS_FILE" _bump_used
+    else
+        (flock -w 2 200; _bump_used) 200>"$STATS_FILE.lock"
+    fi
     exit 0
 fi
 
@@ -93,16 +102,26 @@ EOF
     fi
 
     PROMPT_SNIP=$(jq -r '.prompt // ""' "$SUGGESTIONS_LOG" 2>/dev/null | head -c 100)
-    (flock -w 2 200; echo "$SUGGESTED_SKILL | $(date -Iseconds) | $SUGGESTED_SCORE | $SUGGESTED_LEVEL | $PROMPT_SNIP" >> "$IGNORED_FILE") 200>"$IGNORED_FILE.lock"
+    IGN_LINE="$SUGGESTED_SKILL | $(date -Iseconds) | $SUGGESTED_SCORE | $SUGGESTED_LEVEL | $PROMPT_SNIP"
+    if command -v oc_locked_append >/dev/null 2>&1; then
+        oc_locked_append "$IGNORED_FILE" "$IGN_LINE"
+    else
+        (flock -w 2 200; printf '%s\n' "$IGN_LINE" >> "$IGNORED_FILE") 200>"$IGNORED_FILE.lock"
+    fi
 
     # Actualizar stats
     STATS_FILE="$MEM_DIR/skill-stats.json"
     if [[ ! -f "$STATS_FILE" ]]; then echo '{}' > "$STATS_FILE"; fi
-    (flock -w 2 200
-    jq --arg s "$SUGGESTED_SKILL" '
-        .[$s] = ((.[$s] // {used:0, ignored:0}) | .ignored += 1)
-    ' "$STATS_FILE" > "${STATS_FILE}.tmp" && mv "${STATS_FILE}.tmp" "$STATS_FILE" 2>/dev/null || true
-    ) 200>"$STATS_FILE.lock"
+    _bump_ignored() {
+        jq --arg s "$SUGGESTED_SKILL" '
+            .[$s] = ((.[$s] // {used:0, ignored:0}) | .ignored += 1)
+        ' "$STATS_FILE" > "${STATS_FILE}.tmp" && mv "${STATS_FILE}.tmp" "$STATS_FILE" 2>/dev/null || true
+    }
+    if command -v oc_with_lock >/dev/null 2>&1; then
+        oc_with_lock "$STATS_FILE" _bump_ignored
+    else
+        (flock -w 2 200; _bump_ignored) 200>"$STATS_FILE.lock"
+    fi
 
     # Invalidar (ya procesamos)
     rm -f "$SUGGESTIONS_LOG"

@@ -15,19 +15,20 @@ PROJECT_MEM_DIR="$CWD/.omnicoder/memory"
 
 CONTEXT=""
 
-# Limite de lineas por archivo para no reventar contexto
-MAX_LINES=80
+# v4.3.1: limites ultra-agresivos (-52% vs v4.3).
+# Solo patterns + feedback por default. Resto se carga bajo demanda via /memory.
+MAX_LINES=12
 
-MAX_TOTAL_CHARS=8000
+MAX_TOTAL_CHARS=1200
 TOTAL_CHARS=0
 
 append_file() {
     local f="$1" label="$2"
-    [[ -f "$f" ]] || return
+    [[ -f "$f" ]] || return 0
     # Skip binary files
-    file -b --mime "$f" 2>/dev/null | grep -q 'text/' || return
+    file -b --mime "$f" 2>/dev/null | grep -q 'text/' || return 0
     # Skip if total limit reached
-    [[ "$TOTAL_CHARS" -ge "$MAX_TOTAL_CHARS" ]] && return
+    [[ "$TOTAL_CHARS" -ge "$MAX_TOTAL_CHARS" ]] && return 0
     local content
     content=$(head -n "$MAX_LINES" "$f" 2>/dev/null)
     [[ -z "$content" ]] && return
@@ -38,22 +39,11 @@ append_file() {
 $content"
 }
 
-# 1. Memoria global (v3): prioriza patrones destilados (semantic memory)
-#    sobre casos específicos (episodic). Orden importa:
+# 1. Memoria global: solo semantic memory por default.
+#    Episodic (learned/causal/trajectories) va bajo demanda via /memory.
 if [[ -d "$GLOBAL_MEM_DIR" ]]; then
-    append_file "$GLOBAL_MEM_DIR/MEMORY.md" "MEMORIA-GLOBAL"
-    append_file "$GLOBAL_MEM_DIR/patterns.md" "PATRONES-DESTILADOS"
-    append_file "$GLOBAL_MEM_DIR/feedback.md" "FEEDBACK-USUARIO"
-    append_file "$GLOBAL_MEM_DIR/causal-edges.md" "CAUSAL-EDGES"
-    append_file "$GLOBAL_MEM_DIR/learned.md" "ERRORES-APRENDIDOS"
-    # Trayectorias: solo ultimas 10 (episodic, suele ser mucho)
-    if [[ -f "$GLOBAL_MEM_DIR/trajectories.md" ]]; then
-        TRAJ_TAIL=$(tail -n 10 "$GLOBAL_MEM_DIR/trajectories.md" 2>/dev/null)
-        [[ -n "$TRAJ_TAIL" ]] && CONTEXT+="
-
-## [TRAYECTORIAS-RECIENTES] ultimas 10
-$TRAJ_TAIL"
-    fi
+    append_file "$GLOBAL_MEM_DIR/patterns.md" "PAT"
+    append_file "$GLOBAL_MEM_DIR/feedback.md" "FB"
 fi
 
 # 2. Memoria del proyecto actual (si existe y no es el mismo path que el global)
@@ -76,7 +66,7 @@ STACK=""
 [[ -f "$CWD/Gemfile" ]] && STACK+="Ruby "
 
 if [[ -n "$CONTEXT" ]] || [[ -n "$STACK" ]]; then
-    HEADER="[CONTEXTO PERSISTENTE] Memoria cargada desde ~/.omnicoder/memory/ y ./.omnicoder/memory/. Stack: ${STACK:-desconocido}. Usa esta memoria para no repetir errores, respetar preferencias del usuario y entender el proyecto. Si aprendes algo nuevo o el usuario te corrige, actualiza la memoria con /learn o escribe en ~/.omnicoder/memory/learned.md."
+    HEADER="[MEM] stack=${STACK:-?} | /memory para cargar learned/trajectories/causal."
     FULL="$HEADER$CONTEXT"
     jq -n --arg ctx "$FULL" '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":$ctx}}'
 else

@@ -23,6 +23,13 @@ ACTIVE_ENV="$OMNI_DIR/.env"
 BACKUP_ENV="$OMNI_DIR/.env.backup"
 SETTINGS="$OMNI_DIR/settings.json"
 
+# Paleta compartida
+__SP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$__SP_DIR/_colors.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "$__SP_DIR/_colors.sh"
+fi
+
 usage() {
     cat <<EOF
 Uso: $0 <provider>

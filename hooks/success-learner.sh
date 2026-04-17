@@ -11,6 +11,10 @@
 set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
+# Portable lock helper (flock on Linux/macOS, mkdir fallback on Git Bash Windows)
+# shellcheck source=_flock-compat.sh
+. "$(dirname "${BASH_SOURCE[0]}")/_flock-compat.sh" 2>/dev/null || true
+
 INPUT=$(cat | tr '\n' ' ' | tr '\r' ' ')
 
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null || echo "")
@@ -73,19 +77,26 @@ if echo "$RECENT" | grep -q "sig:$SIG"; then
     exit 0
 fi
 
-(flock -w 2 200; cat >> "$TRAJ_FILE" <<EOF
-- $TIMESTAMP | $SIGNAL | $TOOL_NAME | \`$SNIPPET\` | cwd:$CWD | sig:$SIG
-EOF
-) 200>"$TRAJ_FILE.lock"
+LINE="- $TIMESTAMP | $SIGNAL | $TOOL_NAME | \`$SNIPPET\` | cwd:$CWD | sig:$SIG"
+if command -v oc_locked_append >/dev/null 2>&1; then
+    oc_locked_append "$TRAJ_FILE" "$LINE"
+else
+    (flock -w 2 200; printf '%s\n' "$LINE" >> "$TRAJ_FILE") 200>"$TRAJ_FILE.lock"
+fi
 
 # Trim: mantener ultimas 500 trayectorias
 LINE_COUNT=$(wc -l < "$TRAJ_FILE")
 if [[ "$LINE_COUNT" -gt 600 ]]; then
-    (flock -w 2 200
-    HEADER=$(head -n 7 "$TRAJ_FILE")
-    TAIL=$(tail -n 500 "$TRAJ_FILE")
-    echo -e "$HEADER\n\n$TAIL" > "$TRAJ_FILE"
-    ) 200>"$TRAJ_FILE.lock"
+    _trim_traj() {
+        HEADER=$(head -n 7 "$TRAJ_FILE")
+        TAIL=$(tail -n 500 "$TRAJ_FILE")
+        printf '%s\n\n%s\n' "$HEADER" "$TAIL" > "$TRAJ_FILE"
+    }
+    if command -v oc_with_lock >/dev/null 2>&1; then
+        oc_with_lock "$TRAJ_FILE" _trim_traj
+    else
+        (flock -w 2 200; _trim_traj) 200>"$TRAJ_FILE.lock"
+    fi
 fi
 
 exit 0

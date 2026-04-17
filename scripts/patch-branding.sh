@@ -10,10 +10,14 @@ set -euo pipefail
 
 QUIET="${1:-}"
 
-CYAN='\033[0;36m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+# Paleta compartida
+__PB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
+if [[ -f "$__PB_DIR/_colors.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "$__PB_DIR/_colors.sh"
+else
+    CYAN='\033[0;36m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+fi
 
 log() {
     [[ "$QUIET" == "--quiet" ]] && return

@@ -1,38 +1,54 @@
 #!/usr/bin/env bash
 # ============================================================
-# OmniCoder v4.2 - Instalador para Linux/macOS
+# OmniCoder v4.3 - Instalador para Linux/macOS
 # 168 agentes + 193 skills + 18 hooks + 21 commands + settings
 # ============================================================
 set -euo pipefail
 
-VERSION="4.2.0"
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-DIM='\033[2m'
-NC='\033[0m'
+VERSION="4.3.0"
 
 # ──────────────────────────────────────────────────────────
-# Banner
-# ──────────────────────────���───────────────────────────────
+# Paleta de colores compartida (_colors.sh)
+# ──────────────────────────────────────────────────────────
+__ILS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$__ILS_DIR/_colors.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "$__ILS_DIR/_colors.sh"
+else
+    # Fallback minimo
+    RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'; CYAN='\033[0;36m'; BOLD='\033[1m'
+    DIM='\033[2m'; NC='\033[0m'
+fi
+
+# Spinner (opcional, no critico)
+if [[ -f "$__ILS_DIR/_spinner.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "$__ILS_DIR/_spinner.sh"
+else
+    spinner_start() { :; }
+    spinner_stop() { :; }
+    spinner_stop_ok() { [[ -n "${1:-}" ]] && echo "  OK ${1}"; }
+    spinner_stop_fail() { [[ -n "${1:-}" ]] && echo "  !! ${1}"; }
+fi
+
+# ──────────────────────────────────────────────────────────
+# Banner OmniCoder v4.3
+# ──────────────────────────────────────────────────────────
 echo -e "${CYAN}${BOLD}"
 cat << 'BANNER'
 
-   ____                  _ ______          __
-  / __ \____ ___  ____  (_) ____/___  ____/ /__  _____
- / / / / __ `__ \/ __ \/ / /   / __ \/ __  / _ \/ ___/
-/ /_/ / / / / / / / / / / /___/ /_/ / /_/ /  __/ /
-\____/_/ /_/ /_/_/ /_/_/\____/\____/\__,_/\___/_/
-                                                v4.2.0
+    ___                  _  ___          _
+   / _ \ _ __ ___  _ __ (_)/ __\___   __| | ___ _ __
+  | | | | '_ ` _ \| '_ \| / /  / _ \ / _` |/ _ \ '__|
+  | |_| | | | | | | | | | / /__| (_) | (_| |  __/ |
+   \___/|_| |_| |_|_| |_|_\____/\___/ \__,_|\___|_|
 
 BANNER
 echo -e "${NC}"
-echo -e "${DIM}  168 Agentes + 193 Skills + 18 Hooks + 21 Commands${NC}"
-echo -e "${DIM}  Multi-provider | Cognitive routing | Subagent verification${NC}"
+echo -e "  ${BOLD}v4.3.0${NC} ${DIM}— Cognitive Qwen CLI${NC}"
+echo -e "  ${DIM}168 agents · 193 skills · 18 hooks · 21 commands${NC}"
+echo -e "  ${DIM}Multi-provider · BM25 router · Subagent verification${NC}"
 echo ""
 
 # ──────────────────────────────────────────────────────────
@@ -81,7 +97,7 @@ check_upgrade() {
         # Old installation without version file
         INSTALLED_VER="unknown"
     elif [[ -d "$HOME/.qwen/agents" ]]; then
-        # Legacy "Qwen Con Poderes" installation detected
+        # Legacy OmniCoder pre-rebrand installation detected
         INSTALLED_VER="legacy-qwen"
     fi
 
@@ -93,11 +109,11 @@ check_upgrade() {
     echo ""
 
     if [[ "$INSTALLED_VER" == "legacy-qwen" ]]; then
-        echo -e "  ${YELLOW}Version:${NC} Qwen Con Poderes (legacy en ~/.qwen/)"
+        echo -e "  ${YELLOW}Version:${NC} OmniCoder pre-rebrand (legacy en ~/.qwen/)"
         echo -e "  ${GREEN}Nueva:${NC}   OmniCoder v${VERSION} (en ~/.omnicoder/)"
         echo ""
         echo -e "  ${BOLD}Cambios principales:${NC}"
-        echo "    - Rebranding: Qwen Con Poderes → OmniCoder"
+        echo "    - Rebranding: legacy → OmniCoder"
         echo "    - Nueva ruta: ~/.qwen/ → ~/.omnicoder/"
         echo "    - Wrapper CLI: comando 'omnicoder' disponible"
         echo "    - 19 hooks de seguridad (era 10)"
@@ -194,7 +210,7 @@ doctor() {
     # Check hooks
     HOOK_COUNT=$(ls "$HOME/.omnicoder/hooks/"*.sh 2>/dev/null | wc -l || true)
     if [[ "$HOOK_COUNT" -ge 16 ]]; then
-        echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados (v4.2 con aprendizaje adaptativo + failover)"
+        echo -e "  ${GREEN}OK${NC} $HOOK_COUNT hooks instalados (v4.3 con post-tool-dispatcher consolidado)"
     elif [[ "$HOOK_COUNT" -gt 0 ]]; then
         echo -e "  ${YELLOW}!!${NC} Solo $HOOK_COUNT hooks (esperado: 16+)"
         ISSUES=$((ISSUES + 1))
@@ -264,7 +280,7 @@ doctor() {
 
     echo ""
     if [[ "$ISSUES" -eq 0 ]]; then
-        echo -e "  ${GREEN}${BOLD}Todo OK - OmniCoder v4.2.0 funcionando correctamente${NC}"
+        echo -e "  ${GREEN}${BOLD}Todo OK - OmniCoder v${VERSION} funcionando correctamente${NC}"
     else
         echo -e "  ${YELLOW}${BOLD}$ISSUES issues encontrados${NC}"
         echo -e "  ${DIM}Ejecuta: ./install-linux.sh --force para reparar${NC}"
@@ -367,37 +383,49 @@ HOOK_COUNT=$(ls "$REPO_DIR/hooks/"*.sh 2>/dev/null | wc -l)
 CMD_COUNT=$(ls "$REPO_DIR/commands/"*.md 2>/dev/null | wc -l)
 echo -e "  ${GREEN}OK${NC} $AGENT_COUNT agentes, $SKILL_COUNT skills, $HOOK_COUNT hooks, $CMD_COUNT commands"
 
-# ────��──────────────────────────────────────────────────��──
+# ──────────────────────────────────────────────────────────
+# v4.3: backup automático antes de sobreescribir
+# ──────────────────────────────────────────────────────────
+if [[ -d "$HOME/.omnicoder" ]] && [[ -f "$HOME/.omnicoder/settings.json" ]]; then
+    echo ""
+    echo -e "${BLUE}[backup]${NC} Respaldando configuración actual..."
+    bash "$SCRIPT_DIR/backup.sh" --label "pre-install-$(date +%Y%m%d-%H%M%S)" --quiet 2>/dev/null || \
+        echo -e "  ${YELLOW}!!${NC} Backup falló (no crítico), continuando"
+fi
+
+# ──────────────────────────────────────────────────────────
 # PASO 4: Instalar Agentes
-# ────────────────────��─────────────────────────────────────
+# ──────────────────────────────────────────────────────────
 echo ""
 echo -e "${BLUE}[4/11]${NC} Instalando agentes..."
 
 OMNI_AGENTS_DIR="$HOME/.omnicoder/agents"
 mkdir -p "$OMNI_AGENTS_DIR"
 
+spinner_start "copiando 168 agentes..."
 INSTALLED=0
 for f in "$REPO_DIR/agents/"*.md; do
     cp "$f" "$OMNI_AGENTS_DIR/$(basename "$f")"
     INSTALLED=$((INSTALLED + 1))
 done
-echo -e "  ${GREEN}OK${NC} $INSTALLED agentes -> ~/.omnicoder/agents/"
+spinner_stop_ok "$INSTALLED agentes -> ~/.omnicoder/agents/"
 
-# ────────────────────────────��─────────────────────────────
+# ──────────────────────────────────────────────────────────
 # PASO 5: Instalar Skills
-# ────────��─────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────
 echo ""
 echo -e "${BLUE}[5/11]${NC} Instalando skills..."
 
 OMNI_SKILLS_DIR="$HOME/.omnicoder/skills"
 mkdir -p "$OMNI_SKILLS_DIR"
 
+spinner_start "copiando 193 skills (puede tardar)..."
 INSTALLED=0
 for d in "$REPO_DIR/skills/"*/; do
     cp -r "$d" "$OMNI_SKILLS_DIR/$(basename "$d")"
     INSTALLED=$((INSTALLED + 1))
 done
-echo -e "  ${GREEN}OK${NC} $INSTALLED skills -> ~/.omnicoder/skills/"
+spinner_stop_ok "$INSTALLED skills -> ~/.omnicoder/skills/"
 
 # ──────────────────────────────────────────────────────────
 # PASO 6: Instalar Hooks
@@ -523,6 +551,16 @@ else
     bash "$REPO_DIR/scripts/build-skill-index.sh" || true
 fi
 
+# v4.4: pre-warm del rebuild-check para que el primer router no pague el find.
+# Tambien warmea el router con un prompt dummy para que el primer uso real
+# tenga caches listos.
+mkdir -p "$HOME/.omnicoder/.cache"
+date +%s > "$HOME/.omnicoder/.cache/.rebuild-check" 2>/dev/null || true
+if [[ -x "$HOME/.omnicoder/hooks/skill-router.sh" ]]; then
+    echo '{"user_prompt":"setup warmup dummy prompt for skill router cache","cwd":"'"$HOME"'"}' | \
+        bash "$HOME/.omnicoder/hooks/skill-router.sh" >/dev/null 2>&1 || true
+fi
+
 # ──────────────────────────────────────────────────────────
 # PASO 11: Setup interactivo de provider (API key)
 # ──────────────────────────────────────────────────────────
@@ -558,9 +596,9 @@ echo "$VERSION" > "$HOME/.omnicoder/.version"
 echo ""
 echo -e "${GREEN}${BOLD}"
 cat << 'DONE'
-  ╔══════════════════════════════════════════════════╗
-  ║         INSTALACION COMPLETADA v4.2.0            ║
-  ╚══════════════════════════════════════════════════╝
+  ╔═══════════════════════════════════════════════════╗
+  ║         INSTALACION COMPLETADA — v4.3.0           ║
+  ╚═══════════════════════════════════════════════════╝
 DONE
 echo -e "${NC}"
 
@@ -581,18 +619,19 @@ echo -e "    ${BOLD}/audit${NC}                         # Auditoria de seguridad
 echo -e "    ${BOLD}/handoff${NC}                       # Guardar progreso entre sesiones"
 echo -e "    ${BOLD}/verify-last${NC}                   # Auditoria del ultimo subagent"
 echo ""
-echo -e "  ${YELLOW}${BOLD}Hooks activos (16 total):${NC}"
+echo -e "  ${YELLOW}${BOLD}Hooks activos (18 total — v4.3 consolidados):${NC}"
 echo -e "    ${DIM}security-guard${NC}          Bloquea comandos peligrosos y secrets"
 echo -e "    ${DIM}pre-edit-guard${NC}          Protege archivos sensibles (.env, keys)"
 echo -e "    ${DIM}skill-router${NC}            Routing cognitivo (BM25 + project context)"
-echo -e "    ${DIM}session-init${NC}            Carga handoff de sesion anterior"
+echo -e "    ${DIM}post-tool-dispatcher${NC}    6 hooks PostToolUse en uno (4.4x speedup)"
+echo -e "    ${DIM}session-init${NC}            Carga handoff + memory-loader optimizado"
 echo -e "    ${DIM}auto-handoff${NC}            Sugiere guardar progreso al terminar"
-echo -e "    ${DIM}post-tool-logger${NC}        Registra operaciones para auditoria"
 echo -e "    ${DIM}notify-desktop${NC}          Notificaciones nativas del OS"
 echo -e "    ${DIM}subagent-inject${NC}         Inyecta contrato de evidencia a subagents"
 echo -e "    ${DIM}subagent-verify${NC}         Verifica que subagents completaron tarea"
 echo -e "    ${DIM}subagent-error-recover${NC}  Detecta errores 400 en subagents"
-echo -e "    ${DIM}+ 6 hooks de aprendizaje (trajectories/learned/patterns/...)${NC}"
+echo -e "    ${DIM}provider-failover${NC}       Auto-failover entre providers (fix v4.3)"
+echo -e "    ${DIM}+ hooks de aprendizaje (trajectories/learned/patterns/reflections)${NC}"
 echo ""
 echo -e "  ${YELLOW}${BOLD}Provider activo:${NC}"
 if [[ -f "$HOME/.omnicoder/.env" ]]; then

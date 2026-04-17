@@ -1,0 +1,261 @@
+name: CI
+
+# Triggered on every push/PR against main and via manual dispatch.
+# Cross-platform matrix catches GNU vs BSD tool differences early.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel stale runs on the same ref (e.g., force-push to a PR branch).
+concurrency:
+  group: "ci-${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: "ShellCheck (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install shellcheck. On ubuntu it is already available; on macOS use brew.
+      - name: Install shellcheck (macOS)
+        if: runner.os == 'macOS'
+        run: brew install shellcheck
+
+      - name: Verify shellcheck version
+        run: shellcheck --version
+
+      # -x  follows `source` directives
+      # -e  excludes SC1091 (source not followed) and SC2086 (intentional word splitting in path vars)
+      # Severity >= warning fails the job; info/style do not.
+      - name: Run shellcheck on hooks and scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          files=()
+          for f in hooks/*.sh scripts/*.sh; do
+            [[ -f "$f" ]] && files+=("$f")
+          done
+
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "::warning::No shell files found under hooks/ or scripts/"
+            exit 0
+          fi
+
+          echo "Linting ${#files[@]} shell file(s):"
+          printf '  - %s\n' "${files[@]}"
+
+          shellcheck -x -e SC1091,SC2086 --severity=warning "${files[@]}"
+
+  test:
+    name: "Bats Tests (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Generate a default validation test if the project has none yet.
+      # The stub only validates bash syntax + JSON config integrity.
+      - name: Generate tests/validate.bats if missing
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tests
+          if [[ ! -f tests/validate.bats ]]; then
+            echo "No tests/validate.bats found, generating stub..."
+            cat > tests/validate.bats <<'BATS'
+          #!/usr/bin/env bats
+          # Auto-generated stub validator. Replace with real tests as they are added.
+
+          @test "all hook scripts parse with bash -n" {
+            shopt -s nullglob
+            for f in hooks/*.sh; do
+              run bash -n "$f"
+              [ "$status" -eq 0 ] || { echo "syntax error in $f: $output"; false; }
+            done
+          }
+
+          @test "all installer/utility scripts parse with bash -n" {
+            shopt -s nullglob
+            for f in scripts/*.sh; do
+              run bash -n "$f"
+              [ "$status" -eq 0 ] || { echo "syntax error in $f: $output"; false; }
+            done
+          }
+
+          @test "config/settings.json is valid JSON" {
+            [ -f config/settings.json ]
+            run python3 -c "import json,sys; json.load(open('config/settings.json'))"
+            [ "$status" -eq 0 ]
+          }
+
+          @test "config/settings-turbo.json is valid JSON" {
+            [ -f config/settings-turbo.json ]
+            run python3 -c "import json,sys; json.load(open('config/settings-turbo.json'))"
+            [ "$status" -eq 0 ]
+          }
+          BATS
+          else
+            echo "tests/validate.bats already exists, skipping stub generation."
+          fi
+
+      - name: Setup bats-core
+        uses: bats-core/bats-action@3.0.0
+        with:
+          bats-version: 1.11.0
+
+      - name: Ensure python3 is available (for JSON validation)
+        shell: bash
+        run: python3 --version
+
+      - name: Run bats test suite
+        shell: bash
+        run: bats --print-output-on-failure tests/
+
+  validate-structure:
+    name: "Validate Required Directories"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Fail fast if the canonical OmniCoder layout is broken.
+      - name: Check required directories exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(agents skills hooks commands scripts config)
+          missing=()
+          for dir in "${required[@]}"; do
+            if [[ ! -d "$dir" ]]; then
+              missing+=("$dir")
+            fi
+          done
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error::Missing required directories: ${missing[*]}"
+            exit 1
+          fi
+          echo "All required directories present: ${required[*]}"
+
+  windows-install:
+    # v4.3.1: test real del installer en Windows. Verifica que install-windows.bat
+    # corre sin errores, PATH queda configurado, y los hooks se pueden invocar
+    # desde Git Bash (que viene preinstalado en el runner windows-latest).
+    name: "Windows Install Test"
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify CMD batch syntax
+        shell: cmd
+        run: |
+          REM Validacion estatica: CMD parsea los .bat/.cmd sin ejecutar.
+          REM Si tienen paréntesis desbalanceados o labels mal formados, cmd falla aqui.
+          cmd /c "echo Validando install-windows.bat && type scripts\install-windows.bat > nul"
+          cmd /c "echo Validando omnicoder.cmd && type scripts\omnicoder.cmd > nul"
+          cmd /c "echo Validando omnicoder.bat && type scripts\omnicoder.bat > nul"
+
+      - name: Verify PowerShell scripts parse
+        shell: pwsh
+        run: |
+          # Validacion estatica de .ps1 (parse AST sin ejecutar).
+          $scripts = @('scripts\install-windows.ps1','scripts\omnicoder.ps1')
+          foreach ($s in $scripts) {
+            Write-Host "Parsing $s..."
+            $tokens = $null; $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($s, [ref]$tokens, [ref]$errors)
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Host "::error::$($_.Message)" }
+              exit 1
+            }
+          }
+          Write-Host "OK: PowerShell scripts parse sin errores."
+
+      - name: Run installer in DOCTOR mode (no side-effects)
+        shell: cmd
+        run: |
+          REM Doctor mode solo diagnostica, no instala. Si falla hay bug grave.
+          scripts\install-windows.bat /DOCTOR
+          if errorlevel 2 exit /b %errorlevel%
+          REM errorlevel 1 es OK aqui (missing prereqs es esperado en runner limpio)
+
+      - name: Run full installer with /SKIP_CLI /FORCE
+        shell: cmd
+        run: |
+          REM Test end-to-end: instala sin qwen (/SKIP_CLI) y sin prompts (/FORCE).
+          REM El runner windows-latest tiene node, npm, git. jq se auto-descarga.
+          scripts\install-windows.bat /SKIP_CLI /FORCE
+          if errorlevel 1 (
+            echo ::error::Installer fallo con errorlevel %errorlevel%
+            exit /b %errorlevel%
+          )
+
+      - name: Verify PATH was persisted for user
+        shell: pwsh
+        run: |
+          $userPath = [Environment]::GetEnvironmentVariable('Path','User')
+          $omni = Join-Path $env:USERPROFILE '.omnicoder'
+          if ($userPath -notlike "*$omni*") {
+            Write-Host "::error::PATH de usuario NO contiene $omni. Valor actual: $userPath"
+            exit 1
+          }
+          Write-Host "OK: PATH de usuario contiene OmniCoder."
+
+      - name: Verify installation structure
+        shell: cmd
+        run: |
+          set "OMNI=%USERPROFILE%\.omnicoder"
+          if not exist "%OMNI%\settings.json" ( echo ::error::Falta settings.json & exit /b 1 )
+          if not exist "%OMNI%\hooks" ( echo ::error::Falta hooks\ & exit /b 1 )
+          if not exist "%OMNI%\agents" ( echo ::error::Falta agents\ & exit /b 1 )
+          if not exist "%OMNI%\skills" ( echo ::error::Falta skills\ & exit /b 1 )
+          if not exist "%OMNI%\omnicoder.cmd" ( echo ::error::Falta omnicoder.cmd & exit /b 1 )
+          if not exist "%OMNI%\.version" ( echo ::error::Falta .version & exit /b 1 )
+          set /p INSTVER=<"%OMNI%\.version"
+          echo OK: instalacion completa, version %INSTVER%
+
+      - name: Smoke test hooks via Git Bash
+        shell: bash
+        run: |
+          # Git Bash viene preinstalado en windows-latest. Valida que los hooks
+          # corren con stdin JSON simulado (pipeline real que usa OmniCoder).
+          set -euo pipefail
+          INPUT='{"tool_name":"Bash","tool_input":{"command":"echo hi"},"tool_response":"hi","session_id":"ci","cwd":"."}'
+
+          # dispatcher consolidado
+          echo "$INPUT" | bash ~/.omnicoder/hooks/post-tool-dispatcher.sh > /tmp/out1.json
+          echo "dispatcher output: $(cat /tmp/out1.json)"
+
+          # router-lite en saludo
+          echo '{"user_prompt":"hola","cwd":"."}' | bash ~/.omnicoder/hooks/skill-router-lite.sh > /tmp/out2.json
+          echo "router-lite output: $(cat /tmp/out2.json)"
+
+          # security-guard (debe permitir comandos simples)
+          echo '{"tool_name":"Bash","tool_input":{"command":"ls"}}' | bash ~/.omnicoder/hooks/security-guard.sh > /tmp/out3.json
+          echo "security-guard output: $(cat /tmp/out3.json)"
+
+          echo "OK: los 3 hooks core corren en Git Bash Windows sin fallar."

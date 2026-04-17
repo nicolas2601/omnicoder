@@ -1,0 +1,11 @@
+# Disable the generic "Open a blank issue" link so contributors pick
+# an intentional template (bug / feature) or head to discussions.
+blank_issues_enabled: false
+
+contact_links:
+  - name: "Discussions & Q&A"
+    url: "https://github.com/nicolas2601/omnicoder/discussions"
+    about: "Ask questions, share ideas, or get help from the community."
+  - name: "Troubleshooting guide"
+    url: "https://github.com/nicolas2601/omnicoder#troubleshooting"
+    about: "Check the README troubleshooting section before filing a bug."

@@ -10,6 +10,10 @@
 set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
+# Portable lock helper (flock on Linux/macOS, mkdir fallback on Git Bash Windows)
+# shellcheck source=_flock-compat.sh
+. "$(dirname "${BASH_SOURCE[0]}")/_flock-compat.sh" 2>/dev/null || true
+
 INPUT=$(cat)
 MEM_DIR="$HOME/.omnicoder/memory"
 CACHE_DIR="$HOME/.omnicoder/.cache"
@@ -76,7 +80,12 @@ EOF
 
             SIG=$(echo "${PREV_CMD}${CMD_HEAD}" | md5sum | cut -d' ' -f1)
             if ! grep -q "sig:$SIG" "$CAUSAL_FILE" 2>/dev/null; then
-                (flock -w 2 200; echo "- Si falla \`$PREV_CMD\` → probar \`$CMD_HEAD\` ($(date -Iseconds)) sig:$SIG" >> "$CAUSAL_FILE") 200>"$CAUSAL_FILE.lock"
+                LINE="- Si falla \`$PREV_CMD\` → probar \`$CMD_HEAD\` ($(date -Iseconds)) sig:$SIG"
+                if command -v oc_locked_append >/dev/null 2>&1; then
+                    oc_locked_append "$CAUSAL_FILE" "$LINE"
+                else
+                    (flock -w 2 200; printf '%s\n' "$LINE" >> "$CAUSAL_FILE") 200>"$CAUSAL_FILE.lock"
+                fi
             fi
         fi
     fi

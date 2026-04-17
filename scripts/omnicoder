@@ -1,37 +1,117 @@
 #!/usr/bin/env bash
 # ============================================================
-# OmniCoder - CLI Wrapper
+# OmniCoder v4.3 - CLI Wrapper
 # Lanza qwen CLI con branding OmniCoder y carga .env auto
 # ============================================================
 
+OMNI_VERSION="4.3.0"
 OMNI_DIR="$HOME/.omnicoder"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || echo "$OMNI_DIR")"
 
-# Auto-patch branding si qwen se actualizo (silencioso)
+# Cargar paleta de colores compartida (si existe)
+if [[ -f "$SCRIPT_DIR/_colors.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "$SCRIPT_DIR/_colors.sh"
+elif [[ -f "$OMNI_DIR/scripts/_colors.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "$OMNI_DIR/scripts/_colors.sh"
+else
+    # Fallback minimo si _colors.sh no esta disponible
+    OMNI_CYAN='\033[0;36m'
+    OMNI_BOLD='\033[1m'
+    OMNI_DIM='\033[2m'
+    OMNI_GREEN='\033[0;32m'
+    OMNI_YELLOW='\033[1;33m'
+    OMNI_RED='\033[0;31m'
+    OMNI_NC='\033[0m'
+    # Respeta NO_COLOR
+    if [[ -n "${NO_COLOR:-}" ]]; then
+        OMNI_CYAN='' OMNI_BOLD='' OMNI_DIM='' OMNI_GREEN=''
+        OMNI_YELLOW='' OMNI_RED='' OMNI_NC=''
+    fi
+fi
+
+# Detecta friendly name del provider a partir de OPENAI_BASE_URL
+detect_provider() {
+    local url="${1:-}"
+    case "$url" in
+        *nvidia*)              echo "NVIDIA NIM (MiniMax M2.7)" ;;
+        *generativelanguage*)  echo "Google Gemini" ;;
+        *api.minimax*)         echo "MiniMax (direct)" ;;
+        *deepseek*)            echo "DeepSeek" ;;
+        *openrouter*)          echo "OpenRouter" ;;
+        *localhost*|*127.0.0.1*) echo "Ollama (local)" ;;
+        "")                    echo "(no configurado)" ;;
+        *)                     echo "custom (${url})" ;;
+    esac
+}
+
+# Cargar .env si existe (provider activo) — antes de --version para detectar provider
+if [[ -f "$OMNI_DIR/.env" ]]; then
+    set -a
+    # shellcheck disable=SC1091
+    source "$OMNI_DIR/.env"
+    set +a
+fi
+
+# ──────────────────────────────────────────────────────────
+# --version / -v : output profesional
+# ──────────────────────────────────────────────────────────
+if [[ "${1:-}" == "--version" ]] || [[ "${1:-}" == "-v" ]]; then
+    # Contar componentes desde ~/.omnicoder si existen (reales)
+    agents_count=$(ls "$OMNI_DIR/agents/"*.md 2>/dev/null | wc -l | tr -d ' ')
+    skills_count=$(ls -d "$OMNI_DIR/skills/"*/ 2>/dev/null | wc -l | tr -d ' ')
+    hooks_count=$(ls "$OMNI_DIR/hooks/"*.sh 2>/dev/null | wc -l | tr -d ' ')
+    cmds_count=$(ls "$OMNI_DIR/commands/"*.md 2>/dev/null | wc -l | tr -d ' ')
+
+    # Fallback a valores de referencia v4.3 si no hay runtime aun
+    [[ "$agents_count" == "0" ]] && agents_count=168
+    [[ "$skills_count" == "0" ]] && skills_count=193
+    [[ "$hooks_count"  == "0" ]] && hooks_count=18
+    [[ "$cmds_count"   == "0" ]] && cmds_count=21
+
+    # Version del CLI upstream (qwen), si esta instalado
+    qwen_ver="(no instalado)"
+    if command -v qwen >/dev/null 2>&1; then
+        qwen_ver=$(qwen --version 2>/dev/null | head -n1 | tr -d '[:space:]')
+        [[ -z "$qwen_ver" ]] && qwen_ver="unknown"
+    fi
+
+    provider_name="$(detect_provider "${OPENAI_BASE_URL:-}")"
+
+    printf '\n'
+    printf '%bOmniCoder v%s%b\n' "${OMNI_BOLD}${OMNI_CYAN}" "$OMNI_VERSION" "$OMNI_NC"
+    printf '%b├──%b Qwen Code CLI:    %s\n' "$OMNI_DIM" "$OMNI_NC" "$qwen_ver"
+    printf '%b├──%b Provider:         %s\n' "$OMNI_DIM" "$OMNI_NC" "$provider_name"
+    printf '%b├──%b Agents:           %s\n' "$OMNI_DIM" "$OMNI_NC" "$agents_count"
+    printf '%b├──%b Skills:           %s\n' "$OMNI_DIM" "$OMNI_NC" "$skills_count"
+    printf '%b├──%b Hooks:            %s\n' "$OMNI_DIM" "$OMNI_NC" "$hooks_count"
+    printf '%b└──%b Commands:         %s\n' "$OMNI_DIM" "$OMNI_NC" "$cmds_count"
+    printf '\n'
+    printf '%bInstallation:%b %s\n' "$OMNI_DIM" "$OMNI_NC" "$OMNI_DIR"
+    printf '%bRepo:%b         https://github.com/nicolas2601/omnicoder\n' "$OMNI_DIM" "$OMNI_NC"
+    printf '%bLicense:%b      MIT\n' "$OMNI_DIM" "$OMNI_NC"
+    printf '\n'
+    exit 0
+fi
+
+# Auto-patch branding si qwen se actualizo (silencioso, no bloqueante)
 if [[ -f "$SCRIPT_DIR/patch-branding.sh" ]]; then
     bash "$SCRIPT_DIR/patch-branding.sh" --quiet 2>/dev/null || true
 elif [[ -f "$OMNI_DIR/../omnicoder/scripts/patch-branding.sh" ]]; then
     bash "$OMNI_DIR/../omnicoder/scripts/patch-branding.sh" --quiet 2>/dev/null || true
 fi
 
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-DIM='\033[2m'
-GREEN='\033[0;32m'
-NC='\033[0m'
-
-# Cargar .env si existe (provider activo)
-if [[ -f "$OMNI_DIR/.env" ]]; then
-    set -a
-    source "$OMNI_DIR/.env"
-    set +a
-fi
-
-# Info pre-launch (solo en modo interactivo, no headless)
-if [[ $# -eq 0 ]] || [[ "$1" != "-p" ]]; then
-    echo ""
-    echo -e "  ${DIM}168 agentes | 193 skills | 18 hooks | 21 commands${NC}"
-    echo ""
+# Info pre-launch (solo en modo interactivo, no headless -p)
+if [[ $# -eq 0 ]] || [[ "${1:-}" != "-p" ]]; then
+    provider_name="$(detect_provider "${OPENAI_BASE_URL:-}")"
+    printf '\n'
+    printf '  %b%s%b %bv%s%b  %b%s%b\n' \
+        "${OMNI_BOLD}${OMNI_CYAN}" "OmniCoder" "$OMNI_NC" \
+        "$OMNI_DIM" "$OMNI_VERSION" "$OMNI_NC" \
+        "$OMNI_DIM" "— $provider_name" "$OMNI_NC"
+    printf '  %b168 agents · 193 skills · 18 hooks · 21 commands%b\n' "$OMNI_DIM" "$OMNI_NC"
+    printf '\n'
 fi
 
 # Pasar todo a qwen
