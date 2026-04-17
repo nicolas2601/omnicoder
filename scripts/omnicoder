@@ -95,11 +95,22 @@ if [[ "${1:-}" == "--version" ]] || [[ "${1:-}" == "-v" ]]; then
     exit 0
 fi
 
-# Auto-patch branding si qwen se actualizo (silencioso, no bloqueante)
-if [[ -f "$SCRIPT_DIR/patch-branding.sh" ]]; then
-    bash "$SCRIPT_DIR/patch-branding.sh" --quiet 2>/dev/null || true
-elif [[ -f "$OMNI_DIR/../omnicoder/scripts/patch-branding.sh" ]]; then
-    bash "$OMNI_DIR/../omnicoder/scripts/patch-branding.sh" --quiet 2>/dev/null || true
+# v4.3.3 FAST STARTUP: patch-branding con marker file (~1ms en cache hit).
+# Si el marker no existe (primer arranque), lo corre en background para no
+# bloquear el arranque de qwen. Ahorra ~2.16s de cold start.
+_pb=""
+if [[ -f "$SCRIPT_DIR/patch-branding.sh" ]]; then _pb="$SCRIPT_DIR/patch-branding.sh"
+elif [[ -f "$OMNI_DIR/../omnicoder/scripts/patch-branding.sh" ]]; then _pb="$OMNI_DIR/../omnicoder/scripts/patch-branding.sh"
+fi
+if [[ -n "$_pb" ]]; then
+    if [[ -f "$OMNI_DIR/.branding-patched" ]]; then
+        # Fast path: marker existe, check <5ms
+        bash "$_pb" --quiet 2>/dev/null || true
+    else
+        # Primera vez: patch en background, no bloquear arranque de qwen
+        ( bash "$_pb" --quiet 2>/dev/null || true ) &
+        disown 2>/dev/null || true
+    fi
 fi
 
 # Info pre-launch (solo en modo interactivo, no headless -p)

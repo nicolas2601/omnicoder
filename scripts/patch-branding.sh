@@ -24,11 +24,28 @@ log() {
     echo -e "$@"
 }
 
+# ── v4.3.3 FAST PATH: marker file por version de qwen ──
+# Antes este script hacia 3 greps sobre cli.js (MB de tamano) en CADA
+# arranque del wrapper -> 2.16s de cold start. Ahora: marker file con
+# version parcheada. Check 1ms vs 2160ms (2000x mas rapido).
+MARKER_DIR="$HOME/.omnicoder"
+MARKER_FILE="$MARKER_DIR/.branding-patched"
+QWEN_BIN=$(command -v qwen 2>/dev/null || true)
+QWEN_VERSION=""
+if [[ -n "$QWEN_BIN" ]]; then
+    # Usar mtime del binario como "version" rapido (evita ejecutar qwen --version que tarda 1.6s)
+    QWEN_VERSION=$(stat -c%Y "$QWEN_BIN" 2>/dev/null || stat -f%m "$QWEN_BIN" 2>/dev/null || echo "unknown")
+fi
+
+if [[ -f "$MARKER_FILE" ]] && [[ "$(cat "$MARKER_FILE" 2>/dev/null)" == "$QWEN_VERSION" ]]; then
+    log "  ${GREEN}OK${NC} Branding ya parcheado (marker match)"
+    exit 0
+fi
+
 # Detectar ubicacion del CLI
 CLI_JS=""
-if command -v qwen &>/dev/null; then
-    QWEN_PATH=$(which qwen)
-    REAL_PATH=$(readlink -f "$QWEN_PATH" 2>/dev/null || echo "$QWEN_PATH")
+if [[ -n "$QWEN_BIN" ]]; then
+    REAL_PATH=$(readlink -f "$QWEN_BIN" 2>/dev/null || echo "$QWEN_BIN")
     CLI_DIR=$(dirname "$REAL_PATH")
     for candidate in \
         "$(npm root -g 2>/dev/null)/@qwen-code/qwen-code/cli.js" \
@@ -47,10 +64,12 @@ if [[ -z "$CLI_JS" ]] || [[ ! -f "$CLI_JS" ]]; then
     exit 0
 fi
 
-# Verificar si ya esta completamente parcheado (logo + texto)
+# Verificar si ya esta completamente parcheado (fallback si no hay marker)
 if grep -q '>_ OmniCoder' "$CLI_JS" 2>/dev/null && ! grep -q 'shortAsciiLogo.*QWEN' "$CLI_JS" 2>/dev/null; then
-    # Check if logo is already patched (OMNI instead of QWEN)
     if grep -q 'OMNI' "$CLI_JS" 2>/dev/null; then
+        # Re-crear el marker para futuras invocaciones rapidas
+        mkdir -p "$MARKER_DIR"
+        echo "$QWEN_VERSION" > "$MARKER_FILE" 2>/dev/null || true
         log "  ${GREEN}OK${NC} Branding ya parcheado (OmniCoder)"
         exit 0
     fi
@@ -100,6 +119,9 @@ sed -i 's/"X-OpenRouter-Title": "Qwen Code"/"X-OpenRouter-Title": "OmniCoder"/g'
 
 # Verificar
 if grep -q '>_ OmniCoder' "$CLI_JS" 2>/dev/null; then
+    # v4.3.3: escribir marker con la version parcheada para skip rapido
+    mkdir -p "$MARKER_DIR"
+    echo "$QWEN_VERSION" > "$MARKER_FILE" 2>/dev/null || true
     log "  ${GREEN}OK${NC} Branding parcheado: Qwen Code -> OmniCoder (logo + texto)"
 else
     log "  ${YELLOW}!!${NC} Patch de branding no se aplico correctamente"
