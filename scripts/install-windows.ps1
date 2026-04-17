@@ -299,11 +299,15 @@ try {
 } catch { Write-Err "Copia fallo: $($_.Exception.Message)"; exit 3 }
 
 # PASO 7: Commands
+# v4.3.2 FIX: copiar tambien a ~/.qwen/commands/ (Qwen CLI los lee de ahi).
 Write-Host ''
 Write-Step '7/11' 'Instalando commands...'
 try {
-    $cc = Copy-Files -Source (Join-Path $RepoDir 'commands') -Destination (Join-Path $OmniHome 'commands') -Filter '*.md'
-    Write-Ok "$cc commands"
+    $srcCmds = Join-Path $RepoDir 'commands'
+    $cc = Copy-Files -Source $srcCmds -Destination (Join-Path $OmniHome 'commands') -Filter '*.md'
+    Ensure-Dir (Join-Path $QwenHome 'commands')
+    Copy-Files -Source $srcCmds -Destination (Join-Path $QwenHome 'commands') -Filter '*.md' | Out-Null
+    Write-Ok "$cc commands -> .omnicoder\commands\ + .qwen\commands\"
 } catch { Write-Err "Copia fallo: $($_.Exception.Message)"; exit 3 }
 
 # PASO 8: Config + wrappers

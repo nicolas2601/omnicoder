@@ -255,13 +255,17 @@ echo   [OK] !HC! hooks -^> %%USERPROFILE%%\.omnicoder\hooks\
 REM ── PASO 7: Instalar Commands ──
 echo.
 echo [7/11] Instalando slash commands...
+REM v4.3.2 FIX: Qwen Code CLI lee commands de %USERPROFILE%\.qwen\commands\,
+REM no de .omnicoder\commands\. Copiamos a AMBOS para que funcionen.
 if not exist "%OMNI_HOME%\commands" mkdir "%OMNI_HOME%\commands"
+if not exist "%QWEN_HOME%\commands" mkdir "%QWEN_HOME%\commands"
 set "CC=0"
 for %%f in ("%REPO_DIR%\commands\*.md") do (
     copy /y "%%f" "%OMNI_HOME%\commands\%%~nxf" >nul
+    copy /y "%%f" "%QWEN_HOME%\commands\%%~nxf" >nul
     set /a CC+=1
 )
-echo   [OK] !CC! commands -^> %%USERPROFILE%%\.omnicoder\commands\
+echo   [OK] !CC! commands -^> .omnicoder\commands\ + .qwen\commands\
 
 REM ── PASO 8: Config + CLI wrappers ──
 echo.

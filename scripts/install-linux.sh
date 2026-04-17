@@ -451,14 +451,20 @@ echo ""
 echo -e "${BLUE}[7/11]${NC} Instalando slash commands..."
 
 OMNI_CMDS_DIR="$HOME/.omnicoder/commands"
-mkdir -p "$OMNI_CMDS_DIR"
+QWEN_CMDS_DIR="$HOME/.qwen/commands"
+mkdir -p "$OMNI_CMDS_DIR" "$QWEN_CMDS_DIR"
 
+# v4.3.2 FIX: copiar commands a AMBOS lugares. Qwen Code CLI lee de
+# ~/.qwen/commands/ — sin esta copia los comandos NO aparecen aunque
+# esten en ~/.omnicoder/commands/ (usuario reporto: "Unknown command: /personality").
 INSTALLED=0
 for f in "$REPO_DIR/commands/"*.md; do
-    cp "$f" "$OMNI_CMDS_DIR/$(basename "$f")"
+    name=$(basename "$f")
+    cp "$f" "$OMNI_CMDS_DIR/$name"
+    cp "$f" "$QWEN_CMDS_DIR/$name"
     INSTALLED=$((INSTALLED + 1))
 done
-echo -e "  ${GREEN}OK${NC} $INSTALLED commands -> ~/.omnicoder/commands/"
+echo -e "  ${GREEN}OK${NC} $INSTALLED commands -> ~/.omnicoder/commands/ + ~/.qwen/commands/"
 
 # ───��────────────────────────────────────────��─────────────
 # PASO 8: Instalar Config (OMNICODER.md + settings.json)
