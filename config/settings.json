@@ -60,7 +60,8 @@
       {
         "matcher": "",
         "hooks": [
-          { "type": "command", "command": "bash ~/.omnicoder/hooks/skill-router-lite.sh" }
+          { "type": "command", "command": "bash ~/.omnicoder/hooks/skill-router-lite.sh" },
+          { "type": "command", "command": "bash ~/.omnicoder/hooks/personality-injector.sh" }
         ]
       }
     ],

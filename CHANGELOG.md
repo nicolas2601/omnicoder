@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 
 ### Added
 
+- **Personalidades viltrumitas (feature chistosa, v4.3.2)**: nuevo comando `/personality` que activa alter-egos del universo Invincible. 6 personalidades soportadas: `omni-man` (arrogante paternal, "¡Piensa Mark, PIENSA!"), `conquest` (psicopata violento con risas maniaticas), `thragg` (emperador viltrumita, frio imperial), `anissa` (sarcastica fria), `cecil` (Cecil Stedman pragmatico, anti-viltrumita), `immortal` (solemne epico con referencias historicas). Subcomandos: `set <nombre>`, `get`, `list`, `off`, `random`. El trabajo tecnico sigue siendo impecable; solo cambia el tono. Persistente entre sesiones via `~/.omnicoder/.personality`. Implementado con `scripts/personality.sh` (CLI), `hooks/personality-injector.sh` (UserPromptSubmit hook, 4ms overhead cuando inactivo), `commands/personality.md` (slash command doc).
 - `hooks/skill-router-lite.sh`: fast path para UserPromptSubmit. 80% de prompts se resuelven con 0-15 bytes inyectados. Delega a `skill-router.sh` solo cuando hay tech nueva o prompt >100 palabras.
 - `hooks/_flock-compat.sh`: helper portable para locking de archivos en hooks (flock en Linux/macOS, mkdir fallback en Git Bash Windows).
 - `scripts/omnicoder.cmd`: wrapper CMD estandar para Windows (reemplaza `omnicoder.bat`, que ahora delega al .cmd para backward-compat).
