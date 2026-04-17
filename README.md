@@ -24,17 +24,32 @@ OmniCoder convierte tu CLI en un entorno con 168 agentes especializados, 193 ski
 
 ## Quick Start
 
-```bash
-git clone https://github.com/nicolas2601/omnicoder.git && cd omnicoder && chmod +x scripts/install-linux.sh && ./scripts/install-linux.sh
-```
-
-Luego lanza:
+### 🐧 Linux / 🍎 macOS
 
 ```bash
-omnicoder
+git clone https://github.com/nicolas2601/omnicoder.git && \
+  cd omnicoder && chmod +x scripts/install-linux.sh && ./scripts/install-linux.sh
 ```
 
-Guía completa en [docs/getting-started.md](./docs/getting-started.md).
+### 🪟 Windows (CMD)
+
+```cmd
+git clone https://github.com/nicolas2601/omnicoder.git
+cd omnicoder
+scripts\install-windows.bat
+```
+
+### 🪟 Windows (PowerShell)
+
+```powershell
+git clone https://github.com/nicolas2601/omnicoder.git
+cd omnicoder
+.\scripts\install-windows.ps1
+```
+
+Luego lanza `omnicoder` (cierra y reabre la terminal primero en Windows para que el PATH tenga efecto).
+
+> 💡 **Guía completa de instalación, desinstalación y troubleshooting**: [SUPPORT.md](./SUPPORT.md). Quick reference: [docs/getting-started.md](./docs/getting-started.md).
 
 ## ✨ Features
 
