@@ -26,6 +26,13 @@ CWD=$(echo "$INPUT" | jq -r '.cwd // ""' 2>/dev/null || echo "")
 PROMPT_LC=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]')
 PROMPT_LC_TRIM=$(echo "$PROMPT_LC" | xargs)
 
+# v4.3.2 FIX: slash commands NUNCA deben activar tech detection / router full.
+# Antes, "/personality" detectaba "vue" (o similar) del project context scan
+# y disparaba "npx skills find vue" — noise + falso positivo para slash commands.
+case "$PROMPT_LC_TRIM" in
+    /*) echo '{}'; exit 0 ;;
+esac
+
 # 2) conversacional / reacciones cortas
 if [[ ${#PROMPT_LC_TRIM} -lt 40 ]]; then
     case "$PROMPT_LC_TRIM" in

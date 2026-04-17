@@ -24,6 +24,11 @@ CWD=$(echo "$INPUT" | jq -r '.cwd // ""' 2>/dev/null || echo "")
 # v4.3: early-exit para prompts conversacionales cortos
 # (saludos, confirmaciones, reacciones). Evita overhead + context bloat.
 PROMPT_LC_TRIMMED=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]' | xargs)
+
+# v4.3.2: slash commands nunca deben activar tech detection ni npx skills find.
+case "$PROMPT_LC_TRIMMED" in
+    /*) echo '{}'; exit 0 ;;
+esac
 if [[ ${#PROMPT_LC_TRIMMED} -lt 40 ]]; then
     case "$PROMPT_LC_TRIMMED" in
         hola|holi|holis|ok|okay|listo|gracias|genial|perfecto|sigue|continua|continuar|si|no|dale|vale|bien|mal|hola\ *|buenas*|buen\ dia*|buenos\ dias*|buenas\ tardes*|buenas\ noches*|que\ tal*|como\ estas*|como\ vas*|y\ ahora*|y\ bueno*)

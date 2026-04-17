@@ -500,8 +500,15 @@ else
     echo -e "  ${GREEN}OK${NC} settings.json con hooks pre-configurados"
 fi
 
-# Crear directorio de logs
-mkdir -p "$HOME/.omnicoder/logs"
+# Crear directorios runtime obligatorios
+mkdir -p "$HOME/.omnicoder/logs" "$HOME/.omnicoder/scripts"
+
+# v4.3.2: scripts helper invocados por slash commands (personality, etc).
+# Copiamos los runtime-scripts + sus dependencias (_colors.sh, _spinner.sh).
+for s in personality.sh _colors.sh _spinner.sh backup.sh restore.sh; do
+    [[ -f "$REPO_DIR/scripts/$s" ]] && cp "$REPO_DIR/scripts/$s" "$HOME/.omnicoder/scripts/$s" && \
+        chmod +x "$HOME/.omnicoder/scripts/$s" 2>/dev/null || true
+done
 
 # Instalar wrapper 'omnicoder' en PATH
 if [[ -f "$REPO_DIR/scripts/omnicoder" ]]; then

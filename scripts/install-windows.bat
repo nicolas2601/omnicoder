@@ -296,9 +296,14 @@ if exist "%REPO_DIR%\config\settings.json" (
     if exist "%QWEN_HOME%\auth.json" del /q "%QWEN_HOME%\auth.json"
 )
 
-REM Subdirs estandar
-for %%D in (logs .cache bin) do (
+REM Subdirs estandar (v4.3.2: scripts/ ahora tambien para helpers runtime)
+for %%D in (logs .cache bin scripts) do (
     if not exist "%OMNI_HOME%\%%D" mkdir "%OMNI_HOME%\%%D"
+)
+
+REM v4.3.2: scripts runtime invocados por slash commands (personality, etc)
+for %%S in (personality.sh _colors.sh _spinner.sh backup.sh restore.sh) do (
+    if exist "%REPO_DIR%\scripts\%%S" copy /y "%REPO_DIR%\scripts\%%S" "%OMNI_HOME%\scripts\%%S" >nul
 )
 
 REM CLI wrappers

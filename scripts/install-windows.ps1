@@ -337,7 +337,14 @@ if (Test-Path $srcSettings) {
     }
 }
 
-foreach ($d in @('logs','.cache','bin')) { Ensure-Dir (Join-Path $OmniHome $d) }
+foreach ($d in @('logs','.cache','bin','scripts')) { Ensure-Dir (Join-Path $OmniHome $d) }
+
+# v4.3.2: scripts runtime invocados por slash commands (personality, etc)
+$rtScripts = @('personality.sh','_colors.sh','_spinner.sh','backup.sh','restore.sh')
+foreach ($s in $rtScripts) {
+    $src = Join-Path $ScriptDir $s
+    if (Test-Path $src) { Copy-Item $src (Join-Path $OmniHome "scripts\$s") -Force }
+}
 
 # CLI wrappers
 foreach ($w in @('omnicoder.cmd','omnicoder.bat','omnicoder.ps1')) {
