@@ -227,17 +227,15 @@ echo.
 echo [5/11] Instalando skills...
 if not exist "%OMNI_HOME%\skills" mkdir "%OMNI_HOME%\skills"
 set "SC=0"
-REM v4.3.2 FIX: xcopy es rapido pero retorna errorlevel 1 cuando el skill
-REM solo tiene subdirs vacios (ej. ui-ux-pro-max/data y scripts). Este NO
-REM es un error de copia real. xcopy exit codes:
-REM   0 = files copiados OK
-REM   1 = no files copied (subdir vacio, es OK para nosotros)
-REM   >=2 = error real (Ctrl+C, init error, disk error)
-REM Antes usabamos robocopy pero sus retries default bloqueaban 193 skills
-REM por >15 minutos en CI.
+REM v4.3.3 FIX: usar robocopy con /R:0 /W:0 (cero reintentos, zero wait).
+REM Antes xcopy fallaba con rc=4 en skills con subdirs vacios (ui-ux-pro-max
+REM tiene data/ y scripts/ vacios). Y robocopy default hace 1M retries x 30s
+REM wait = cuelga el CI. Con /R:0 /W:0 es rapido y tolerante.
+REM robocopy exit codes: 0-7 = success (0=no files, 1=copied, 3=copied+extras),
+REM >=8 = error real.
 for /d %%d in ("%REPO_DIR%\skills\*") do (
-    xcopy /e /i /y /q /h "%%d" "%OMNI_HOME%\skills\%%~nxd" >nul 2>&1
-    if !errorlevel! GEQ 2 ( echo   ERROR copiando skill %%~nxd ^(xcopy rc=!errorlevel!^) & endlocal & exit /b 3 )
+    robocopy "%%d" "%OMNI_HOME%\skills\%%~nxd" /E /R:0 /W:0 /NFL /NDL /NJH /NJS /NP /NC /NS >nul 2>&1
+    if !errorlevel! GEQ 8 ( echo   ERROR copiando skill %%~nxd ^(robocopy rc=!errorlevel!^) & endlocal & exit /b 3 )
     set /a SC+=1
 )
 echo   [OK] !SC! skills -^> %%USERPROFILE%%\.omnicoder\skills\
