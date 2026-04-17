@@ -45,7 +45,7 @@ if (-not $KeepMemory) {
 } else {
     Write-Host '    (memory/ se conserva: -KeepMemory)' -ForegroundColor DarkGray
 }
-Write-Host "  - $QwenHome\settings.json y caches OAuth residuales"
+Write-Host "  - $QwenHome\settings.json, QWEN.md, commands\ y caches OAuth residuales"
 if (-not $KeepQwen) {
     Write-Host '  - Paquete global: @qwen-code/qwen-code (npm uninstall -g)'
 } else {
@@ -106,13 +106,16 @@ if (Test-Path $OmniHome) {
     }
 }
 
-# 3. Limpiar ~/.qwen/ (settings + OAuth caches residuales)
+# 3. Limpiar ~/.qwen/ (settings + OAuth caches + QWEN.md + commands/)
+# v4.3.2: QWEN.md y commands/ los creamos con install copiando de OmniCoder.
 if (Test-Path $QwenHome) {
-    $qwenFiles = @('settings.json','oauth_creds.json','access_token','refresh_token','.qwen_session','auth.json')
+    $qwenFiles = @('settings.json','QWEN.md','oauth_creds.json','access_token','refresh_token','.qwen_session','auth.json')
     foreach ($f in $qwenFiles) {
         $p = Join-Path $QwenHome $f
         if (Test-Path $p) { Remove-Item $p -Force -ErrorAction SilentlyContinue }
     }
+    $qwenCmds = Join-Path $QwenHome 'commands'
+    if (Test-Path $qwenCmds) { Remove-Item $qwenCmds -Recurse -Force -ErrorAction SilentlyContinue }
     $remaining = Get-ChildItem -Path $QwenHome -Force -ErrorAction SilentlyContinue
     if (-not $remaining) {
         Remove-Item $QwenHome -Force -ErrorAction SilentlyContinue

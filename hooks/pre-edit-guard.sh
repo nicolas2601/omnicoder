@@ -52,6 +52,22 @@ if [[ -z "$DENY_REASON" ]]; then
     esac
 fi
 
+# v4.3.2: blacklist de paths de sistema (fuera de $HOME). Antes el guard
+# permitia editar /etc/passwd, /boot/grub, /usr/bin, /sys/*, /proc/*, /dev/*
+# — fallo de defensa en profundidad reportado en bug hunt.
+if [[ -z "$DENY_REASON" ]]; then
+    case "$FILE_PATH" in
+        /etc/*|/boot/*|/sys/*|/proc/*|/dev/*|/root/*|/var/log/*)
+            DENY_REASON="Path de sistema protegido ($FILE_PATH). Usa sudo manual si es necesario." ;;
+        /usr/*|/bin/*|/sbin/*|/lib/*|/lib64/*|/opt/*)
+            # Permitir solo dentro de /usr/local/share/* y similares donde apps de usuario escriben
+            case "$FILE_PATH" in
+                /usr/local/share/*|/usr/local/lib/python*/site-packages/*) ;;  # excepciones
+                *) DENY_REASON="Path de sistema protegido ($FILE_PATH). Usa sudo manual si es necesario." ;;
+            esac ;;
+    esac
+fi
+
 if [[ -n "$DENY_REASON" ]]; then
     jq -n --arg reason "BLOQUEADO: $DENY_REASON. No se permite edicion automatica." '{
         "hookSpecificOutput": {

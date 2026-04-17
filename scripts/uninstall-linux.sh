@@ -65,7 +65,7 @@ echo "  - ~/.omnicoder/ (TODO el directorio, incluye:"
 echo "    agents, skills, hooks, commands, config, logs, .cache, bin)"
 [[ "$KEEP_MEMORY" == "0" ]] && echo "    + memory/ (aprendizajes, patterns, trajectories, causal-edges)"
 [[ "$KEEP_MEMORY" == "1" ]] && echo -e "    ${OMNI_DIM}(memory/ se conserva: --keep-memory)${OMNI_NC}"
-echo "  - ~/.qwen/settings.json y caches OAuth residuales"
+echo "  - ~/.qwen/settings.json, QWEN.md, commands/ y caches OAuth residuales"
 [[ "$KEEP_QWEN" == "0" ]] && echo "  - Paquete global: @qwen-code/qwen-code (npm uninstall -g)"
 [[ "$KEEP_QWEN" == "1" ]] && echo -e "  ${OMNI_DIM}(qwen CLI se conserva: --keep-qwen)${OMNI_NC}"
 echo "  - Entradas de PATH a ~/.omnicoder en shell rcs"
@@ -105,11 +105,14 @@ if [[ -d "$OMNI_HOME" ]]; then
     fi
 fi
 
-# 3. Limpiar ~/.qwen/ (settings de qwen + OAuth caches residuales)
+# 3. Limpiar ~/.qwen/ (settings de qwen + OAuth caches + QWEN.md system prompt)
 if [[ -d "$QWEN_HOME" ]]; then
-    for f in settings.json oauth_creds.json access_token refresh_token .qwen_session auth.json; do
+    # v4.3.2: eliminar QWEN.md (lo creamos con install copiando OMNICODER.md)
+    for f in settings.json QWEN.md oauth_creds.json access_token refresh_token .qwen_session auth.json; do
         [[ -f "$QWEN_HOME/$f" ]] && rm -f "$QWEN_HOME/$f"
     done
+    # Borrar commands/ que instalamos (copias de ~/.omnicoder/commands/)
+    [[ -d "$QWEN_HOME/commands" ]] && rm -rf "$QWEN_HOME/commands"
     # Si qwen home queda vacio, removerlo
     if [[ -z "$(ls -A "$QWEN_HOME" 2>/dev/null)" ]]; then
         rmdir "$QWEN_HOME" 2>/dev/null

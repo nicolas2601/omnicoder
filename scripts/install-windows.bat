@@ -271,10 +271,12 @@ REM ── PASO 8: Config + CLI wrappers ──
 echo.
 echo [8/11] Configurando...
 
-REM OMNICODER.md
+REM OMNICODER.md (tambien -> QWEN.md porque qwen CLI lo lee auto como system prompt)
 if exist "%REPO_DIR%\OMNICODER.md" (
     copy /y "%REPO_DIR%\OMNICODER.md" "%OMNI_HOME%\OMNICODER.md" >nul
-    echo   [OK] OMNICODER.md
+    if not exist "%QWEN_HOME%" mkdir "%QWEN_HOME%"
+    copy /y "%REPO_DIR%\OMNICODER.md" "%QWEN_HOME%\QWEN.md" >nul
+    echo   [OK] OMNICODER.md -^> ~/.omnicoder/ + ~/.qwen/QWEN.md
 )
 
 REM settings.json para OmniCoder + qwen (qwen lee hardcoded de .qwen\)

@@ -472,10 +472,23 @@ echo -e "  ${GREEN}OK${NC} $INSTALLED commands -> ~/.omnicoder/commands/ + ~/.qw
 echo ""
 echo -e "${BLUE}[8/11]${NC} Configurando..."
 
-# OMNICODER.md
+# OMNICODER.md (instrucciones globales) — tambien se copia como QWEN.md
+# porque Qwen Code CLI carga ~/.qwen/QWEN.md automaticamente como system prompt.
+# v4.3.2 FIX: sin esto, qwen usaba un QWEN.md legacy de 212 lineas.
 if [[ -f "$REPO_DIR/OMNICODER.md" ]]; then
     cp "$REPO_DIR/OMNICODER.md" "$HOME/.omnicoder/OMNICODER.md"
-    echo -e "  ${GREEN}OK${NC} OMNICODER.md (instrucciones globales optimizadas)"
+    mkdir -p "$HOME/.qwen"
+    cp "$REPO_DIR/OMNICODER.md" "$HOME/.qwen/QWEN.md"
+    echo -e "  ${GREEN}OK${NC} OMNICODER.md -> ~/.omnicoder/ + ~/.qwen/QWEN.md"
+fi
+
+# v4.3.2: allowlist de bash para scripts internos (evita permission prompts
+# en /personality, /backup, /restore, etc).
+if command -v jq >/dev/null 2>&1 && [[ -f "$HOME/.qwen/settings.json" ]]; then
+    jq '.tools = (.tools // {}) | .tools.allowedCommands = (.tools.allowedCommands // [] + ["bash ~/.omnicoder/scripts/*", "bash '"$HOME"'/.omnicoder/scripts/*"] | unique)' \
+        "$HOME/.qwen/settings.json" > "$HOME/.qwen/settings.json.tmp" 2>/dev/null && \
+        mv "$HOME/.qwen/settings.json.tmp" "$HOME/.qwen/settings.json" && \
+        echo -e "  ${GREEN}OK${NC} allowedCommands añadido (bash ~/.omnicoder/scripts/*)"
 fi
 
 # settings.json - merge hooks si ya existe

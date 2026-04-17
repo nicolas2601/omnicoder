@@ -316,7 +316,10 @@ Write-Step '8/11' 'Configurando...'
 $omniMd = Join-Path $RepoDir 'OMNICODER.md'
 if (Test-Path $omniMd) {
     Copy-Item $omniMd (Join-Path $OmniHome 'OMNICODER.md') -Force
-    Write-Ok 'OMNICODER.md'
+    # v4.3.2 FIX: copiar tambien como QWEN.md (qwen CLI lo lee como system prompt).
+    Ensure-Dir $QwenHome
+    Copy-Item $omniMd (Join-Path $QwenHome 'QWEN.md') -Force
+    Write-Ok 'OMNICODER.md -> ~/.omnicoder/ + ~/.qwen/QWEN.md'
 }
 
 # settings.json cross-platform: hooks usan "bash ~/.omnicoder/hooks/xxx.sh".
