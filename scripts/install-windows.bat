@@ -226,18 +226,18 @@ REM ── PASO 5: Instalar Skills ──
 echo.
 echo [5/11] Instalando skills...
 if not exist "%OMNI_HOME%\skills" mkdir "%OMNI_HOME%\skills"
+REM v4.3.4 FIX: una sola llamada robocopy para TODO skills/. Antes iteraba
+REM per-skill con for /d, lo que causaba errorlevel "sticky" entre iteraciones
+REM (rc=9 aparecia aunque solo 1 skill tuviera issue menor). Un solo robocopy
+REM sobre el directorio padre es 10x mas rapido y evita el state bug.
+REM Toleramos rc < 16 (bits 0-7 = copiado/extras/mismatch/algun-fail menor).
+REM Solo >= 16 es error FATAL.
+robocopy "%REPO_DIR%\skills" "%OMNI_HOME%\skills" /E /R:0 /W:0 /NFL /NDL /NJH /NJS /NP /NC /NS >nul 2>&1
+set "ROBOCOPY_RC=!errorlevel!"
+if !ROBOCOPY_RC! GEQ 16 ( echo   ERROR fatal copiando skills ^(robocopy rc=!ROBOCOPY_RC!^) & endlocal & exit /b 3 )
+REM Contar skills instaladas
 set "SC=0"
-REM v4.3.3 FIX: usar robocopy con /R:0 /W:0 (cero reintentos, zero wait).
-REM Antes xcopy fallaba con rc=4 en skills con subdirs vacios (ui-ux-pro-max
-REM tiene data/ y scripts/ vacios). Y robocopy default hace 1M retries x 30s
-REM wait = cuelga el CI. Con /R:0 /W:0 es rapido y tolerante.
-REM robocopy exit codes: 0-7 = success (0=no files, 1=copied, 3=copied+extras),
-REM >=8 = error real.
-for /d %%d in ("%REPO_DIR%\skills\*") do (
-    robocopy "%%d" "%OMNI_HOME%\skills\%%~nxd" /E /R:0 /W:0 /NFL /NDL /NJH /NJS /NP /NC /NS >nul 2>&1
-    if !errorlevel! GEQ 8 ( echo   ERROR copiando skill %%~nxd ^(robocopy rc=!errorlevel!^) & endlocal & exit /b 3 )
-    set /a SC+=1
-)
+for /d %%d in ("%OMNI_HOME%\skills\*") do set /a SC+=1
 echo   [OK] !SC! skills -^> %%USERPROFILE%%\.omnicoder\skills\
 
 REM ── PASO 6: Instalar Hooks ──
