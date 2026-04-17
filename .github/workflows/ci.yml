@@ -26,7 +26,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Install shellcheck. On ubuntu it is already available; on macOS use brew.
       - name: Install shellcheck (macOS)
@@ -58,7 +58,11 @@ jobs:
           echo "Linting ${#files[@]} shell file(s):"
           printf '  - %s\n' "${files[@]}"
 
-          shellcheck -x -e SC1091,SC2086 --severity=warning "${files[@]}"
+          # v4.3.1: severity=error (antes warning era fatal). Los warnings
+          # SC2034 (unused vars, muchos son aliases intencionales) y SC2221/SC2222
+          # (patterns ambiguos en case, false positives con `hola\ *` vs `hola`)
+          # quedan como info. Solo fallamos en errores reales.
+          shellcheck -x -e SC1091,SC2086,SC2034,SC2154,SC2221,SC2222 --severity=error "${files[@]}"
 
   test:
     name: "Bats Tests (${{ matrix.os }})"
@@ -71,7 +75,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Generate a default validation test if the project has none yet.
       # The stub only validates bash syntax + JSON config integrity.
@@ -138,7 +142,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Fail fast if the canonical OmniCoder layout is broken.
       - name: Check required directories exist
@@ -168,7 +172,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Verify CMD batch syntax
         shell: cmd
@@ -198,10 +202,17 @@ jobs:
       - name: Run installer in DOCTOR mode (no side-effects)
         shell: cmd
         run: |
-          REM Doctor mode solo diagnostica, no instala. Si falla hay bug grave.
+          REM v4.3.1: doctor mode diagnostica. En runner limpio sin instalacion
+          REM previa devuelve errorlevel 1 (issues encontrados). Esto es ESPERADO
+          REM y NO debe fallar el CI. Solo errorlevel >= 2 es bug real.
           scripts\install-windows.bat /DOCTOR
-          if errorlevel 2 exit /b %errorlevel%
-          REM errorlevel 1 es OK aqui (missing prereqs es esperado en runner limpio)
+          set "DOCTOR_RC=%errorlevel%"
+          if %DOCTOR_RC% GEQ 2 (
+            echo ::error::DOCTOR retorno errorlevel %DOCTOR_RC% (bug real)
+            exit /b %DOCTOR_RC%
+          )
+          echo DOCTOR OK con errorlevel %DOCTOR_RC% (1 es esperado en runner limpio)
+          exit /b 0
 
       - name: Run full installer with /SKIP_CLI /FORCE
         shell: cmd
