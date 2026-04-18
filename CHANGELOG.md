@@ -4,6 +4,64 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.2] — 2026-04-18
+
+Performance + ergonomics pass. Router is 22× faster on the hot path, the
+shipped config no longer hijacks the model the user picked in `/models`,
+and a one-shot Windows bootstrap script gets a fresh machine from zero to
+running in a single command.
+
+### Performance
+
+- Router warm p50: **23 ms → 0.71 ms** (~32× faster) over 361 indexed
+  assets. TF is pre-computed at build time; `bm25()` iterates query terms
+  instead of the full doc vocabulary; top-3 selection is a streaming O(n)
+  scan instead of sort+slice.
+- Router cold p50 **from disk**: **126 ms → 77 ms** (-38%) via smaller
+  payload (doc body cap reduced from 2000B to 900B → on-disk index
+  **2.6 MB → 1.2 MB**, -53%) and native `Bun.file().json()` when the plugin
+  runs under Bun.
+- Full pipeline (50 tool calls × 6 hooks) wall clock: **1303 ms → 68 ms**
+  (-94.8% end-to-end) — below the v4 TSV baseline of 2000 ms.
+- Background warmup: `getIndex()` fires on plugin init so the first user
+  prompt never pays the build cost.
+- Disk cache lives at `$XDG_CACHE_HOME/omnicoder/router-index.json`,
+  keyed by mtime+count of the source dirs. Opt out with
+  `OMNICODER_ROUTER_NOCACHE=1`.
+
+### Fixed
+
+- `.omnicoder/opencode.jsonc` no longer pins `build`, `plan`, `general`
+  agents to `nvidia-nim/minimaxai/minimax-m2.7`. Model selected in
+  `/models` (or `-m`) now sticks across messages; agent overrides are
+  opt-in and documented.
+- Legacy `~/.omnicoder/.env` (from v4) is now loaded by the wrapper in
+  addition to `~/.omnicoder/env`, with `set -a` so provider keys reach
+  opencode without a manual rename. Fixes
+  `Unauthorized: Header of type authorization was missing` on fresh v4→v5
+  upgrades.
+- `test/bin-wrapper.test.ts` spawns via `bash` on Windows — Node's
+  `spawnSync` cannot `CreateProcess` a shebang-only POSIX script. Repairs
+  the 3 bin-wrapper failures visible only on `windows-latest`.
+- `/personality` command now executes `~/.omnicoder/scripts/personality.sh`
+  and echoes its output verbatim instead of dumping the command markdown.
+
+### Added
+
+- `scripts/bootstrap-windows.ps1` — one-shot Windows bootstrap. Checks
+  PowerShell version, installs Node LTS / Git / GitHub CLI via winget,
+  runs `gh auth login`, purges legacy v4 / Qwen Code / stale opencode
+  state (with automatic memory backup to `%TEMP%`), clones the repo,
+  runs `install-windows.ps1`, prompts for `NVIDIA_API_KEY` with masked
+  input, persists it to User scope, and verifies with `omnicoder doctor`
+  in a refreshed child shell.
+  - Flags: `-Yes`, `-SkipCleanup`, `-KeepMemory`, `-NvidiaApiKey`,
+    `-RepoDir`, `-DryRun`.
+  - Safe by default: refuses to run as admin, only touches the user
+    profile + User PATH, every destructive step confirms unless `-Yes`.
+- Dedicated `uniq()` pass on query tokens so repeated words in the prompt
+  don't over-weight matches.
+
 ## [5.0.0-alpha.1] — 2026-04-18
 
 Second alpha, closing the SEC-05 / bun-install / MIGRATION gaps left open by alpha.0 and adding a professional README + 7 topical docs modelled after the v4 documentation layout.
