@@ -178,6 +178,114 @@ run_installer() {
   fi
 }
 
+# ---- API key provisioning ---------------------------------------------------
+# Creates ~/.omnicoder/env with NVIDIA_API_KEY (and friends). The wrapper
+# bin/omnicoder sources it automatically so the user does not need to
+# re-export anything per-shell. Also hooks into bash/zsh/fish rc files so
+# `echo $NVIDIA_API_KEY` works at any prompt.
+OMNI_ENV_FILE="$HOME/.omnicoder/env"
+
+persist_key() {
+  key_name=$1 ; key_value=$2
+  mkdir -p "$HOME/.omnicoder"
+  # Remove any previous line for the same key and append the new one.
+  if [ -f "$OMNI_ENV_FILE" ]; then
+    grep -v "^export[[:space:]]\+${key_name}=" "$OMNI_ENV_FILE" > "$OMNI_ENV_FILE.new" || true
+    mv "$OMNI_ENV_FILE.new" "$OMNI_ENV_FILE"
+  fi
+  # shellcheck disable=SC2016
+  printf 'export %s=%s\n' "$key_name" "$(printf '%s' "$key_value" | sed "s/'/'\\\\''/g; s/^/'/; s/\$/'/")" \
+    >> "$OMNI_ENV_FILE"
+  chmod 600 "$OMNI_ENV_FILE"
+
+  # Make sure the user shells source it automatically.
+  src_line='[ -f "$HOME/.omnicoder/env" ] && . "$HOME/.omnicoder/env"'
+  fish_line='test -f $HOME/.omnicoder/env.fish; and source $HOME/.omnicoder/env.fish'
+  for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
+    if [ -f "$rc" ] && ! grep -qF 'omnicoder/env' "$rc"; then
+      printf '\n# OmniCoder — auto-loaded API keys\n%s\n' "$src_line" >> "$rc"
+    fi
+  done
+  if [ -d "$HOME/.config/fish" ]; then
+    mkdir -p "$HOME/.config/fish"
+    fish_rc="$HOME/.config/fish/config.fish"
+    [ -f "$fish_rc" ] || touch "$fish_rc"
+    if ! grep -qF 'omnicoder/env' "$fish_rc"; then
+      printf '\n# OmniCoder — auto-loaded API keys\n%s\n' "$fish_line" >> "$fish_rc"
+    fi
+    # Fish cannot source POSIX `export` — emit a twin file for it.
+    grep -E '^export ' "$OMNI_ENV_FILE" \
+      | sed -E "s/^export ([A-Z_]+)=(.*)$/set -gx \\1 \\2/" \
+      > "$HOME/.omnicoder/env.fish" 2>/dev/null || true
+    chmod 600 "$HOME/.omnicoder/env.fish" 2>/dev/null || true
+  fi
+
+  # Export in the current script so `verify` below can reach it.
+  eval "export ${key_name}=\"\$key_value\""
+}
+
+setup_api_key() {
+  # Skip if the user already has any provider key in env.
+  for v in NVIDIA_API_KEY MINIMAX_API_KEY DASHSCOPE_API_KEY ANTHROPIC_API_KEY OPENAI_API_KEY; do
+    val=$(eval "printf '%s' \"\${$v:-}\"")
+    [ -n "${val:-}" ] && { note "using existing $v from environment"; return 0; }
+  done
+
+  # Piped (curl | bash) setups have no stdin. Try /dev/tty so we can still
+  # ask the user — that works for both piped and direct invocations.
+  have_tty=0
+  if [ -r /dev/tty ] && [ -w /dev/tty ]; then have_tty=1; fi
+  if [ "$have_tty" = "0" ]; then
+    warn "no interactive terminal — skipping API key prompt"
+    note "set NVIDIA_API_KEY (or MINIMAX / DASHSCOPE / ANTHROPIC / OPENAI) before launching omnicoder"
+    return 0
+  fi
+
+  step "Provider API key"
+  {
+    printf '\n  %sOmniCoder needs one LLM provider key to run.%s\n' "${C_BOLD}" "${C_RST}"
+    printf '  The default provider is %sNVIDIA NIM%s (free-tier, MiniMax M2.7 + Qwen3 Coder).\n' "${C_CYN}" "${C_RST}"
+    printf '  Get one at: %shttps://build.nvidia.com%s (sign in → API Keys).\n\n' "${C_DIM}" "${C_RST}"
+    printf '  Pick a provider (press ENTER for NVIDIA):\n'
+    printf '    1) NVIDIA NIM         [recommended]\n'
+    printf '    2) MiniMax direct\n'
+    printf '    3) DashScope (Qwen)\n'
+    printf '    4) Anthropic (Claude)\n'
+    printf '    5) OpenAI\n'
+    printf '    6) skip (set it later)\n'
+    printf '  > '
+  } > /dev/tty
+  read -r choice </dev/tty || choice="1"
+  [ -z "${choice:-}" ] && choice="1"
+
+  case "$choice" in
+    1|"") var="NVIDIA_API_KEY";    label="NVIDIA NIM (MiniMax M2.7)" ;;
+    2)    var="MINIMAX_API_KEY";   label="MiniMax direct" ;;
+    3)    var="DASHSCOPE_API_KEY"; label="DashScope (Qwen)" ;;
+    4)    var="ANTHROPIC_API_KEY"; label="Anthropic Claude" ;;
+    5)    var="OPENAI_API_KEY";    label="OpenAI" ;;
+    *)    note "skipped"; return 0 ;;
+  esac
+
+  printf '  paste your %s key (hidden, ENTER when done): ' "$label" > /dev/tty
+  # read -s isn't POSIX but bash/zsh/fish (running as bash here) have it;
+  # fall back to plain read otherwise.
+  if read -rs value </dev/tty 2>/dev/null; then
+    printf '\n' > /dev/tty
+  else
+    read -r value </dev/tty
+  fi
+
+  if [ -z "${value:-}" ]; then
+    warn "no value entered — skipping"
+    return 0
+  fi
+
+  persist_key "$var" "$value"
+  ok "$var saved to ~/.omnicoder/env (chmod 600)"
+  note "it's also hooked into ~/.bashrc / ~/.zshrc / ~/.config/fish/config.fish"
+}
+
 # ---- verification -----------------------------------------------------------
 verify() {
   step "Verifying install"
@@ -265,6 +373,7 @@ main() {
   fi
   clone_or_update
   run_installer
+  setup_api_key
   verify
   run_qa
   summary

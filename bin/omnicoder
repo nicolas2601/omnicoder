@@ -20,6 +20,14 @@ export OMNICODER_HOME
 OMNICODER_BANNER_FLAG="${OMNICODER_HOME}/.banner-shown"
 OMNICODER_USER_CONFIG="${OMNICODER_HOME}/opencode.jsonc"
 
+# Auto-load API keys stashed by scripts/setup.sh. This lets users launch
+# `omnicoder` from any shell (fish, dash, restricted bash) without having
+# to re-export NVIDIA_API_KEY etc. every session.
+if [ -f "${OMNICODER_HOME}/env" ]; then
+  # shellcheck disable=SC1091
+  . "${OMNICODER_HOME}/env"
+fi
+
 # ---- version lookup ---------------------------------------------------------
 # Read version from the installed package.json. Walk upward from this script so
 # we work both from the repo checkout and from a bin-only install.
