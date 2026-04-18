@@ -22,11 +22,17 @@ OMNICODER_USER_CONFIG="${OMNICODER_HOME}/opencode.jsonc"
 
 # Auto-load API keys stashed by scripts/setup.sh. This lets users launch
 # `omnicoder` from any shell (fish, dash, restricted bash) without having
-# to re-export NVIDIA_API_KEY etc. every session.
-if [ -f "${OMNICODER_HOME}/env" ]; then
-  # shellcheck disable=SC1091
-  . "${OMNICODER_HOME}/env"
-fi
+# to re-export NVIDIA_API_KEY etc. every session. Accept both `env` and
+# `.env` so legacy v4 installs keep working without manual rename.
+for envfile in "${OMNICODER_HOME}/env" "${OMNICODER_HOME}/.env"; do
+  if [ -f "$envfile" ]; then
+    set -a
+    # shellcheck disable=SC1090
+    . "$envfile"
+    set +a
+    break
+  fi
+done
 
 # ---- version lookup ---------------------------------------------------------
 # Read version from the installed package.json. Walk upward from this script so

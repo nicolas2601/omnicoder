@@ -21,6 +21,18 @@ const REPO_ROOT = path.resolve(import.meta.dir, "..", "..", "..")
 const SHIM = path.join(REPO_ROOT, "bin", "omnicoder")
 const PKG_JSON = path.join(REPO_ROOT, "packages", "omnicoder", "package.json")
 
+// Windows cannot CreateProcess a shebang-only POSIX script, so we route the
+// invocation through Git Bash (guaranteed on the Windows runner where these
+// tests execute under `bash.EXE`). Linux/macOS execute the shim natively via
+// its `#!/bin/sh` shebang.
+const IS_WINDOWS = process.platform === "win32"
+function runShim(args: string[], env: NodeJS.ProcessEnv) {
+  if (IS_WINDOWS) {
+    return spawnSync("bash", [SHIM, ...args], { env, encoding: "utf8" })
+  }
+  return spawnSync(SHIM, args, { env, encoding: "utf8" })
+}
+
 async function readPackageVersion(): Promise<string> {
   const raw = await fs.readFile(PKG_JSON, "utf8")
   return (JSON.parse(raw) as { version: string }).version
@@ -61,10 +73,7 @@ describe("bin/omnicoder wrapper", () => {
 
   test("--omnicoder-version prints the package version", async () => {
     const version = await readPackageVersion()
-    const result = spawnSync(SHIM, ["--omnicoder-version"], {
-      env: cleanEnv(home),
-      encoding: "utf8",
-    })
+    const result = runShim(["--omnicoder-version"], cleanEnv(home))
     expect(result.status).toBe(0)
     expect(result.stdout).toContain(`omnicoder ${version}`)
     // The second line covers the opencode core — either a real version or
@@ -73,10 +82,7 @@ describe("bin/omnicoder wrapper", () => {
   })
 
   test("doctor reports provider status for each supported key", async () => {
-    const result = spawnSync(SHIM, ["doctor"], {
-      env: cleanEnv(home, { NVIDIA_API_KEY: "sk-test-nvidia" }),
-      encoding: "utf8",
-    })
+    const result = runShim(["doctor"], cleanEnv(home, { NVIDIA_API_KEY: "sk-test-nvidia" }))
     // Doctor can legitimately exit 1 when opencode is missing on the runner
     // (feedback_ci_windows_bat.md #8). Both exit paths are acceptable; we
     // only require the output contract.
@@ -95,10 +101,17 @@ describe("bin/omnicoder wrapper", () => {
 
   test("launching without opencode in PATH fails with a helpful message", async () => {
     // Point PATH at an empty dir so `command -v opencode` returns nothing.
+    // On Windows we must keep the Git Bash bin in PATH so `bash` itself is
+    // resolvable — only `opencode` needs to be missing for this assertion.
     const emptyBin = path.join(home, "empty-bin")
     await fs.mkdir(emptyBin, { recursive: true })
-    const env = cleanEnv(home, { PATH: emptyBin })
-    const result = spawnSync(SHIM, [], { env, encoding: "utf8" })
+    let pathOverride = emptyBin
+    if (IS_WINDOWS) {
+      const bashDir = path.dirname(process.env.BASH ?? "C:/Program Files/Git/bin/bash.EXE")
+      pathOverride = `${emptyBin}${path.delimiter}${bashDir}`
+    }
+    const env = cleanEnv(home, { PATH: pathOverride })
+    const result = runShim([], env)
     expect(result.status).toBe(127)
     expect(result.stderr).toContain("opencode is not installed")
   })
