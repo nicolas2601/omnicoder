@@ -1,5 +1,34 @@
 # 02 · Instalación detallada
 
+## Opción Windows (recomendada para usuarias nuevas): bootstrap one-shot
+
+Un único comando cubre todo: instala Node LTS + Git + GitHub CLI si faltan,
+corre `gh auth login`, limpia cualquier resto de v4 / Qwen Code / opencode
+viejo (con backup de memoria), clona el repo, instala v5 y pide la API key
+de NVIDIA NIM al final.
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/bootstrap-windows.ps1 -OutFile "$env:TEMP\oc-bootstrap.ps1"
+pwsh -ExecutionPolicy Bypass -File "$env:TEMP\oc-bootstrap.ps1"
+```
+
+Flags útiles:
+
+```
+-Yes                       no pedir confirmaciones (CI / VM descartables)
+-SkipCleanup               dejar v4 / Qwen Code intactos (install side-by-side)
+-KeepMemory:$false         no respaldar ~\.omnicoder\memory durante la limpieza
+-NvidiaApiKey nvapi-xxx    pasar la key sin prompt interactivo
+-DryRun                    mostrar qué haría sin tocar el disco
+-RepoDir C:\ruta\repo      clonar en otra carpeta (default ~\omnicoder-v5)
+```
+
+El bootstrap es **seguro por defecto**: cada paso destructivo pregunta
+antes de ejecutarse (salvo que uses `-Yes`), nunca corre como admin,
+solo toca el perfil del usuario y el User PATH — nunca el sistema.
+
+---
+
 ## Opción A — clonar el repo (recomendada)
 
 ```bash
