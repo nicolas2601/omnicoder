@@ -3,11 +3,14 @@ import { EOL } from "os"
 import { NamedError } from "@opencode-ai/shared/util/error"
 import { logo as glyphs } from "./logo"
 
+// OMNICODER: non-TTY wordmark matches the `omnicoder` spelling in logo.ts.
+// Keeps the same glyph style and the decorative dot over the `i` so that
+// ` --help ` output and CI captures don't claim the upstream brand.
 const wordmark = [
-  `⠀                                ▄     `,
-  `█▀▀█ █▀▀█ █▀▀█ █▀▀▄ █▀▀▀ █▀▀█ █▀▀█ █▀▀█`,
-  `█  █ █  █ █▀▀▀ █  █ █    █  █ █  █ █▀▀▀`,
-  `▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀  ▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀`,
+  `⠀               ▄                             `,
+  `█▀▀█ █▀▀█ █▀▀▄ ▀█▀ █▀▀█  █▀▀█ █▀▀█ █▀▀▄ █▀▀▀ █▀▀█ `,
+  `█  █ █^^█ █  █  █  █  █  █  █ █  █ █  █ █▀▀  █▄▄▀ `,
+  `▀▀▀▀ ▀  ▀ ▀  ▀ ▀▀▀ ▀▀▀▀  ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀ ▀▀ `,
 ]
 
 export const CancelledError = NamedError.create("UICancelledError", z.void())

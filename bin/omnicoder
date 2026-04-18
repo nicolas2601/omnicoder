@@ -209,10 +209,20 @@ if [ "$#" -ge 1 ]; then
 fi
 
 # ---- dispatch to opencode ---------------------------------------------------
-if ! command -v opencode >/dev/null 2>&1; then
-  printf 'omnicoder: opencode is not installed. Run scripts/install.sh first.\n' >&2
-  exit 127
-fi
+# Prefer the source build from the omnicoder repo when available — that's
+# the one that carries the purple theme, the `omnicoder` splash, and the
+# plugin fast-paths that upstream opencode doesn't ship with. Fall back to
+# the globally installed `opencode` binary when the repo isn't checked out
+# on this machine so a wrapper-only install still works.
+OMNICODER_REPO="${OMNICODER_REPO:-$HOME/omnicoder-v5}"
+OMNICODER_SRC_ENTRY="$OMNICODER_REPO/packages/opencode/src/index.ts"
+# bun's monorepo install hoists per workspace, so @opentui lives under the
+# opencode package, not the repo root.
+OMNICODER_SRC_DEPS="$OMNICODER_REPO/packages/opencode/node_modules/@opentui/core"
+
+can_run_source() {
+  [ -f "$OMNICODER_SRC_ENTRY" ] && [ -d "$OMNICODER_SRC_DEPS" ] && command -v bun >/dev/null 2>&1
+}
 
 maybe_show_banner
 
@@ -221,6 +231,20 @@ maybe_show_banner
 if [ -f "$OMNICODER_USER_CONFIG" ]; then
   OPENCODE_CONFIG="$OMNICODER_USER_CONFIG"
   export OPENCODE_CONFIG
+fi
+
+if can_run_source; then
+  # `--conditions=browser` mirrors the root `dev` script so @opentui/solid's
+  # browser entrypoint wins over the server-side one — same runtime shape as
+  # `bun dev` from the repo root.
+  exec bun run --cwd "$OMNICODER_REPO/packages/opencode" --conditions=browser src/index.ts "$@"
+fi
+
+if ! command -v opencode >/dev/null 2>&1; then
+  printf 'omnicoder: opencode is not installed and the source repo is not ready at %s.\n' "$OMNICODER_REPO" >&2
+  printf '  - quick fix: run `bun install` at %s\n' "$OMNICODER_REPO" >&2
+  printf '  - or install the upstream binary: npm i -g opencode-ai@latest\n' >&2
+  exit 127
 fi
 
 exec opencode "$@"
