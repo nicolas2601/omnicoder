@@ -297,6 +297,26 @@ function Initialize-OpencodeConfig {
     if (-not (Test-Path -LiteralPath $OpencodeCfgDir)) {
         New-Item -ItemType Directory -Path $OpencodeCfgDir -Force | Out-Null
     }
+    # Opencode's agent / command discovery walks %APPDATA%\opencode\{agent,command}
+    # and .opencode dirs from cwd up; it does NOT look at %USERPROFILE%\.omnicoder.
+    # Mirror the fork's .opencode\{agent,command}\ into the user-global config so
+    # the orchestrator can actually spawn the 170 specialist agents no matter
+    # where the user launched omnicoder from.
+    foreach ($sub in @('agent', 'command')) {
+        $src = Join-Path $RepoRoot ".opencode\$sub"
+        $dst = Join-Path $OpencodeCfgDir $sub
+        if (-not (Test-Path -LiteralPath $src)) { continue }
+        if (-not (Test-Path -LiteralPath $dst)) {
+            New-Item -ItemType Directory -Path $dst -Force | Out-Null
+        }
+        Get-ChildItem -Path $src -Recurse -Filter *.md | ForEach-Object {
+            $rel = $_.FullName.Substring($src.Length).TrimStart('\','/')
+            $target = Join-Path $dst $rel
+            Copy-IfMissing -Src $_.FullName -Dst $target
+        }
+    }
+    Write-Log "seeded $OpencodeCfgDir\{agent,command} (discovery paths for opencode)"
+
     if (Test-Path -LiteralPath $OpencodeCfgFile) {
         Write-Log "opencode config exists at $OpencodeCfgFile (respecting user overrides)"
         return

@@ -4,6 +4,45 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.6] — 2026-04-18
+
+Fix the silent "orchestrator never delegates" bug. Two structural gaps
+caused the symptom users reported ("agents-orchestrator doesn't search
+skills, doesn't call other agents"):
+
+1. Opencode's agent discovery walks `~/.config/opencode/{agent,command}/`
+   (and `.opencode/` dirs on the current path), but the fork's 170
+   specialists were only seeded into `~/.omnicoder/{agents,skills}/`.
+   None of them were visible to the TUI unless you launched it from the
+   repo root, so every `task(subagent_type: ...)` call fell through with
+   `Unknown agent type`.
+2. The orchestrator's own markdown told the model to "Please spawn a
+   project-manager-senior agent" in plain English — no tool call. The
+   model obediently printed that sentence and moved on, never invoking
+   the `task` tool.
+
+### Fixed
+
+- `scripts/install.sh` + `scripts/install-windows.ps1`: mirror the fork's
+  `.opencode/agent/` and `.opencode/command/` into the user-global
+  `~/.config/opencode/agent/` and `~/.config/opencode/command/`
+  (Linux/macOS) / `%APPDATA%\opencode\agent,command` (Windows). Copy is
+  idempotent / copy-if-missing so local edits survive re-install.
+- `.opencode/agent/agents-orchestrator.md`: declares `tools.task: true`
+  explicitly (with bash/read/write/edit/glob/grep/todowrite/webfetch) and
+  adds a "CRITICAL: how to actually delegate" block that shows the exact
+  `task(description, prompt, subagent_type)` signature plus the canonical
+  subagent_type names the model should prefer. Color bumped to the new
+  OmniCoder purple accent `#b077ff` to match the rebrand.
+
+### Impact
+
+After an install that includes these changes the orchestrator can really
+spawn `project-manager-senior`, `engineering-senior-developer`,
+`testing-reality-checker`, and the rest — plus the `general-purpose` /
+`explore` Claude-Code-style aliases added in alpha.4 — without the user
+having to cd to the repo or type agent paths by hand.
+
 ## [5.0.0-alpha.5] — 2026-04-18
 
 Rebrand follow-up. Alpha.4 tried to hand-draw an "omnicoder" block banner

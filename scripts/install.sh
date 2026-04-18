@@ -320,12 +320,31 @@ seed_opencode_config() {
   mkdir -p "$OPENCODE_CFG_DIR"
   if [ -f "$OPENCODE_CFG_FILE" ]; then
     log "opencode config exists at $OPENCODE_CFG_FILE (respecting user overrides)"
-    return 0
-  fi
-  if [ -f "$REPO_ROOT/.omnicoder/opencode.jsonc" ]; then
+  elif [ -f "$REPO_ROOT/.omnicoder/opencode.jsonc" ]; then
     cp "$REPO_ROOT/.omnicoder/opencode.jsonc" "$OPENCODE_CFG_FILE"
     log "seeded $OPENCODE_CFG_FILE"
   fi
+
+  # Opencode's agent / command discovery walks `~/.config/opencode/{agent,command}/`
+  # and `.opencode/` dirs from the cwd up; it does NOT look at ~/.omnicoder/.
+  # Mirror the fork's .opencode/{agent,command}/ into the user-global config so
+  # the orchestrator can actually spawn the 170 specialist agents regardless
+  # of where the user launched omnicoder from. Copy-if-missing preserves user
+  # edits.
+  for sub in agent command; do
+    src="$REPO_ROOT/.opencode/$sub"
+    dst="$OPENCODE_CFG_DIR/$sub"
+    [ -d "$src" ] || continue
+    mkdir -p "$dst"
+    ( cd "$src" && find . -type f -name "*.md" -print ) | while IFS= read -r rel; do
+      target="$dst/${rel#./}"
+      if [ ! -f "$target" ]; then
+        mkdir -p "$(dirname "$target")"
+        cp "$src/${rel#./}" "$target"
+      fi
+    done
+  done
+  log "seeded $OPENCODE_CFG_DIR/{agent,command} (discovery paths for opencode)"
 }
 
 # ---- step: uninstall --------------------------------------------------------
