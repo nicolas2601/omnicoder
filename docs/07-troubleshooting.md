@@ -71,5 +71,5 @@ Tabla de síntomas comunes y fixes.
 - `omnicoder doctor` — primer diagnóstico.
 - `omnicoder --omnicoder-version` — versión + core opencode.
 - Logs: `~/.omnicoder/logs/*.jsonl`.
-- GitHub Issues: <https://github.com/nicolas2601/omnicoder-v5/issues>.
+- GitHub Issues: <https://github.com/nicolas2601/omnicoder/issues>.
 - ADRs en `docs/adr/` — decisiones arquitectónicas.

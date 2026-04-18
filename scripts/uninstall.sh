@@ -19,7 +19,7 @@
 #     --purge-all    equivalent to all three above
 #
 # One-liner:
-#   curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/uninstall.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/uninstall.sh | bash
 #
 # Works on Linux, macOS, and Git Bash / MSYS / Cygwin on Windows.
 # -----------------------------------------------------------------------------
@@ -174,10 +174,10 @@ summary() {
     $REPO_DIR             (cloned repo)                    $( [ "$PURGE_REPO" = "1" ]   && echo "[purged]" )
 
   To remove everything, re-run with --purge-all:
-    curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/uninstall.sh | bash -s -- --purge-all
+    curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/uninstall.sh | bash -s -- --purge-all
 
   To reinstall fresh:
-    curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/setup.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/setup.sh | bash
 EOF
 }
 

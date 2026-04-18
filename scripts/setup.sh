@@ -13,7 +13,7 @@
 #   6. Optionally runs the tests + benchmark suite for a full QA sweep.
 #
 # One-liner:
-#   curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/setup.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/setup.sh | bash
 #
 # Flags (via env vars, since we support `curl | bash`):
 #   OMNICODER_REPO=<path>     override clone location (default $HOME/omnicoder-v5)
@@ -25,7 +25,7 @@
 set -euo pipefail
 
 # ---- settings ---------------------------------------------------------------
-REPO_URL="https://github.com/nicolas2601/omnicoder-v5.git"
+REPO_URL="https://github.com/nicolas2601/omnicoder.git"
 REPO_DIR="${OMNICODER_REPO:-$HOME/omnicoder-v5}"
 BRANCH="${OMNICODER_BRANCH:-main}"
 NO_V4_PURGE="${OMNICODER_NO_V4_PURGE:-0}"
@@ -235,10 +235,10 @@ summary() {
        omnicoder
 
   3. Re-run setup to upgrade at any time:
-       curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/setup.sh | bash
+       curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/setup.sh | bash
 
   4. Uninstall completely (v4 + v5):
-       curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/uninstall.sh | bash
+       curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/uninstall.sh | bash
 
   Repo:      $REPO_DIR
   Docs:      $REPO_DIR/docs/

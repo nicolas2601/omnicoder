@@ -65,7 +65,7 @@ Compress-Archive -Path "$env:USERPROFILE\.omnicoder","$env:USERPROFILE\.qwen" `
 ### Linux/macOS
 
 ```bash
-git clone https://github.com/nicolas2601/omnicoder-v5.git
+git clone https://github.com/nicolas2601/omnicoder.git
 cd omnicoder-v5
 bash scripts/install.sh --yes
 # v4 sobrevivirá en ~/.omnicoder (compartido). Si querés limpieza total:
@@ -75,7 +75,7 @@ bash scripts/migrate-from-v4.sh
 ### Windows
 
 ```powershell
-git clone https://github.com/nicolas2601/omnicoder-v5.git
+git clone https://github.com/nicolas2601/omnicoder.git
 cd omnicoder-v5
 pwsh .\scripts\install-windows.ps1 -Yes
 # Para mover config de Qwen Code a Opencode:
@@ -113,12 +113,12 @@ Si preferís no migrar:
 
 ```bash
 # Linux/macOS
-curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/install.sh | bash -s -- --yes
+curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/install.sh | bash -s -- --yes
 ```
 
 ```powershell
 # Windows
-iwr -useb https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/install-windows.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/install-windows.ps1 | iex
 ```
 
 ---
@@ -178,6 +178,6 @@ npm install -g @qwen-code/qwen-code@0.14.5
 
 ## 10. Soporte
 
-- Issues: https://github.com/nicolas2601/omnicoder-v5/issues
+- Issues: https://github.com/nicolas2601/omnicoder/issues
 - Specs internas: `/home/nicolas/omnicoder-v5-specs/`
 - ADRs: `docs/adr/ADR-00*`

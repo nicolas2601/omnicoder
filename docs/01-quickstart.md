@@ -21,14 +21,14 @@ De cero a `omnicoder` corriendo en menos de 5 minutos.
 
 ```bash
 # Linux / macOS
-git clone https://github.com/nicolas2601/omnicoder-v5 ~/omnicoder-v5
+git clone https://github.com/nicolas2601/omnicoder ~/omnicoder-v5
 cd ~/omnicoder-v5
 bash scripts/install.sh --yes
 ```
 
 ```powershell
 # Windows
-git clone https://github.com/nicolas2601/omnicoder-v5 $env:USERPROFILE\omnicoder-v5
+git clone https://github.com/nicolas2601/omnicoder $env:USERPROFILE\omnicoder-v5
 cd $env:USERPROFILE\omnicoder-v5
 pwsh .\scripts\install-windows.ps1 -Yes
 ```

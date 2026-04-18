@@ -20,7 +20,7 @@
 Linux, macOS **y Windows (Git Bash)** — el mismo comando:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/setup.sh | bash
 ```
 
 El script hace todo: detecta OmniCoder v4 (Qwen Code) si existe y la desinstala con backup, clona el repo, instala `opencode` y `engram`, copia los wrappers, siembra `~/.omnicoder/` y `opencode.jsonc`, corre `doctor` y los tests + benchmarks.
@@ -28,7 +28,7 @@ El script hace todo: detecta OmniCoder v4 (Qwen Code) si existe y la desinstala 
 Desinstalar (v4 + v5 completo) en un solo comando:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/uninstall.sh | bash
 # purga total (memoria + config + repo): añadir -s -- --purge-all
 ```
 
@@ -119,5 +119,5 @@ original de SST (opencode) y derivado de nicolas2601 (omnicoder).
 
 ## Soporte
 
-- Issues: <https://github.com/nicolas2601/omnicoder-v5/issues>
+- Issues: <https://github.com/nicolas2601/omnicoder/issues>
 - Specs internas: `/home/nicolas/omnicoder-v5-specs/`

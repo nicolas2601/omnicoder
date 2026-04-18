@@ -18,7 +18,7 @@ Requirements for the base:
 
 ## Decision
 
-**Fork `sst/opencode`** (TypeScript / Bun, MIT, 145K stars, v1.4.11 as of fork date) to `nicolas2601/omnicoder-v5`.
+**Fork `sst/opencode`** (TypeScript / Bun, MIT, 145K stars, v1.4.11 as of fork date) to `nicolas2601/omnicoder`.
 
 Rejected alternatives:
 

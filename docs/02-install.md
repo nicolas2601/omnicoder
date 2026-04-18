@@ -3,13 +3,13 @@
 ## Opción A — clonar el repo (recomendada)
 
 ```bash
-git clone https://github.com/nicolas2601/omnicoder-v5 ~/omnicoder-v5
+git clone https://github.com/nicolas2601/omnicoder ~/omnicoder-v5
 cd ~/omnicoder-v5
 bash scripts/install.sh --yes
 ```
 
 ```powershell
-git clone https://github.com/nicolas2601/omnicoder-v5 $env:USERPROFILE\omnicoder-v5
+git clone https://github.com/nicolas2601/omnicoder $env:USERPROFILE\omnicoder-v5
 cd $env:USERPROFILE\omnicoder-v5
 pwsh .\scripts\install-windows.ps1 -Yes
 ```
@@ -17,11 +17,11 @@ pwsh .\scripts\install-windows.ps1 -Yes
 ## Opción B — one-liner curlable (sin repo local)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/install.sh | bash -s -- --yes
+curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/install.sh | bash -s -- --yes
 ```
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/install-windows.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/install-windows.ps1 | iex
 ```
 
 > Si vas a contribuir, preferí la Opción A — necesitás el repo para
