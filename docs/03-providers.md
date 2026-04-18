@@ -26,6 +26,33 @@ o `%APPDATA%\opencode\opencode.jsonc` (Windows).
 
 ---
 
+## Per-phase routing (alpha.3+)
+
+Cada agente built-in de opencode (`plan`, `build`, `general`) puede usar un
+modelo distinto — útil cuando querés Opus solo en `plan` (donde vale) y
+Haiku en `build` (donde pagás volumen). OmniCoder ships un catálogo:
+
+```bash
+/routing list            # lista los 7 presets
+/routing apply balanced  # Sonnet plan+general, Haiku build
+/routing apply quality   # Opus plan, Sonnet build+general
+/routing apply cheap     # Haiku en todo excepto plan=Sonnet
+/routing apply nim-free  # NVIDIA NIM MiniMax M2.7 en todas las fases
+/routing apply mixed-nim-anthropic   # Opus plan, NIM build (mejor valor)
+/routing off             # quita overrides → la TUI /models vuelve a mandar
+/routing get             # muestra lo aplicado ahora
+```
+
+Detrás: `omnicoder-routing` edita solo el bloque `"agent"` del
+`opencode.jsonc` del user, preservando comments, MCP servers y plugins.
+Cada apply deja un `.bak` al lado por si querés revertir. Hay que
+reiniciar la TUI para que tome el cambio.
+
+Podés editar los presets en `~/.omnicoder/routing-presets.json` o
+agregar nuevos — el archivo es JSON puro.
+
+---
+
 ## Cómo funciona el failover
 
 El hook `provider-failover` (en `packages/omnicoder/src/hooks/provider-failover.ts`):

@@ -1,0 +1,63 @@
+{
+  "description": "OmniCoder per-phase model routing presets. Edit ~/.omnicoder/routing-presets.json to add your own. The `agent` block is merged into ~/.config/opencode/opencode.jsonc (or %APPDATA%\\opencode\\opencode.jsonc on Windows) by `omnicoder-routing apply <preset>`.",
+  "presets": {
+    "default": {
+      "description": "No per-agent overrides. Whatever you pick in the TUI (/models, Tab) sticks across build / plan / general. Use this unless you want different models for different phases.",
+      "agent": {}
+    },
+    "balanced": {
+      "description": "Sonnet for plan & general (quality-sensitive), Haiku for build (token-heavy, tight feedback loop). Good default when you have Anthropic credits.",
+      "requires": ["ANTHROPIC_API_KEY"],
+      "agent": {
+        "plan":    { "model": "anthropic/claude-sonnet-4-6" },
+        "build":   { "model": "anthropic/claude-haiku-4-5-20251001" },
+        "general": { "model": "anthropic/claude-sonnet-4-6" }
+      }
+    },
+    "quality": {
+      "description": "Opus for plan (the one step that benefits most from reasoning), Sonnet for build & general. Most expensive, but keeps architecture decisions sharp.",
+      "requires": ["ANTHROPIC_API_KEY"],
+      "agent": {
+        "plan":    { "model": "anthropic/claude-opus-4-7" },
+        "build":   { "model": "anthropic/claude-sonnet-4-6" },
+        "general": { "model": "anthropic/claude-sonnet-4-6" }
+      }
+    },
+    "cheap": {
+      "description": "Sonnet only for plan, Haiku for everything else. Minimises tokens while still getting a smart upfront plan.",
+      "requires": ["ANTHROPIC_API_KEY"],
+      "agent": {
+        "plan":    { "model": "anthropic/claude-sonnet-4-6" },
+        "build":   { "model": "anthropic/claude-haiku-4-5-20251001" },
+        "general": { "model": "anthropic/claude-haiku-4-5-20251001" }
+      }
+    },
+    "nim-free": {
+      "description": "NVIDIA NIM MiniMax M2.7 for every phase. Free tier, 40 rpm. Good when you're out of paid credits.",
+      "requires": ["NVIDIA_API_KEY"],
+      "agent": {
+        "plan":    { "model": "nvidia-nim/minimaxai/minimax-m2.7" },
+        "build":   { "model": "nvidia-nim/minimaxai/minimax-m2.7" },
+        "general": { "model": "nvidia-nim/minimaxai/minimax-m2.7" }
+      }
+    },
+    "minimax-paid": {
+      "description": "MiniMax M2 via Anthropic-compat endpoint (prompt caching for 90% off on cache hits).",
+      "requires": ["MINIMAX_API_KEY"],
+      "agent": {
+        "plan":    { "model": "minimax/minimax-m2" },
+        "build":   { "model": "minimax/minimax-m2" },
+        "general": { "model": "minimax/minimax-m2" }
+      }
+    },
+    "mixed-nim-anthropic": {
+      "description": "Anthropic Sonnet/Opus for plan (better reasoning), NVIDIA NIM MiniMax for build (free bulk tokens). Best value if you have both keys.",
+      "requires": ["ANTHROPIC_API_KEY", "NVIDIA_API_KEY"],
+      "agent": {
+        "plan":    { "model": "anthropic/claude-opus-4-7" },
+        "build":   { "model": "nvidia-nim/minimaxai/minimax-m2.7" },
+        "general": { "model": "anthropic/claude-sonnet-4-6" }
+      }
+    }
+  }
+}

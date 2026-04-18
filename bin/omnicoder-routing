@@ -1,0 +1,50 @@
+#!/bin/sh
+# shellcheck shell=sh
+# omnicoder-routing — thin POSIX shim around packages/omnicoder/src/routing/preset.ts
+#
+# Resolves the TS script by walking from this binary up to the repo root, then
+# invokes it with bun. Works both from a repo checkout (bin/ next to packages/)
+# and from an installed layout (share/omnicoder/routing-preset.ts).
+
+set -eu
+
+resolve_self() {
+  src=$0
+  while [ -L "$src" ]; do
+    dir=$(cd -P "$(dirname "$src")" && pwd)
+    src=$(readlink "$src")
+    case $src in
+      /*) ;;
+      *) src="$dir/$src" ;;
+    esac
+  done
+  cd -P "$(dirname "$src")" && pwd
+}
+
+SELF_DIR=$(resolve_self)
+
+find_script() {
+  for candidate in \
+    "$SELF_DIR/../packages/omnicoder/src/routing/preset.ts" \
+    "$SELF_DIR/../share/omnicoder/routing/preset.ts" \
+    "$HOME/.omnicoder/scripts/routing/preset.ts"
+  do
+    if [ -f "$candidate" ]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+if ! command -v bun >/dev/null 2>&1; then
+  printf 'omnicoder-routing: bun is not in PATH. Install with: curl -fsSL https://bun.sh/install | bash\n' >&2
+  exit 127
+fi
+
+script=$(find_script) || {
+  printf 'omnicoder-routing: routing/preset.ts not found near %s\n' "$SELF_DIR" >&2
+  exit 127
+}
+
+exec bun "$script" "$@"

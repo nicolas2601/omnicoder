@@ -84,7 +84,7 @@ safe_rm() {
 remove_v5_wrappers() {
   step "Removing v5 wrappers + engram"
   for prefix in /usr/local /opt/homebrew "$HOME/.local"; do
-    for f in omnicoder omnicoder.cmd omnicoder.ps1 engram engram.exe; do
+    for f in omnicoder omnicoder.cmd omnicoder.ps1 omnicoder-routing omnicoder-routing.cmd omnicoder-routing.ps1 engram engram.exe; do
       if [ -f "$prefix/bin/$f" ]; then
         safe_rm "$prefix/bin/$f" && ok "removed $prefix/bin/$f"
       fi

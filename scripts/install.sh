@@ -233,7 +233,10 @@ install_engram() {
 # ---- step: wrappers ---------------------------------------------------------
 install_wrappers() {
   [ -d "$BIN_DIR" ] || runas_root "$PREFIX" mkdir -p "$BIN_DIR"
-  for f in omnicoder omnicoder.cmd omnicoder.ps1; do
+  # omnicoder-routing is the POSIX shim that invokes packages/omnicoder/src/
+  # routing/preset.ts (per-phase model preset editor). `.cmd`/`.ps1` siblings
+  # are wired up by install-windows.ps1; the `.sh` artefact is repo-only.
+  for f in omnicoder omnicoder.cmd omnicoder.ps1 omnicoder-routing; do
     src="$REPO_ROOT/bin/$f"
     [ -f "$src" ] || { warn "missing $src"; continue; }
     dst="$BIN_DIR/$f"
@@ -282,6 +285,14 @@ seed_home() {
       cp -f "$f" "$OMNICODER_HOME/scripts/$(basename "$f")"
       chmod +x "$OMNICODER_HOME/scripts/$(basename "$f")"
     done
+  fi
+
+  # Routing presets ship as a user-editable JSON so new installs have a
+  # catalogue to pick from via `omnicoder-routing list`. We copy-if-missing
+  # so a user's local edits survive re-install.
+  if [ -f "$REPO_ROOT/.omnicoder/routing-presets.json" ] && \
+     [ ! -f "$OMNICODER_HOME/routing-presets.json" ]; then
+    cp -f "$REPO_ROOT/.omnicoder/routing-presets.json" "$OMNICODER_HOME/routing-presets.json"
   fi
 
   log "seeded $OMNICODER_HOME (non-destructive)"

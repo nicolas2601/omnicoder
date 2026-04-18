@@ -212,7 +212,7 @@ function Install-Wrappers {
     if (-not (Test-Path -LiteralPath $InstallDir)) {
         New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
     }
-    foreach ($f in @('omnicoder.cmd', 'omnicoder.ps1')) {
+    foreach ($f in @('omnicoder.cmd', 'omnicoder.ps1', 'omnicoder-routing.ps1')) {
         $src = Join-Path $RepoRoot "bin\$f"
         if (-not (Test-Path -LiteralPath $src)) {
             Write-Warn "missing $src"
@@ -222,6 +222,16 @@ function Install-Wrappers {
         Copy-Item -LiteralPath $src -Destination $dst -Force
         Write-Log "installed $dst"
     }
+    # Tiny .cmd forwarder so `omnicoder-routing list` works from CMD too, not
+    # just PowerShell. Hand-rolled because we do not want to ship another
+    # maintained script; it simply re-invokes pwsh against the .ps1 sibling.
+    $fwd = Join-Path $InstallDir 'omnicoder-routing.cmd'
+    $fwdBody = @'
+@echo off
+pwsh -NoProfile -ExecutionPolicy Bypass -File "%~dp0omnicoder-routing.ps1" %*
+'@
+    Set-Content -LiteralPath $fwd -Value $fwdBody -Encoding ASCII
+    Write-Log "installed $fwd"
     Add-ToUserPath -Dir $InstallDir
 }
 
@@ -248,6 +258,12 @@ function Initialize-OmnicoderHome {
             Copy-IfMissing -Src $_.FullName -Dst $target
         }
     }
+    # Routing presets — copy-if-missing so user edits survive re-install.
+    $presetsSrc = Join-Path $RepoRoot '.omnicoder\routing-presets.json'
+    $presetsDst = Join-Path $OmnicoderHome 'routing-presets.json'
+    if ((Test-Path -LiteralPath $presetsSrc) -and -not (Test-Path -LiteralPath $presetsDst)) {
+        Copy-Item -LiteralPath $presetsSrc -Destination $presetsDst -Force
+    }
     Write-Log "seeded $OmnicoderHome (non-destructive)"
 }
 
@@ -270,7 +286,7 @@ function Invoke-Uninstall {
     if (-not (Confirm-Action -Prompt "Uninstall OmniCoder from $InstallDir and $OmnicoderHome?")) {
         Write-Log "aborted"; return
     }
-    foreach ($f in @('omnicoder.cmd', 'omnicoder.ps1', 'engram.exe')) {
+    foreach ($f in @('omnicoder.cmd', 'omnicoder.ps1', 'omnicoder-routing.cmd', 'omnicoder-routing.ps1', 'engram.exe')) {
         $p = Join-Path $InstallDir $f
         if (Test-Path -LiteralPath $p) {
             Remove-Item -LiteralPath $p -Force

@@ -4,6 +4,43 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.3] — 2026-04-18
+
+Per-phase model routing. Ship a catalogue of presets (balanced / quality /
+cheap / nim-free / mixed-nim-anthropic / …) and a tiny CLI that patches
+the `agent` block in the user's `opencode.jsonc` — a specific model per
+phase without re-pinning the whole TUI.
+
+### Added
+
+- `packages/omnicoder/src/routing/preset.ts`: JSONC-aware editor that finds
+  the top-level `"agent"` block, replaces just its value, and preserves
+  every comment, MCP server and plugin entry around it. Writes a `.bak`
+  next to the file on every apply so reverts are copy-paste away.
+- `.omnicoder/routing-presets.json`: ships 7 curated presets covering the
+  common provider mixes (Anthropic only, NVIDIA NIM free tier, MiniMax
+  Anthropic-compat, mixed NIM+Anthropic for bulk+reasoning).
+- `bin/omnicoder-routing` (POSIX) and `bin/omnicoder-routing.ps1` (Windows)
+  — thin wrappers that locate `preset.ts` and invoke it with bun. A tiny
+  `omnicoder-routing.cmd` forwarder is generated at install time so the
+  command works from both PowerShell and CMD.
+- `/routing` slash command — `list | get | apply <name> | off`, executes
+  the shell wrapper verbatim so the output is the colourful script
+  response instead of a paraphrase from the model.
+- 5 new tests in `test/routing-preset.test.ts` (JSONC editing with
+  comments, fresh insertion when the block is missing, default reset,
+  unknown-preset error messaging). Suite now 53/53.
+
+### Changed
+
+- `scripts/install.sh`: installs the new `omnicoder-routing` wrapper and
+  copy-if-missing seeds `routing-presets.json` into `~/.omnicoder/`.
+- `scripts/install-windows.ps1`: installs `omnicoder-routing.ps1`,
+  generates a sibling `.cmd` forwarder, seeds the presets file under
+  `%USERPROFILE%\.omnicoder\`.
+- `scripts/uninstall.sh` & Windows uninstall block: remove every
+  `omnicoder-routing*` artefact alongside the main wrapper.
+
 ## [5.0.0-alpha.2] — 2026-04-18
 
 Performance + ergonomics pass. Router is 22× faster on the hot path, the
