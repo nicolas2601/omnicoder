@@ -118,21 +118,17 @@
   },
 
   // ─── Agent routing (ADR-005) ────────────────────────────────────────────
-  // Default role → provider/model map. Only applied for providers whose
-  // env vars are present; install.sh detects availability and writes a
-  // user-tailored copy of this block to ~/.config/opencode/opencode.jsonc.
-  // Users may override per-agent with frontmatter `model: provider/id`.
-  "agent": {
-    "build": {
-      "model": "nvidia-nim/minimaxai/minimax-m2.7"
-    },
-    "plan": {
-      "model": "nvidia-nim/minimaxai/minimax-m2.7"
-    },
-    "general": {
-      "model": "nvidia-nim/minimaxai/minimax-m2.7"
-    }
-  },
+  // We deliberately do NOT pin a default model per agent. An agent-scoped
+  // `model` field overrides the user's TUI selection (`/models` / Tab) on
+  // every message, which is surprising when juggling providers. Leaving
+  // this empty makes `build`, `plan`, `general` inherit whatever model the
+  // user picked in the TUI — switching to GitHub Copilot, Anthropic,
+  // or NVIDIA NIM mid-session just works.
+  //
+  // If you want a specific agent to always run on a specific model,
+  // add it here explicitly, e.g.:
+  //   "agent": { "build": { "model": "anthropic/claude-sonnet-4-5" } }
+  "agent": {},
 
   // ─── Share ──────────────────────────────────────────────────────────────
   "share": "manual",
