@@ -15,24 +15,32 @@
 - Plugin: `@omnicoder/core` — 6 hooks TypeScript, 45 tests, <200 ms suite
 - Owner: `nicolas2601 <nm5571762@gmail.com>`
 
-## Instalación rápida
+## Instalación en un solo comando
+
+Linux, macOS **y Windows (Git Bash)** — el mismo comando:
 
 ```bash
-# Linux / macOS
-git clone https://github.com/nicolas2601/omnicoder-v5 ~/omnicoder-v5
-cd ~/omnicoder-v5 && bash scripts/install.sh --yes
+curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/setup.sh | bash
+```
 
-# Windows PowerShell
-git clone https://github.com/nicolas2601/omnicoder-v5 $env:USERPROFILE\omnicoder-v5
-cd $env:USERPROFILE\omnicoder-v5; pwsh .\scripts\install-windows.ps1 -Yes
+El script hace todo: detecta OmniCoder v4 (Qwen Code) si existe y la desinstala con backup, clona el repo, instala `opencode` y `engram`, copia los wrappers, siembra `~/.omnicoder/` y `opencode.jsonc`, corre `doctor` y los tests + benchmarks.
 
-# Verificación
+Desinstalar (v4 + v5 completo) en un solo comando:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder-v5/main/scripts/uninstall.sh | bash
+# purga total (memoria + config + repo): añadir -s -- --purge-all
+```
+
+Verificación:
+
+```bash
 omnicoder --omnicoder-version
 omnicoder doctor
 omnicoder
 ```
 
-Instalación one-liner sin clonar: ver [`docs/02-install.md`](docs/02-install.md).
+> Windows: correr el comando **dentro de Git Bash** (viene con Git for Windows).
 
 ## Providers soportados (una API key mínima)
 

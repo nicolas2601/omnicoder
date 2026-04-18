@@ -24,7 +24,7 @@
 set -eu
 
 # ---- defaults ---------------------------------------------------------------
-PREFIX="${PREFIX:-/usr/local}"
+PREFIX="${PREFIX:-}"   # resolved after sourcing helpers
 ASSUME_YES=0
 USE_SUDO=1
 MODE=install
@@ -80,8 +80,9 @@ detect_platform() {
   uname_s=$(uname -s 2>/dev/null || echo unknown)
   uname_m=$(uname -m 2>/dev/null || echo unknown)
   case "$uname_s" in
-    Linux)  os=linux ;;
-    Darwin) os=darwin ;;
+    Linux)                 os=linux ;;
+    Darwin)                os=darwin ;;
+    MINGW*|MSYS*|CYGWIN*)  os=windows ;;
     *) die "unsupported OS: $uname_s" ;;
   esac
   case "$uname_m" in
@@ -90,6 +91,16 @@ detect_platform() {
     *) die "unsupported arch: $uname_m" ;;
   esac
   printf '%s-%s\n' "$os" "$arch"
+}
+
+# Pick the default install prefix. Under Git Bash / MSYS / Cygwin we cannot
+# write to /usr/local/bin (no sudo, path mapping), so we drop into ~/.local.
+default_prefix() {
+  uname_s=$(uname -s 2>/dev/null || echo unknown)
+  case "$uname_s" in
+    MINGW*|MSYS*|CYGWIN*)  printf '%s\n' "$HOME/.local" ;;
+    *)                     printf '%s\n' "/usr/local"   ;;
+  esac
 }
 
 # ---- arg parse --------------------------------------------------------------
@@ -109,6 +120,7 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
+[ -z "$PREFIX" ] && PREFIX="$(default_prefix)"
 BIN_DIR="$PREFIX/bin"
 
 # ---- step: opencode ---------------------------------------------------------
