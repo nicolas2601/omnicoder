@@ -15,27 +15,6 @@ const FAILOVER_RE =
   /\b(429|rate.?limit|too many requests|503|service.?unavailable|timed?\s*out|ETIMEDOUT|ECONNREFUSED|ECONNRESET|401|unauthorized|invalid.*key)\b/i
 
 type Blocked = { providerId: string; until: number; reason: string }
-const blocked = new Map<string, Blocked>()
-
-export function reportProviderError(providerId: string, sample: string): void {
-  const m = sample.match(FAILOVER_RE)
-  if (!m) return
-  blocked.set(providerId, {
-    providerId,
-    until: Date.now() + BLOCK_TTL_MS,
-    reason: m[0],
-  })
-}
-
-function isBlocked(providerId: string): Blocked | null {
-  const b = blocked.get(providerId)
-  if (!b) return null
-  if (Date.now() > b.until) {
-    blocked.delete(providerId)
-    return null
-  }
-  return b
-}
 
 export async function createProviderFailover(_input: PluginInput): Promise<{
   tune: (
@@ -48,6 +27,29 @@ export async function createProviderFailover(_input: PluginInput): Promise<{
     isBlocked: (providerId: string) => Blocked | null
   }
 }> {
+  // CR-01: state lives in the closure so two plugin instances (e.g. two
+  // workspaces in the same process) don't share blocked providers.
+  const blocked = new Map<string, Blocked>()
+
+  function report(providerId: string, sample: string): void {
+    const m = sample.match(FAILOVER_RE)
+    if (!m) return
+    blocked.set(providerId, {
+      providerId,
+      until: Date.now() + BLOCK_TTL_MS,
+      reason: m[0],
+    })
+  }
+
+  function isBlocked(providerId: string): Blocked | null {
+    // Also sweep expired entries so the map doesn't grow unbounded over
+    // long-running sessions.
+    const now = Date.now()
+    for (const [key, b] of blocked) if (now > b.until) blocked.delete(key)
+    const b = blocked.get(providerId)
+    return b ?? null
+  }
+
   async function tune(
     i: { sessionID?: string; agent?: string; provider?: { info?: { id?: string } } },
     _o: Record<string, unknown>,
@@ -70,7 +72,7 @@ export async function createProviderFailover(_input: PluginInput): Promise<{
   return {
     tune,
     _debug: {
-      report: reportProviderError,
+      report,
       clear: () => blocked.clear(),
       isBlocked,
     },

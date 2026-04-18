@@ -7,12 +7,8 @@
  */
 import type { PluginInput } from "@opencode-ai/plugin"
 import { promises as fs } from "node:fs"
-import * as os from "node:os"
 import * as path from "node:path"
-
-function resolveHome(): string {
-  return process.env.HOME ?? os.homedir()
-}
+import { resolveHome, JSONL_ROTATE_BYTES, rotateJsonlIfLarge } from "../util/paths.js"
 
 type Event = { type?: string; properties?: Record<string, unknown> } | Record<string, unknown>
 
@@ -35,6 +31,8 @@ export async function createToolDispatcher(_input: PluginInput): Promise<{
   async function safeAppend(file: string, line: string): Promise<void> {
     try {
       await fs.mkdir(getPaths().logDir, { recursive: true })
+      // CR-02: rotate at 5 MB so the log doesn't grow unbounded.
+      await rotateJsonlIfLarge(file, JSONL_ROTATE_BYTES)
       await fs.appendFile(file, line, "utf8")
     } catch (err) {
       console.error("[omnicoder:tool-dispatcher]", (err as Error).message)

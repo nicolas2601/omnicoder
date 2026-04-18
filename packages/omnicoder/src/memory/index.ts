@@ -82,10 +82,14 @@ export async function createMemoryLoader(_input: PluginInput): Promise<{
   _debug: { load: () => Promise<string | null>; invalidate: () => void }
 }> {
   let cache: CacheEntry | null = null
+  // CR-03: dedupe concurrent misses (same pattern as router).
+  let inFlight: Promise<string | null> | null = null
 
   async function getCached(): Promise<string | null> {
     if (cache && Date.now() - cache.builtAt < CACHE_TTL_MS) return cache.text
-    const text = await loadMemory(resolveHome())
+    if (inFlight) return inFlight
+    inFlight = loadMemory(resolveHome()).finally(() => { inFlight = null })
+    const text = await inFlight
     cache = { text, builtAt: Date.now() }
     return text
   }

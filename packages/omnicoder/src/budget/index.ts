@@ -7,12 +7,8 @@
  */
 import type { PluginInput } from "@opencode-ai/plugin"
 import { promises as fs } from "node:fs"
-import * as os from "node:os"
 import * as path from "node:path"
-
-function resolveHome(): string {
-  return process.env.HOME ?? os.homedir()
-}
+import { resolveHome, JSONL_ROTATE_BYTES, rotateJsonlIfLarge } from "../util/paths.js"
 
 const WARN_THRESHOLD = 15_000
 const ROLLING_WINDOW = 10
@@ -85,6 +81,8 @@ export async function createTokenBudget(_input: PluginInput): Promise<{
       if (!tokens) return
       const { logDir, logPath } = getPaths()
       await fs.mkdir(logDir, { recursive: true })
+      // CR-02: rotate at 5 MB so the log doesn't grow unbounded.
+      await rotateJsonlIfLarge(logPath, JSONL_ROTATE_BYTES)
       const line = JSON.stringify({ ts: new Date().toISOString(), tokens }) + "\n"
       await fs.appendFile(logPath, line, "utf8")
 

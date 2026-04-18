@@ -99,10 +99,15 @@ export async function createSkillRouter(_input: PluginInput): Promise<{
   _debug: { buildIndex: () => Promise<Index>; invalidate: () => void }
 }> {
   let cached: Index | null = null
+  // CR-03: dedupe in-flight rebuilds so two concurrent inject() misses don't
+  // both scan the filesystem (duplicated work + torn cache).
+  let inFlight: Promise<Index> | null = null
 
   async function getIndex(): Promise<Index> {
     if (cached && Date.now() - cached.builtAt < CACHE_TTL_MS) return cached
-    cached = await buildIndex(resolveHome())
+    if (inFlight) return inFlight
+    inFlight = buildIndex(resolveHome()).finally(() => { inFlight = null })
+    cached = await inFlight
     return cached
   }
 

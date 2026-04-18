@@ -114,6 +114,23 @@
     }
   },
 
+  // ─── Agent routing (ADR-005) ────────────────────────────────────────────
+  // Default role → provider/model map. Only applied for providers whose
+  // env vars are present; install.sh detects availability and writes a
+  // user-tailored copy of this block to ~/.config/opencode/opencode.jsonc.
+  // Users may override per-agent with frontmatter `model: provider/id`.
+  "agent": {
+    "build": {
+      "model": "nvidia-nim/minimax/minimax-m2"
+    },
+    "plan": {
+      "model": "nvidia-nim/minimax/minimax-m2"
+    },
+    "general": {
+      "model": "nvidia-nim/minimax/minimax-m2"
+    }
+  },
+
   // ─── Share ──────────────────────────────────────────────────────────────
   "share": "manual",
 
