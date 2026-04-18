@@ -4,6 +4,48 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.5] — 2026-04-18
+
+Rebrand follow-up. Alpha.4 tried to hand-draw an "omnicoder" block banner
+and ended up rendering as `OANIO OODER` on a live terminal — the colour
+markers `_^~` only work for the TTY path, and plain Unicode substitutes
+for `m`/`n`/`i`/`r`/`c` gave up legibility. Backed that out and rebuilt
+the rebrand around surfaces that render reliably.
+
+### Fixed
+
+- `packages/opencode/src/cli/logo.ts` and `packages/opencode/src/cli/ui.ts`:
+  reverted to the upstream `opencode` block glyphs so the splash is
+  readable. Product branding now lives in the terminal title, the CLI
+  help text, the theme palette, and the user config.
+- Installer scripts (POSIX + Windows) now run `bun install` against the
+  repo when bun is available and `packages/opencode/node_modules` is
+  missing. Without that step the `omnicoder` wrapper's source-preferred
+  path short-circuits to the global npm binary, which is exactly what
+  produced "opencode green" instead of the purple theme after alpha.4.
+- `bin/omnicoder.ps1`: same source-preference logic as `bin/omnicoder`.
+  On Windows, when the repo is checked out with deps staged,
+  `omnicoder` now launches `bun run --cwd ...\packages\opencode
+  --conditions=browser src/index.ts`.
+
+### Changed
+
+- `.omnicoder/opencode.jsonc` template: ships `"theme": "omnicoder"`
+  explicitly, so `install.sh` / `install-windows.ps1` seed the purple
+  palette without relying on the fallback default in the code path
+  (which is overridden by any earlier KV value).
+- Terminal title set by the TUI: `OpenCode` → `OmniCoder`;
+  `OC | <session>` → `OMNI | <session>`.
+
+### Rationale
+
+The product name shows up on screen through three reliable surfaces:
+the terminal title bar (always set), the `--help` text (controlled by
+`thread.ts` describe), and the colour palette (a full theme swap).
+Block-art is the worst surface for rebranding a fork because every
+glyph needs matching shadow markers or it looks broken, which is what
+happened in alpha.4.
+
 ## [5.0.0-alpha.4] — 2026-04-18
 
 Rebrand pass. The TUI now opens on "omnicoder" instead of "opencode" and

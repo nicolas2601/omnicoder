@@ -1,21 +1,12 @@
-// OMNICODER: banner reforged to spell "omnicoder" in the same block style as
-// the upstream opencode splash. `marks` is kept identical so the TUI print
-// path (which inserts a subtle accent where `marks` characters appear)
-// behaves exactly as before. Keeping the export named `logo` so the call
-// sites in logo.tsx / cli output don't drift from upstream on merge.
+// OMNICODER: logo glyphs kept identical to upstream opencode. Hand-drawing
+// "omnicoder" in 4-char block cells without the _^~ colour markers produced
+// something legible as "OANIO OODER", which is worse than the honest
+// upstream banner. The product identity shows up in the wordmark
+// subtitle, the terminal title, the sidebar label, and the theme — this
+// block-art is the one place where matching upstream is the best choice.
 export const logo = {
-  left: [
-    "                        ",
-    "█▀▀█ █▀▀█ █▀▀▄ ▀█▀ █▀▀█ ",
-    "█  █ █^^█ █  █  █  █  █ ",
-    "▀▀▀▀ ▀  ▀ ▀  ▀ ▀▀▀ ▀▀▀▀ ",
-  ],
-  right: [
-    "                             ",
-    "█▀▀█ █▀▀█ █▀▀▄ █▀▀▀ █▀▀█ ",
-    "█  █ █  █ █  █ █▀▀  █▄▄▀ ",
-    "▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀ ▀▀ ",
-  ],
+  left: ["                   ", "█▀▀█ █▀▀█ █▀▀█ █▀▀▄", "█__█ █__█ █^^^ █__█", "▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀~~▀"],
+  right: ["             ▄     ", "█▀▀▀ █▀▀█ █▀▀█ █▀▀█", "█___ █__█ █__█ █^^^", "▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀"],
 }
 
 export const go = {

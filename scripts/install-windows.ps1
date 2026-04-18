@@ -121,6 +121,32 @@ function Install-Opencode {
     if ($LASTEXITCODE -ne 0) { Die "npm install failed (exit $LASTEXITCODE)" }
 }
 
+function Install-RepoDeps {
+    # The `omnicoder` wrapper prefers the fork's TypeScript source (purple
+    # theme, omnicoder branding, agent aliases, plugin hot paths) whenever
+    # node_modules are ready. Running `bun install` here wires that up so
+    # a fresh `omnicoder` launch hits the patched build, not the upstream
+    # opencode npm tarball.
+    if (-not (Get-Command bun -ErrorAction SilentlyContinue)) {
+        Write-Warn "bun not found — wrapper will fall back to the npm opencode (no fork branding)."
+        Write-Warn "Install bun first if you want the purple theme + OmniCoder splash: irm bun.sh/install.ps1 | iex"
+        return
+    }
+    $opentui = Join-Path $RepoRoot 'packages\opencode\node_modules\@opentui\core'
+    if (Test-Path -LiteralPath $opentui) {
+        Write-Log "repo deps already installed (found @opentui/core) — skipping bun install"
+        return
+    }
+    Write-Log "Installing repo deps with bun (one-time, ~30s)"
+    Push-Location $RepoRoot
+    try {
+        & bun install
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warn "bun install failed (exit $LASTEXITCODE) — wrapper will fall back to the npm opencode"
+        }
+    } finally { Pop-Location }
+}
+
 function Install-Engram {
     if (Get-Command engram -ErrorAction SilentlyContinue) {
         Write-Log "engram already installed: $((Get-Command engram).Source)"
@@ -333,6 +359,7 @@ if ($Uninstall) {
 
 Write-Log "OmniCoder install -> InstallDir=$InstallDir, Home=$OmnicoderHome"
 Install-Opencode
+Install-RepoDeps
 Install-Engram
 Install-Wrappers
 Initialize-OmnicoderHome

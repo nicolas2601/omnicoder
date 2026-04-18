@@ -4,6 +4,12 @@
 {
   "$schema": "https://opencode.ai/config.json",
 
+  // ─── Branding ──────────────────────────────────────────────────────────
+  // Default theme is the purple "omnicoder" palette shipped alongside the
+  // upstream "opencode" theme. Users who prefer vanilla green can set
+  // `"theme": "opencode"` here or pick another via the theme picker.
+  "theme": "omnicoder",
+
   // ─── Providers ──────────────────────────────────────────────────────────
   // Declared via AI SDK openai-compatible adapter for non-native providers.
   // API keys use the {env:VAR} indirection so values never land in config.

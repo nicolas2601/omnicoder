@@ -179,9 +179,18 @@ if ($args.Count -ge 1) {
     }
 }
 
-if (-not (Get-Command opencode -ErrorAction SilentlyContinue)) {
-    Write-Error "omnicoder: opencode is not installed. Run scripts\install-windows.ps1 first."
-    exit 127
+# Prefer the source build from the omnicoder repo when it is ready (purple
+# theme, "omnicoder" help text, agent aliases, plugin hot-paths). Fall back
+# to the globally installed opencode binary when the source isn't
+# populated so wrapper-only installs still launch the upstream TUI.
+$OmnicoderRepo = if ($env:OMNICODER_REPO) { $env:OMNICODER_REPO } else { Join-Path $env:USERPROFILE 'omnicoder-v5' }
+$OmnicoderSrcEntry = Join-Path $OmnicoderRepo 'packages\opencode\src\index.ts'
+$OmnicoderSrcDeps  = Join-Path $OmnicoderRepo 'packages\opencode\node_modules\@opentui\core'
+
+function Test-CanRunSource {
+    (Test-Path -LiteralPath $OmnicoderSrcEntry) -and
+    (Test-Path -LiteralPath $OmnicoderSrcDeps)  -and
+    (Get-Command bun -ErrorAction SilentlyContinue)
 }
 
 Show-BannerOnce
@@ -190,6 +199,16 @@ if (Test-Path -LiteralPath $OmnicoderUserConfig) {
     $env:OPENCODE_CONFIG = $OmnicoderUserConfig
 }
 
-# Forward remaining args to opencode, preserving exit code.
+if (Test-CanRunSource) {
+    $pkgDir = Join-Path $OmnicoderRepo 'packages\opencode'
+    & bun run --cwd $pkgDir --conditions=browser src/index.ts @args
+    exit $LASTEXITCODE
+}
+
+if (-not (Get-Command opencode -ErrorAction SilentlyContinue)) {
+    Write-Error "omnicoder: opencode is not installed and the source repo is not ready at $OmnicoderRepo.`n  quick fix: run ``bun install`` at $OmnicoderRepo`n  or install the upstream binary: npm i -g opencode-ai@latest"
+    exit 127
+}
+
 & opencode @args
 exit $LASTEXITCODE

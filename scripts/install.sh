@@ -136,6 +136,24 @@ install_opencode() {
   npm install -g opencode-ai@latest
 }
 
+# The wrapper prefers the fork source (purple theme + OmniCoder branding +
+# agent aliases) whenever packages/opencode/node_modules is populated.
+# `bun install` only runs when bun exists AND the deps aren't staged yet,
+# so this is cheap on re-install. Failures are warnings — we still have
+# the upstream npm binary to fall back to.
+install_repo_deps() {
+  if ! command -v bun >/dev/null 2>&1; then
+    warn "bun not found — wrapper will use the npm opencode (no fork branding)"
+    return 0
+  fi
+  if [ -d "$REPO_ROOT/packages/opencode/node_modules/@opentui/core" ]; then
+    log "repo deps already installed (found @opentui/core) — skipping bun install"
+    return 0
+  fi
+  log "installing repo deps with bun (one-time, ~30s)"
+  ( cd "$REPO_ROOT" && bun install ) || warn "bun install failed — wrapper will fall back to npm opencode"
+}
+
 # ---- step: engram -----------------------------------------------------------
 install_engram() {
   if command -v engram >/dev/null 2>&1; then
@@ -369,6 +387,7 @@ main() {
 
   log "OmniCoder install -> prefix=$PREFIX, home=$OMNICODER_HOME"
   install_opencode
+  install_repo_deps
   install_engram
   install_wrappers
   seed_home
