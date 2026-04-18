@@ -1,4 +1,17 @@
-# web + desktop packages
+# OmniCoder fork — nicolas2601 owns everything by default.
+* @nicolas2601
+
+# OmniCoder package: explicit ownership to short-circuit upstream overrides.
+/packages/omnicoder/ @nicolas2601
+
+# CI / release plumbing is fork-owned.
+/.github/workflows/omnicoder-ci.yml       @nicolas2601
+/.github/workflows/omnicoder-pr.yml       @nicolas2601
+/.github/workflows/omnicoder-release.yml  @nicolas2601
+/.github/dependabot.yml                   @nicolas2601
+/.github/CODEOWNERS                       @nicolas2601
+
+# Upstream package owners (kept for reference; outranked by the * rule above).
 packages/app/      @adamdotdevin
 packages/tauri/    @adamdotdevin
 packages/desktop/src-tauri/  @brendonovich

@@ -1,0 +1,146 @@
+name: omnicoder-release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v5.0.0)"
+        required: true
+        type: string
+
+concurrency:
+  group: omnicoder-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Resolve release tag
+        id: tag
+        run: |
+          if [ -n "${{ inputs.tag }}" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          if [ -z "$TAG" ]; then
+            echo "::error::Could not resolve release tag"
+            exit 1
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Releasing tag: ${TAG}"
+
+      - name: Extract changelog entry
+        id: changelog
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/release
+          NOTES_FILE=".artifacts/release/notes.md"
+
+          if [ -f CHANGELOG.md ]; then
+            # Try to extract the section between the current tag header and the previous tag header.
+            # Matches headers like "## v5.0.0", "## [v5.0.0]", "## 5.0.0".
+            awk -v tag="${TAG}" '
+              BEGIN { inside = 0 }
+              /^##[[:space:]]/ {
+                if (inside) { exit }
+                if (index($0, tag) > 0) { inside = 1; next }
+              }
+              inside { print }
+            ' CHANGELOG.md > "$NOTES_FILE"
+
+            if [ ! -s "$NOTES_FILE" ]; then
+              echo "::warning::No changelog entry found for ${TAG} — falling back to commit log"
+              PREV_TAG="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
+              if [ -n "$PREV_TAG" ]; then
+                git log --pretty=format:'- %s (%h)' "${PREV_TAG}..${TAG}" > "$NOTES_FILE"
+              else
+                git log --pretty=format:'- %s (%h)' "${TAG}" > "$NOTES_FILE"
+              fi
+            fi
+          else
+            echo "::warning::CHANGELOG.md missing — using git log"
+            PREV_TAG="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
+            if [ -n "$PREV_TAG" ]; then
+              git log --pretty=format:'- %s (%h)' "${PREV_TAG}..${TAG}" > "$NOTES_FILE"
+            else
+              git log --pretty=format:'- %s (%h)' "${TAG}" > "$NOTES_FILE"
+            fi
+          fi
+
+          echo "notes_file=${NOTES_FILE}" >> "$GITHUB_OUTPUT"
+
+      - name: Pack @omnicoder/core as tarball
+        id: pack
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/release
+          VERSION="${TAG#v}"
+          OUT_DIR=".artifacts/release"
+          TARBALL="${OUT_DIR}/omnicoder-core-${VERSION}.tgz"
+
+          tar --exclude='node_modules' \
+              --exclude='.artifacts' \
+              -czf "$TARBALL" \
+              -C packages omnicoder
+
+          # Bundle install script and root install binary for convenience.
+          cp install "${OUT_DIR}/install.sh" 2>/dev/null || true
+          if [ -d packages/omnicoder/scripts ]; then
+            tar -czf "${OUT_DIR}/omnicoder-scripts-${VERSION}.tgz" -C packages/omnicoder scripts
+          fi
+
+          ls -lah "$OUT_DIR"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tarball=${TARBALL}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          NOTES_FILE: ${{ steps.changelog.outputs.notes_file }}
+        run: |
+          set -euo pipefail
+          ASSETS=(.artifacts/release/omnicoder-core-*.tgz)
+          if ls .artifacts/release/omnicoder-scripts-*.tgz >/dev/null 2>&1; then
+            ASSETS+=(.artifacts/release/omnicoder-scripts-*.tgz)
+          fi
+          if [ -f .artifacts/release/install.sh ]; then
+            ASSETS+=(.artifacts/release/install.sh)
+          fi
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" "${ASSETS[@]}" --clobber
+          else
+            gh release create "${TAG}" "${ASSETS[@]}" \
+              --title "OmniCoder ${TAG}" \
+              --notes-file "${NOTES_FILE}"
+          fi

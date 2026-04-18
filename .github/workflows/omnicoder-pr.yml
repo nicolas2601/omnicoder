@@ -1,0 +1,85 @@
+name: omnicoder-pr
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+    branches: [main, v5-migration]
+
+concurrency:
+  group: omnicoder-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
+jobs:
+  gate:
+    name: PR gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout PR head (read-only)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun install store
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run --cwd packages/omnicoder typecheck
+
+      - name: Tests
+        run: bun run --cwd packages/omnicoder test:ci
+
+      - name: Coverage gate (baseline skipped)
+        run: |
+          echo "Coverage baseline not yet established — skipping coverage gate for now."
+          echo "TODO: when baseline is added, fail if coverage drops."
+
+      - name: CHANGELOG entry required
+        env:
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          if echo "$PR_LABELS" | grep -q '"no-changelog"'; then
+            echo "Label 'no-changelog' present — skipping CHANGELOG check."
+            exit 0
+          fi
+
+          if [ ! -f CHANGELOG.md ]; then
+            echo "::error title=Missing CHANGELOG.md::Add a CHANGELOG.md with an entry for this PR, or apply the 'no-changelog' label."
+            exit 1
+          fi
+
+          git fetch --no-tags --depth=0 origin "${BASE_SHA}" >/dev/null 2>&1 || true
+          CHANGED="$(git diff --name-only "${BASE_SHA}...${HEAD_SHA}" || true)"
+
+          if echo "$CHANGED" | grep -qx 'CHANGELOG.md'; then
+            echo "CHANGELOG.md updated in this PR."
+            exit 0
+          fi
+
+          echo "::error title=CHANGELOG entry missing::Update CHANGELOG.md or apply the 'no-changelog' label."
+          exit 1
