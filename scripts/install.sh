@@ -152,10 +152,12 @@ install_engram() {
   # Prefer gh (handles auth + private assets gracefully).
   asset_pattern=""
   case $platform in
-    linux-x64)    asset_pattern="engram*linux*x86_64*"; sha_var=$ENGRAM_SHA256_LINUX_X64 ;;
-    linux-arm64)  asset_pattern="engram*linux*aarch64*"; sha_var=$ENGRAM_SHA256_LINUX_ARM64 ;;
-    darwin-x64)   asset_pattern="engram*darwin*x86_64*"; sha_var=$ENGRAM_SHA256_DARWIN_X64 ;;
-    darwin-arm64) asset_pattern="engram*darwin*aarch64*"; sha_var=$ENGRAM_SHA256_DARWIN_ARM64 ;;
+    linux-x64)    asset_pattern="engram*linux*amd64*"; sha_var=$ENGRAM_SHA256_LINUX_X64 ;;
+    linux-arm64)  asset_pattern="engram*linux*arm64*"; sha_var=$ENGRAM_SHA256_LINUX_ARM64 ;;
+    darwin-x64)   asset_pattern="engram*darwin*amd64*"; sha_var=$ENGRAM_SHA256_DARWIN_X64 ;;
+    darwin-arm64) asset_pattern="engram*darwin*arm64*"; sha_var=$ENGRAM_SHA256_DARWIN_ARM64 ;;
+    windows-x64)  asset_pattern="engram*windows*amd64*"; sha_var= ;;
+    windows-arm64) asset_pattern="engram*windows*arm64*"; sha_var= ;;
   esac
 
   if command -v gh >/dev/null 2>&1; then
@@ -174,15 +176,24 @@ install_engram() {
       | grep -E "$(echo "$asset_pattern" | sed 's/\*/.*/g')" \
       | head -n1 \
       | sed -E 's/.*"browser_download_url":[[:space:]]*"([^"]+)".*/\1/')
-    [ -n "${url:-}" ] || die "could not resolve engram download URL"
+    if [ -z "${url:-}" ]; then
+      warn "could not resolve engram download URL — skipping (memory-loader falls back to markdown)"
+      return 0
+    fi
     log "fetching $url"
-    curl -fsSL \
-      -H "Accept: application/octet-stream" \
-      -o "$tmp/engram.asset" "$url"
+    # Keep the original asset extension so the extract step works.
+    asset_file="$tmp/$(basename "$url")"
+    curl -fsSL -H "Accept: application/octet-stream" -o "$asset_file" "$url" || {
+      warn "engram download failed — skipping (memory-loader falls back to markdown)"
+      return 0
+    }
   fi
 
   asset=$(ls "$tmp"/engram* 2>/dev/null | head -n1)
-  [ -n "${asset:-}" ] && [ -f "$asset" ] || die "engram asset missing after download"
+  if [ -z "${asset:-}" ] || [ ! -f "$asset" ]; then
+    warn "engram asset missing after download — skipping (memory-loader falls back to markdown)"
+    return 0
+  fi
 
   # SHA-256 verification (SEC-05). If digest is pinned, enforce it.
   if [ -n "${sha_var:-}" ]; then
@@ -208,10 +219,11 @@ install_engram() {
     *.zip)          ( cd "$tmp" && unzip -q "$asset" ) ;;
   esac
 
-  bin_found=$(find "$tmp" -type f -name 'engram' -perm -u+x 2>/dev/null | head -n1)
+  # find the engram binary (may also be engram.exe on Windows)
+  bin_found=$(find "$tmp" -type f \( -name 'engram' -o -name 'engram.exe' \) 2>/dev/null | head -n1)
   if [ -z "$bin_found" ]; then
-    # raw binary case
-    bin_found=$asset
+    warn "engram binary not found inside asset — skipping"
+    return 0
   fi
   chmod +x "$bin_found"
   runas_root "$BIN_DIR" install -m 0755 "$bin_found" "$BIN_DIR/engram"
