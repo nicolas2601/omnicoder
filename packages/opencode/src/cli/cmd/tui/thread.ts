@@ -67,7 +67,8 @@ async function input(value?: string) {
 
 export const TuiThreadCommand = cmd({
   command: "$0 [project]",
-  describe: "start opencode tui",
+  // OMNICODER: surface product name in CLI help instead of upstream brand.
+  describe: "start omnicoder tui",
   builder: (yargs) =>
     withNetworkOptions(yargs)
       .positional("project", {

@@ -4,6 +4,47 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.4] — 2026-04-18
+
+Rebrand pass. The TUI now opens on "omnicoder" instead of "opencode" and
+defaults to a purple palette, and two Claude Code-style agent aliases
+(`general-purpose`, `Explore`) close the "Unknown agent type" error that
+showed up when MiniMax/NIM tried to spawn subagents.
+
+### Added
+
+- `.opencode/agent/general-purpose.md` — alias for open-ended multi-step
+  research / code search, matching the Claude Code taxonomy so models
+  trained on those prompts spawn without failing.
+- `.opencode/agent/explore.md` — read-only codebase exploration alias
+  (Glob / Grep / Read / read-only Bash only). Forbidden from Edit / Write.
+- `packages/opencode/src/cli/cmd/tui/context/theme/omnicoder.json` —
+  new "omnicoder" theme with a purple-first palette. Kept identical shape
+  to upstream `opencode.json` so every syntax / diff / markdown slot
+  resolves with no rendering regressions.
+
+### Changed
+
+- `packages/opencode/src/cli/logo.ts`: splash banner now spells
+  `omnicoder` in the same block-art style as the upstream banner.
+  Marked with `// OMNICODER:` for clean upstream merges.
+- `packages/opencode/src/cli/cmd/tui/context/theme.tsx`: default theme
+  when no `theme` is set anywhere is now `"omnicoder"` instead of
+  `"opencode"`. Users who prefer the upstream look can still pick it from
+  the theme picker.
+- `packages/opencode/src/cli/cmd/tui/thread.ts`: CLI help describes
+  `$0` as "start omnicoder tui" — MIT compliance kept by preserving the
+  upstream NOTICE / LICENSE files untouched.
+
+### Rationale for the agent aliases
+
+The built-in `build`, `plan`, `general` agents in opencode never existed
+under the Claude Code names `general-purpose` / `Explore`, so whenever a
+model paraphrased a Claude-style spawn call (`spawn a general-purpose
+subagent…`) opencode rejected it with `Unknown agent type`. Shipping the
+aliases as thin markdown files that route to equivalent tools makes
+cross-trained models Just Work without retraining.
+
 ## [5.0.0-alpha.3] — 2026-04-18
 
 Per-phase model routing. Ship a catalogue of presets (balanced / quality /

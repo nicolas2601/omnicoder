@@ -317,8 +317,11 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
         const mode = pick(kv.get("theme_mode", props.mode))
         draft.mode = lock ?? mode ?? props.mode
         draft.lock = lock
-        const active = config.theme ?? kv.get("theme", "opencode")
-        draft.active = typeof active === "string" ? active : "opencode"
+        // OMNICODER: default to the `omnicoder` theme (purple palette)
+        // shipped alongside the upstream `opencode` theme. Users can flip
+        // back via `/theme opencode` or the `theme` key in their config.
+        const active = config.theme ?? kv.get("theme", "omnicoder")
+        draft.active = typeof active === "string" ? active : "omnicoder"
         draft.ready = false
       }),
     )
