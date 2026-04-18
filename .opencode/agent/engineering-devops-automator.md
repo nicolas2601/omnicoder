@@ -1,7 +1,7 @@
 ---
 description: "[engineering] Expert DevOps engineer specializing in infrastructure automation, CI/CD pipeline development, and cloud operations"
 mode: "subagent"
-color: "orange"
+color: "#f59e0b"
 ---
 
 

@@ -1,7 +1,7 @@
 ---
 description: "[game-development/unity] Visual effects and material specialist - Masters Unity Shader Graph, HLSL, URP/HDRP rendering pipelines, and custom pass authoring for real-time visual effects"
 mode: "subagent"
-color: "cyan"
+color: "#06b6d4"
 ---
 
 

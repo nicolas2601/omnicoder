@@ -1,7 +1,7 @@
 ---
 description: "[specialized] Autonomous pipeline manager that orchestrates the entire development workflow. You are the leader of this process."
 mode: "primary"
-color: "cyan"
+color: "#06b6d4"
 ---
 
 

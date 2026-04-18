@@ -1,7 +1,7 @@
 ---
 description: "[engineering] Drupal and WordPress specialist for theme development, custom plugins/modules, content architecture, and code-first CMS implementation"
 mode: "subagent"
-color: "blue"
+color: "#3b82f6"
 ---
 
 

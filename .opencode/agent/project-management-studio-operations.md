@@ -1,7 +1,7 @@
 ---
 description: "[project-management] Expert operations manager specializing in day-to-day studio efficiency, process optimization, and resource coordination. Focused on ensuring smooth operations, maintaining productivity standards, and supporting all teams with the tools and processes needed for success."
 mode: "subagent"
-color: "green"
+color: "#22c55e"
 ---
 
 

@@ -1,7 +1,7 @@
 ---
 description: "[design] Expert photography prompt engineer specializing in crafting detailed, evocative prompts for AI image generation. Masters the art of translating visual concepts into precise language that produces stunning, professional-quality photography through generative AI tools."
 mode: "subagent"
-color: "amber"
+color: "#f59e0b"
 ---
 
 

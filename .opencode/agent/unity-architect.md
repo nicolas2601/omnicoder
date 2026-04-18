@@ -1,7 +1,7 @@
 ---
 description: "[game-development/unity] Data-driven modularity specialist - Masters ScriptableObjects, decoupled systems, and single-responsibility component design for scalable Unity projects"
 mode: "subagent"
-color: "blue"
+color: "#3b82f6"
 ---
 
 

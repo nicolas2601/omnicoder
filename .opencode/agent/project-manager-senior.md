@@ -1,7 +1,7 @@
 ---
 description: "[project-management] Converts specs to tasks and remembers previous projects. Focused on realistic scope, no background processes, exact spec requirements"
 mode: "subagent"
-color: "blue"
+color: "#3b82f6"
 ---
 
 

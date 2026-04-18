@@ -253,9 +253,12 @@ seed_home() {
   # Idempotent copy: only populate missing files. A user who edited an agent
   # keeps their version. New upstream agents show up, existing ones do not
   # get overwritten.
-  for sub in agent skills; do
+  for sub in agent skills command; do
     src="$REPO_ROOT/.opencode/$sub"
-    dst="$OMNICODER_HOME/$sub"
+    dst="$OMNICODER_HOME/${sub}s"   # pluralise: command → commands for legacy compat
+    [ "$sub" = "agent"  ] && dst="$OMNICODER_HOME/agents"
+    [ "$sub" = "skills" ] && dst="$OMNICODER_HOME/skills"
+    [ "$sub" = "command" ] && dst="$OMNICODER_HOME/commands"
     [ -d "$src" ] || continue
     mkdir -p "$dst"
     # POSIX find: walk every regular file under $src, compute its relative
@@ -268,6 +271,19 @@ seed_home() {
       fi
     done
   done
+
+  # Personality / backup / restore helper scripts invoked by slash commands
+  # live at ~/.omnicoder/scripts/. Always refresh executable bits so new
+  # versions in the repo win on re-install.
+  if [ -d "$REPO_ROOT/scripts/personality-assets" ]; then
+    mkdir -p "$OMNICODER_HOME/scripts"
+    for f in "$REPO_ROOT/scripts/personality-assets"/*.sh; do
+      [ -f "$f" ] || continue
+      cp -f "$f" "$OMNICODER_HOME/scripts/$(basename "$f")"
+      chmod +x "$OMNICODER_HOME/scripts/$(basename "$f")"
+    done
+  fi
+
   log "seeded $OMNICODER_HOME (non-destructive)"
 }
 

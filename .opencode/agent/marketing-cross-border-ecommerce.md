@@ -1,7 +1,7 @@
 ---
 description: "[marketing] Full-funnel cross-border e-commerce strategist covering Amazon, Shopee, Lazada, AliExpress, Temu, and TikTok Shop operations, international logistics and overseas warehousing, compliance and taxation, multilingual listing optimization, brand globalization, and DTC independent site development."
 mode: "subagent"
-color: "blue"
+color: "#3b82f6"
 ---
 
 

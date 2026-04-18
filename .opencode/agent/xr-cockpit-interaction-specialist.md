@@ -1,7 +1,7 @@
 ---
 description: "[spatial-computing] Specialist in designing and developing immersive cockpit-based control systems for XR environments"
 mode: "subagent"
-color: "orange"
+color: "#f59e0b"
 ---
 
 

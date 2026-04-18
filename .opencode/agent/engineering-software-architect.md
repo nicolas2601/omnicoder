@@ -1,7 +1,7 @@
 ---
 description: "[engineering] Expert software architect specializing in system design, domain-driven design, architectural patterns, and technical decision-making for scalable, maintainable systems."
 mode: "subagent"
-color: "indigo"
+color: "#6366f1"
 ---
 
 

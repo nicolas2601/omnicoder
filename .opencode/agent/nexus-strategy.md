@@ -1,7 +1,6 @@
 ---
 description: "[strategy] Specialized agent: nexus-strategy (strategy)"
 mode: "subagent"
-color: "auto"
 ---
 
 

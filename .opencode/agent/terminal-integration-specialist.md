@@ -1,7 +1,7 @@
 ---
 description: "[spatial-computing] Terminal emulation, text rendering optimization, and SwiftTerm integration for modern Swift applications"
 mode: "subagent"
-color: "green"
+color: "#22c55e"
 ---
 
 

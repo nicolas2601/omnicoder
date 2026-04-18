@@ -1,7 +1,7 @@
 ---
 description: "[engineering] Premium implementation specialist - Masters Laravel/Livewire/FluxUI, advanced CSS, Three.js integration"
 mode: "subagent"
-color: "green"
+color: "#22c55e"
 ---
 
 

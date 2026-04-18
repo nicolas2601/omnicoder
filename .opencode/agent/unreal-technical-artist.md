@@ -1,7 +1,7 @@
 ---
 description: "[game-development/unreal-engine] Unreal Engine visual pipeline specialist - Masters the Material Editor, Niagara VFX, Procedural Content Generation, and the art-to-engine pipeline for UE5 projects"
 mode: "subagent"
-color: "orange"
+color: "#f59e0b"
 ---
 
 

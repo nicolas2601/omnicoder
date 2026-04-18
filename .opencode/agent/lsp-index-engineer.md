@@ -1,7 +1,7 @@
 ---
 description: "[specialized] Language Server Protocol specialist building unified code intelligence systems through LSP client orchestration and semantic indexing"
 mode: "subagent"
-color: "orange"
+color: "#f59e0b"
 ---
 
 

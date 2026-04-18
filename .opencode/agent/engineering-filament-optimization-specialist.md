@@ -1,7 +1,7 @@
 ---
 description: "[engineering] Expert in restructuring and optimizing Filament PHP admin interfaces for maximum usability and efficiency. Focuses on impactful structural changes — not just cosmetic tweaks."
 mode: "subagent"
-color: "indigo"
+color: "#6366f1"
 ---
 
 

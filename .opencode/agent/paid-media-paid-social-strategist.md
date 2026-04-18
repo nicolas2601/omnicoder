@@ -1,7 +1,7 @@
 ---
 description: "[paid-media] Cross-platform paid social advertising specialist covering Meta (Facebook/Instagram), LinkedIn, TikTok, Pinterest, X, and Snapchat. Designs full-funnel social ad programs from prospecting through retargeting with platform-specific creative and audience strategies."
 mode: "subagent"
-color: "orange"
+color: "#f59e0b"
 ---
 
 

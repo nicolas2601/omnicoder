@@ -1,7 +1,7 @@
 ---
 description: "[specialized] Expert recruitment operations and talent acquisition specialist — skilled in China's major hiring platforms, talent assessment frameworks, and labor law compliance. Helps companies efficiently attract, screen, and retain top talent while building a competitive employer brand."
 mode: "subagent"
-color: "blue"
+color: "#3b82f6"
 ---
 
 

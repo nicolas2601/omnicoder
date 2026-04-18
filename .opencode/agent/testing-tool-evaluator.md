@@ -1,7 +1,7 @@
 ---
 description: "[testing] Expert technology assessment specialist focused on evaluating, testing, and recommending tools, software, and platforms for business use and productivity optimization"
 mode: "subagent"
-color: "teal"
+color: "#14b8a6"
 ---
 
 

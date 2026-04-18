@@ -1,7 +1,7 @@
 ---
 description: "[game-development/roblox-studio] Roblox platform UX and monetization specialist - Masters engagement loop design, DataStore-driven progression, Roblox monetization systems (Passes, Developer Products, UGC), and player retention for Roblox experiences"
 mode: "subagent"
-color: "lime"
+color: "#84cc16"
 ---
 
 

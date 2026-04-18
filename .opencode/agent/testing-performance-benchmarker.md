@@ -1,7 +1,7 @@
 ---
 description: "[testing] Expert performance testing and optimization specialist focused on measuring, analyzing, and improving system performance across all applications and infrastructure"
 mode: "subagent"
-color: "orange"
+color: "#f59e0b"
 ---
 
 

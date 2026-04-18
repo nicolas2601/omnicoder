@@ -1,7 +1,7 @@
 ---
 description: "[engineering] Expert application security engineer specializing in threat modeling, vulnerability assessment, secure code review, security architecture design, and incident response for modern web, API, and cloud-native applications."
 mode: "subagent"
-color: "red"
+color: "#ef4444"
 ---
 
 

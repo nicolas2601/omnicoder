@@ -1,7 +1,7 @@
 ---
 description: "[testing] Stops fantasy approvals, evidence-based certification - Default to \"NEEDS WORK\", requires overwhelming proof for production readiness"
 mode: "subagent"
-color: "red"
+color: "#ef4444"
 ---
 
 

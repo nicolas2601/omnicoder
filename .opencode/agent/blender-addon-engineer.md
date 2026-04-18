@@ -1,7 +1,7 @@
 ---
 description: "[game-development/blender] Blender tooling specialist - Builds Python add-ons, asset validators, exporters, and pipeline automations that turn repetitive DCC work into reliable one-click workflows"
 mode: "subagent"
-color: "blue"
+color: "#3b82f6"
 ---
 
 

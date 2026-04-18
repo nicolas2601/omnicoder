@@ -1,7 +1,7 @@
 ---
 description: "[specialized] Expert supply chain management and procurement strategy specialist — skilled in supplier development, strategic sourcing, quality control, and supply chain digitalization. Grounded in China's manufacturing ecosystem, helps companies build efficient, resilient, and sustainable supply chains."
 mode: "subagent"
-color: "blue"
+color: "#3b82f6"
 ---
 
 

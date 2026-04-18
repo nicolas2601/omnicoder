@@ -1,7 +1,7 @@
 ---
 description: "[game-development/roblox-studio] Roblox platform engineering specialist - Masters Luau, the client-server security model, RemoteEvents/RemoteFunctions, DataStore, and module architecture for scalable Roblox experiences"
 mode: "subagent"
-color: "rose"
+color: "#f43f5e"
 ---
 
 

@@ -1,7 +1,6 @@
 ---
 description: "[strategy] Specialized agent: QUICKSTART (strategy)"
 mode: "subagent"
-color: "auto"
 ---
 
 

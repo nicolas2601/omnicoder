@@ -1,7 +1,7 @@
 ---
 description: "[engineering] Specialist in bare-metal and RTOS firmware - ESP32/ESP-IDF, PlatformIO, Arduino, ARM Cortex-M, STM32 HAL/LL, Nordic nRF5/nRF Connect SDK, FreeRTOS, Zephyr"
 mode: "subagent"
-color: "orange"
+color: "#f59e0b"
 ---
 
 

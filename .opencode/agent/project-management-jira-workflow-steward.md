@@ -1,7 +1,7 @@
 ---
 description: "[project-management] Expert delivery operations specialist who enforces Jira-linked Git workflows, traceable commits, structured pull requests, and release-safe branch strategy across software teams."
 mode: "subagent"
-color: "orange"
+color: "#f59e0b"
 ---
 
 

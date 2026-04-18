@@ -1,7 +1,7 @@
 ---
 description: "[engineering] Specialized in ultra-fast proof-of-concept development and MVP creation using efficient tools and frameworks"
 mode: "subagent"
-color: "green"
+color: "#22c55e"
 ---
 
 

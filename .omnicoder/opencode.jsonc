@@ -124,13 +124,13 @@
   // Users may override per-agent with frontmatter `model: provider/id`.
   "agent": {
     "build": {
-      "model": "nvidia-nim/minimax/minimax-m2"
+      "model": "nvidia-nim/minimaxai/minimax-m2.7"
     },
     "plan": {
-      "model": "nvidia-nim/minimax/minimax-m2"
+      "model": "nvidia-nim/minimaxai/minimax-m2.7"
     },
     "general": {
-      "model": "nvidia-nim/minimax/minimax-m2"
+      "model": "nvidia-nim/minimaxai/minimax-m2.7"
     }
   },
 

@@ -1,7 +1,7 @@
 ---
 description: "[spatial-computing] Native visionOS spatial computing, SwiftUI volumetric interfaces, and Liquid Glass design implementation"
 mode: "subagent"
-color: "indigo"
+color: "#6366f1"
 ---
 
 

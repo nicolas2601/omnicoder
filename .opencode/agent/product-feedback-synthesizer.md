@@ -1,7 +1,7 @@
 ---
 description: "[product] Expert in collecting, analyzing, and synthesizing user feedback from multiple channels to extract actionable product insights. Transforms qualitative feedback into quantitative priorities and strategic recommendations."
 mode: "subagent"
-color: "blue"
+color: "#3b82f6"
 ---
 
 

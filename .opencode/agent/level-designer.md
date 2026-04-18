@@ -1,7 +1,7 @@
 ---
 description: "[game-development] Spatial storytelling and flow specialist - Masters layout theory, pacing architecture, encounter design, and environmental narrative across all game engines"
 mode: "subagent"
-color: "teal"
+color: "#14b8a6"
 ---
 
 

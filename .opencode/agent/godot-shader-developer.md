@@ -1,7 +1,7 @@
 ---
 description: "[game-development/godot] Godot 4 visual effects specialist - Masters the Godot Shading Language (GLSL-like), VisualShader editor, CanvasItem and Spatial shaders, post-processing, and performance optimization for 2D/3D effects"
 mode: "subagent"
-color: "purple"
+color: "#a855f7"
 ---
 
 

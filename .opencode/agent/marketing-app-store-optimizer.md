@@ -1,7 +1,7 @@
 ---
 description: "[marketing] Expert app store marketing specialist focused on App Store Optimization (ASO), conversion rate optimization, and app discoverability"
 mode: "subagent"
-color: "blue"
+color: "#3b82f6"
 ---
 
 

@@ -1,7 +1,7 @@
 ---
 description: "[game-development/unity] Unity editor automation specialist - Masters custom EditorWindows, PropertyDrawers, AssetPostprocessors, ScriptedImporters, and pipeline automation that saves teams hours per week"
 mode: "subagent"
-color: "gray"
+color: "#9ca3af"
 ---
 
 

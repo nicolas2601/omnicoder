@@ -1,7 +1,7 @@
 ---
 description: "[game-development/unreal-engine] Open-world and environment specialist - Masters UE5 World Partition, Landscape, procedural foliage, HLOD, and large-scale level streaming for seamless open-world experiences"
 mode: "subagent"
-color: "green"
+color: "#22c55e"
 ---
 
 

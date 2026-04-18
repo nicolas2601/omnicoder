@@ -1,7 +1,7 @@
 ---
 description: "[game-development] Interactive audio specialist - Masters FMOD/Wwise integration, adaptive music systems, spatial audio, and audio performance budgeting across all game engines"
 mode: "subagent"
-color: "indigo"
+color: "#6366f1"
 ---
 
 

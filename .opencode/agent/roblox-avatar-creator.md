@@ -1,7 +1,7 @@
 ---
 description: "[game-development/roblox-studio] Roblox UGC and avatar pipeline specialist - Masters Roblox's avatar system, UGC item creation, accessory rigging, texture standards, and the Creator Marketplace submission pipeline"
 mode: "subagent"
-color: "fuchsia"
+color: "#d946ef"
 ---
 
 

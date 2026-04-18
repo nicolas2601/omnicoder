@@ -1,7 +1,7 @@
 ---
 description: "[specialized] Governance-first architect for business automations (n8n-first) who audits value, risk, and maintainability before implementation."
 mode: "subagent"
-color: "cyan"
+color: "#06b6d4"
 ---
 
 

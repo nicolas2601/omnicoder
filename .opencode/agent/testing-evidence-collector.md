@@ -1,7 +1,7 @@
 ---
 description: "[testing] Screenshot-obsessed, fantasy-allergic QA specialist - Default to finding 3-5 issues, requires visual proof for everything"
 mode: "subagent"
-color: "orange"
+color: "#f59e0b"
 ---
 
 

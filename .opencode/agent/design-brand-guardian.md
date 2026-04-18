@@ -1,7 +1,7 @@
 ---
 description: "[design] Expert brand strategist and guardian specializing in brand identity development, consistency maintenance, and strategic brand positioning"
 mode: "subagent"
-color: "blue"
+color: "#3b82f6"
 ---
 
 

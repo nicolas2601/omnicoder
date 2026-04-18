@@ -1,7 +1,7 @@
 ---
 description: "[game-development/unreal-engine] Performance and hybrid architecture specialist - Masters C++/Blueprint continuum, Nanite geometry, Lumen GI, and Gameplay Ability System for AAA-grade Unreal Engine projects"
 mode: "subagent"
-color: "orange"
+color: "#f59e0b"
 ---
 
 

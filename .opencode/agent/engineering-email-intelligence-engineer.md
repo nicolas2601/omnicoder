@@ -1,7 +1,7 @@
 ---
 description: "[engineering] Expert in extracting structured, reasoning-ready data from raw email threads for AI agents and automation systems"
 mode: "subagent"
-color: "indigo"
+color: "#6366f1"
 ---
 
 

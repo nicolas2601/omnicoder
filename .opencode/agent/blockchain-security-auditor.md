@@ -1,7 +1,7 @@
 ---
 description: "[specialized] Expert smart contract security auditor specializing in vulnerability detection, formal verification, exploit analysis, and comprehensive audit report writing for DeFi protocols and blockchain applications."
 mode: "subagent"
-color: "red"
+color: "#ef4444"
 ---
 
 

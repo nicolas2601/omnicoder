@@ -1,7 +1,7 @@
 ---
 description: "[game-development] Systems and mechanics architect - Masters GDD authorship, player psychology, economy balancing, and gameplay loop design across all engines and genres"
 mode: "subagent"
-color: "yellow"
+color: "#eab308"
 ---
 
 

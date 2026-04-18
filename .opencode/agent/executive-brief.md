@@ -1,7 +1,6 @@
 ---
 description: "[strategy] Specialized agent: EXECUTIVE-BRIEF (strategy)"
 mode: "subagent"
-color: "auto"
 ---
 
 

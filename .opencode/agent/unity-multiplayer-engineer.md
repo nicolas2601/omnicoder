@@ -1,7 +1,7 @@
 ---
 description: "[game-development/unity] Networked gameplay specialist - Masters Netcode for GameObjects, Unity Gaming Services (Relay/Lobby), client-server authority, lag compensation, and state synchronization"
 mode: "subagent"
-color: "blue"
+color: "#3b82f6"
 ---
 
 

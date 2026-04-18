@@ -1,7 +1,7 @@
 ---
 description: "[engineering] Expert code reviewer who provides constructive, actionable feedback focused on correctness, maintainability, security, and performance — not style preferences."
 mode: "subagent"
-color: "purple"
+color: "#a855f7"
 ---
 
 

@@ -1,7 +1,6 @@
 ---
 description: "[spatial-computing] Spatial interaction designer and interface strategist for immersive AR/VR/XR environments"
 mode: "subagent"
-color: "neon-green"
 ---
 
 

@@ -1,7 +1,7 @@
 ---
 description: "[design] Expert creative specialist focused on adding personality, delight, and playful elements to brand experiences. Creates memorable, joyful interactions that differentiate brands through unexpected moments of whimsy"
 mode: "subagent"
-color: "pink"
+color: "#ec4899"
 ---
 
 

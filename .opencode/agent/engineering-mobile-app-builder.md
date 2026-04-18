@@ -1,7 +1,7 @@
 ---
 description: "[engineering] Specialized mobile application developer with expertise in native iOS/Android development and cross-platform frameworks"
 mode: "subagent"
-color: "purple"
+color: "#a855f7"
 ---
 
 

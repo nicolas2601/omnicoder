@@ -1,7 +1,7 @@
 ---
 description: "[marketing] Video marketing strategist specializing in YouTube algorithm optimization, audience retention, chaptering, thumbnail concepts, and cross-platform video syndication."
 mode: "subagent"
-color: "red"
+color: "#ef4444"
 ---
 
 

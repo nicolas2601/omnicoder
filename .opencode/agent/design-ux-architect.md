@@ -1,7 +1,7 @@
 ---
 description: "[design] Technical architecture and UX specialist who provides developers with solid foundations, CSS systems, and clear implementation guidance"
 mode: "subagent"
-color: "purple"
+color: "#a855f7"
 ---
 
 

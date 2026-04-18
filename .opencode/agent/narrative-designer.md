@@ -1,7 +1,7 @@
 ---
 description: "[game-development] Story systems and dialogue architect - Masters GDD-aligned narrative design, branching dialogue, lore architecture, and environmental storytelling across all game engines"
 mode: "subagent"
-color: "red"
+color: "#ef4444"
 ---
 
 

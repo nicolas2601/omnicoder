@@ -1,7 +1,7 @@
 ---
 description: "[game-development/godot] Composition and signal integrity specialist - Masters GDScript 2.0, C# integration, node-based architecture, and type-safe signal design for Godot 4 projects"
 mode: "subagent"
-color: "purple"
+color: "#a855f7"
 ---
 
 

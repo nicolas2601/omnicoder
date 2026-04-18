@@ -1,7 +1,6 @@
 ---
 description: "[strategy/coordination] Specialized agent: handoff-templates (strategy/coordination)"
 mode: "subagent"
-color: "auto"
 ---
 
 

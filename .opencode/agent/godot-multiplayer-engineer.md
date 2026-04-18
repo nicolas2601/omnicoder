@@ -1,7 +1,7 @@
 ---
 description: "[game-development/godot] Godot 4 networking specialist - Masters the MultiplayerAPI, scene replication, ENet/WebRTC transport, RPCs, and authority models for real-time multiplayer games"
 mode: "subagent"
-color: "violet"
+color: "#8b5cf6"
 ---
 
 
