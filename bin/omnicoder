@@ -1,0 +1,212 @@
+#!/bin/sh
+# shellcheck shell=sh
+# -----------------------------------------------------------------------------
+# omnicoder — user-facing CLI wrapper around the `opencode` binary.
+#
+# ADR-001: the upstream fork is kept mergeable; we never rename the underlying
+# command. This shim exposes the product name `omnicoder`, injects environment
+# and config indirection, and keeps the experience coherent across *nix shells.
+#
+# POSIX-compliant (sh, bash 3.2+, dash, zsh). No bashisms.
+# -----------------------------------------------------------------------------
+
+set -eu
+
+# ---- constants --------------------------------------------------------------
+OMNICODER_HOME_DEFAULT="${HOME}/.omnicoder"
+OMNICODER_HOME="${OMNICODER_HOME:-$OMNICODER_HOME_DEFAULT}"
+export OMNICODER_HOME
+
+OMNICODER_BANNER_FLAG="${OMNICODER_HOME}/.banner-shown"
+OMNICODER_USER_CONFIG="${OMNICODER_HOME}/opencode.jsonc"
+
+# ---- version lookup ---------------------------------------------------------
+# Read version from the installed package.json. Walk upward from this script so
+# we work both from the repo checkout and from a bin-only install.
+omnicoder_script_dir() {
+  # Resolve symlinks without relying on GNU readlink -f (macOS compatibility).
+  src=$0
+  while [ -L "$src" ]; do
+    dir=$(cd -P "$(dirname "$src")" && pwd)
+    src=$(readlink "$src")
+    case $src in
+      /*) ;;
+      *) src="$dir/$src" ;;
+    esac
+  done
+  cd -P "$(dirname "$src")" && pwd
+}
+
+find_package_json() {
+  d=$(omnicoder_script_dir)
+  # Try common locations in order:
+  #   1. sibling packages/omnicoder/package.json (repo checkout)
+  #   2. ../share/omnicoder/package.json (system install)
+  #   3. $OMNICODER_HOME/package.json (user install)
+  for candidate in \
+    "$d/../packages/omnicoder/package.json" \
+    "$d/../share/omnicoder/package.json" \
+    "$OMNICODER_HOME/package.json"
+  do
+    if [ -f "$candidate" ]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+read_pkg_version() {
+  pkg=$1
+  # POSIX grep + sed only. Tolerant of whitespace/quotes variants.
+  grep -E '"version"[[:space:]]*:' "$pkg" \
+    | head -n 1 \
+    | sed -E 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/'
+}
+
+OMNICODER_VERSION="unknown"
+if pkg_path=$(find_package_json); then
+  v=$(read_pkg_version "$pkg_path" 2>/dev/null || true)
+  if [ -n "${v:-}" ]; then
+    OMNICODER_VERSION=$v
+  fi
+fi
+export OMNICODER_VERSION
+
+# ---- provider detection -----------------------------------------------------
+detect_providers() {
+  providers=""
+  if [ -n "${NVIDIA_API_KEY:-}" ]; then providers="${providers}nvidia-nim "; fi
+  if [ -n "${MINIMAX_API_KEY:-}" ]; then providers="${providers}minimax "; fi
+  if [ -n "${DASHSCOPE_API_KEY:-}" ]; then providers="${providers}dashscope "; fi
+  if [ -n "${ANTHROPIC_API_KEY:-}" ]; then providers="${providers}anthropic "; fi
+  if [ -n "${OPENAI_API_KEY:-}" ]; then providers="${providers}openai "; fi
+  printf '%s' "${providers% }"
+}
+
+OMNICODER_PROVIDERS=$(detect_providers)
+export OMNICODER_PROVIDERS
+
+# ---- banner -----------------------------------------------------------------
+print_banner() {
+  # Respect NO_COLOR and non-TTY stdout so we do not pollute piped output.
+  if [ -n "${NO_COLOR:-}" ] || [ ! -t 1 ]; then
+    printf '%s\n' "OmniCoder v${OMNICODER_VERSION}"
+    return
+  fi
+  cat <<'BANNER'
+   ___                  _ _____          _
+  / _ \ _ __ ___  _ __ (_)  ___|__  _ __| | ___ _ __
+ | | | | '_ ` _ \| '_ \| | |_ / _ \| '__| |/ _ \ '__|
+ | |_| | | | | | | | | | |  _| (_) | |  | |  __/ |
+  \___/|_| |_| |_|_| |_|_|_|  \___/|_|  |_|\___|_|
+BANNER
+  printf '  OmniCoder v%s  (opencode-powered)\n\n' "$OMNICODER_VERSION"
+}
+
+maybe_show_banner() {
+  # First-invocation banner; guarded by a flag file. Non-fatal if write fails.
+  if [ -f "$OMNICODER_BANNER_FLAG" ]; then return; fi
+  mkdir -p "$OMNICODER_HOME" 2>/dev/null || return 0
+  print_banner
+  : > "$OMNICODER_BANNER_FLAG" 2>/dev/null || true
+}
+
+# ---- doctor -----------------------------------------------------------------
+doctor_run() {
+  printf 'OmniCoder doctor — v%s\n\n' "$OMNICODER_VERSION"
+
+  issues=0
+
+  # 1. opencode binary
+  if command -v opencode >/dev/null 2>&1; then
+    oc_path=$(command -v opencode)
+    printf '  [ok]   opencode binary       %s\n' "$oc_path"
+  else
+    printf '  [miss] opencode binary       not in PATH (run scripts/install.sh)\n'
+    issues=$((issues + 1))
+  fi
+
+  # 2. engram binary (optional but recommended for shared memory)
+  if command -v engram >/dev/null 2>&1; then
+    eg_path=$(command -v engram)
+    printf '  [ok]   engram binary         %s\n' "$eg_path"
+  else
+    printf '  [warn] engram binary         not in PATH (MCP memory disabled)\n'
+  fi
+
+  # 3. OMNICODER_HOME
+  if [ -d "$OMNICODER_HOME" ]; then
+    printf '  [ok]   OMNICODER_HOME        %s\n' "$OMNICODER_HOME"
+  else
+    printf '  [miss] OMNICODER_HOME        %s (not created)\n' "$OMNICODER_HOME"
+    issues=$((issues + 1))
+  fi
+
+  # 4. user config
+  if [ -f "$OMNICODER_USER_CONFIG" ]; then
+    printf '  [ok]   user config           %s\n' "$OMNICODER_USER_CONFIG"
+  else
+    printf '  [info] user config           not present (using fork defaults)\n'
+  fi
+
+  # 5. providers
+  printf '\nProviders:\n'
+  if [ -n "${NVIDIA_API_KEY:-}" ]; then printf '  [ok]   NVIDIA_API_KEY        set\n'; else printf '  [--]   NVIDIA_API_KEY        unset\n'; fi
+  if [ -n "${MINIMAX_API_KEY:-}" ]; then printf '  [ok]   MINIMAX_API_KEY       set\n'; else printf '  [--]   MINIMAX_API_KEY       unset\n'; fi
+  if [ -n "${DASHSCOPE_API_KEY:-}" ]; then printf '  [ok]   DASHSCOPE_API_KEY     set\n'; else printf '  [--]   DASHSCOPE_API_KEY     unset\n'; fi
+  if [ -n "${ANTHROPIC_API_KEY:-}" ]; then printf '  [ok]   ANTHROPIC_API_KEY     set\n'; else printf '  [--]   ANTHROPIC_API_KEY     unset\n'; fi
+  if [ -n "${OPENAI_API_KEY:-}" ]; then printf '  [ok]   OPENAI_API_KEY        set\n'; else printf '  [--]   OPENAI_API_KEY        unset\n'; fi
+
+  if [ -z "$OMNICODER_PROVIDERS" ]; then
+    printf '\n  [warn] no provider API keys detected — set at least one before running.\n'
+    issues=$((issues + 1))
+  fi
+
+  printf '\n'
+  if [ "$issues" -eq 0 ]; then
+    printf 'Status: healthy\n'
+    return 0
+  fi
+  # Per feedback_ci_windows_bat.md #8 — doctor on a fresh runner returning 1
+  # is expected, so we exit 1 only to let CI tolerate it explicitly.
+  printf 'Status: %d issue(s) found\n' "$issues"
+  return 1
+}
+
+# ---- arg parsing ------------------------------------------------------------
+if [ "$#" -ge 1 ]; then
+  case $1 in
+    --omnicoder-version)
+      core_version="(opencode not installed)"
+      if command -v opencode >/dev/null 2>&1; then
+        core_version=$(opencode --version 2>/dev/null || printf 'unknown')
+      fi
+      printf 'omnicoder %s\n' "$OMNICODER_VERSION"
+      printf 'opencode  %s\n' "$core_version"
+      exit 0
+      ;;
+    doctor)
+      shift
+      doctor_run
+      exit $?
+      ;;
+  esac
+fi
+
+# ---- dispatch to opencode ---------------------------------------------------
+if ! command -v opencode >/dev/null 2>&1; then
+  printf 'omnicoder: opencode is not installed. Run scripts/install.sh first.\n' >&2
+  exit 127
+fi
+
+maybe_show_banner
+
+# Point opencode at the user's OmniCoder config only if it exists. Otherwise we
+# let opencode use its own default resolution (respecting XDG/project files).
+if [ -f "$OMNICODER_USER_CONFIG" ]; then
+  OPENCODE_CONFIG="$OMNICODER_USER_CONFIG"
+  export OPENCODE_CONFIG
+fi
+
+exec opencode "$@"

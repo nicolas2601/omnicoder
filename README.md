@@ -1,3 +1,57 @@
+# OmniCoder v5
+
+> Fork of [sst/opencode](https://github.com/sst/opencode) with a product-layer CLI (`omnicoder`), skill routing, provider failover, security guard, token budget and shared-memory layer. The upstream `opencode` binary is kept intact so we can cleanly merge updates (see ADR-001).
+
+## Quick start
+
+```bash
+# Linux / macOS
+git clone https://github.com/nicolas2601/omnicoder-v5 && cd omnicoder-v5
+./scripts/install.sh           # installs opencode, engram, wrappers
+
+# Windows (PowerShell, non-elevated)
+powershell -ExecutionPolicy Bypass -File scripts\install-windows.ps1
+
+# Verify
+omnicoder --omnicoder-version
+omnicoder doctor
+omnicoder                      # launches the TUI
+```
+
+The installer is **idempotent** — running it twice produces the same result, and user edits under `~/.omnicoder/` or `~/.config/opencode/opencode.jsonc` are never overwritten.
+
+### Required environment (pick at least one)
+
+```bash
+export NVIDIA_API_KEY=...      # MiniMax M2.7 / Qwen 3 Coder on NVIDIA NIM
+export MINIMAX_API_KEY=...     # MiniMax direct (Anthropic-compat endpoint)
+export DASHSCOPE_API_KEY=...   # Alibaba Qwen Max
+export ANTHROPIC_API_KEY=...   # Claude
+export OPENAI_API_KEY=...      # OpenAI
+```
+
+`omnicoder doctor` reports which keys are set and whether `opencode` / `engram` are on PATH.
+
+### Uninstall
+
+```bash
+./scripts/install.sh --uninstall                       # *nix
+scripts\install-windows.ps1 -Uninstall                 # Windows
+```
+
+### Why the wrapper?
+
+`omnicoder` is a thin POSIX-sh / PowerShell shim around the upstream `opencode` binary. It:
+
+- exports `OMNICODER_HOME` and `OMNICODER_VERSION`
+- detects which provider API keys are available
+- points `opencode` at `~/.omnicoder/opencode.jsonc` when present (no core edits)
+- keeps the underlying fork mergeable with upstream
+
+See [`bin/omnicoder`](bin/omnicoder) (sh), [`bin/omnicoder.cmd`](bin/omnicoder.cmd) and [`bin/omnicoder.ps1`](bin/omnicoder.ps1).
+
+---
+
 <p align="center">
   <a href="https://opencode.ai">
     <picture>

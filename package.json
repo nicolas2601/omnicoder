@@ -17,6 +17,8 @@
     "prepare": "husky",
     "random": "echo 'Random script'",
     "hello": "echo 'Hello World!'",
+    "omnicoder-install": "sh scripts/install.sh",
+    "omnicoder-doctor": "sh bin/omnicoder doctor",
     "test": "echo 'do not run tests from root' && exit 1"
   },
   "workspaces": {
