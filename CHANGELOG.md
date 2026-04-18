@@ -4,6 +4,40 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.1] — 2026-04-18
+
+Second alpha, closing the SEC-05 / bun-install / MIGRATION gaps left open by alpha.0 and adding a professional README + 7 topical docs modelled after the v4 documentation layout.
+
+### Added
+
+- `docs/MIGRATION.md` — complete v4 (Qwen Code) → v5 migration guide with hook matrix, paths matrix, rollback procedure, and known issues.
+- Topical documentation in `docs/`:
+  - `01-quickstart.md` — 5-minute onboarding for Linux / macOS / Windows.
+  - `02-install.md` — detailed installer flags, one-liner, user-local install, update flow.
+  - `03-providers.md` — provider matrix (NVIDIA NIM, MiniMax, DashScope, Anthropic, OpenAI), failover logic, custom-provider guide.
+  - `04-skills-agents.md` — skill/agent formats, 360+ ported assets, enable/disable, debugging the router.
+  - `05-hooks.md` — per-hook deep dive, execution order diagram, how to write & register a new hook + test.
+  - `06-benchmarks.md` — test suite layout, CI matrix, baseline ops/sec, v4 → v5 comparison.
+  - `07-troubleshooting.md` — installer / runtime / hooks / CI / sync tables.
+  - `control-del-cli.md` — repo anatomy, how to add a subcommand, patch upstream safely, rebrand.
+  - `uninstall.md` — Linux/mac/Windows uninstall + purge procedures with backup guidance.
+- Root `README.md` rewritten in v4 style: one-screen quickstart, links to the 8 docs, state table, architecture map.
+
+### Changed
+
+- SEC-05 HIGH closed: installer (Linux + Windows) verifies the Engram download against `ENGRAM_SHA256_<PLATFORM>` pins. When the env var is empty the installer warns and proceeds, matching the documented dev flow.
+- SEC-07 closed: `omnicoder-ci.yml` runs `bun install --frozen-lockfile` on all three OSes before typecheck / test.
+- `README.md` reorganised to surface documentation tree and current metrics, mirroring the compact `omnicoder v4` layout.
+
+### Fixed
+
+- Removed hackathon-specific quickstart draft; onboarding consolidated into `docs/01-quickstart.md`.
+
+### Known issues
+
+- Mid-session provider failover still blocked on upstream #7602; alpha.1 keeps log-only behaviour.
+- Engram default checksum pins are empty — users who need signed installs must export `ENGRAM_SHA256_*` until we ship a release matrix (tracked for alpha.2).
+
 ## [5.0.0-alpha.0] — 2026-04-18
 
 Initial alpha of OmniCoder v5. Base change: forked from [sst/opencode](https://github.com/sst/opencode) v1.4.11. See `docs/adr/ADR-001-fork-opencode.md` for rationale.

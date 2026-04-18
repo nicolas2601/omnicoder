@@ -1,7 +1,7 @@
 {
   "version": "5.0.0-alpha.0",
-  "generatedAt": "2026-04-18T19:24:20.121Z",
-  "bun": "1.3.6",
+  "generatedAt": "2026-04-18T20:13:31.686Z",
+  "bun": "1.3.12",
   "node": "v24.3.0",
   "platform": "linux-x64",
   "baselines_v4": {
@@ -13,90 +13,90 @@
   },
   "metrics": {
     "pipeline_50_tool_calls": {
-      "wall_clock_ms": 1179.536182,
-      "per_call_p50_ms": 21.952597,
-      "per_call_p95_ms": 34.998413,
-      "per_call_max_ms": 37.862484,
+      "wall_clock_ms": 1302.577219,
+      "per_call_p50_ms": 23.933678,
+      "per_call_p95_ms": 36.98896,
+      "per_call_max_ms": 40.571334,
       "stages_ns": {
         "memory": {
-          "p50": 13828,
-          "p95": 43511,
-          "mean": 18890.8
+          "p50": 14188,
+          "p95": 42354,
+          "mean": 19445.16
         },
         "router": {
-          "p50": 20372078,
-          "p95": 33510782,
-          "mean": 21879908.7
+          "p50": 21231013,
+          "p95": 35496916,
+          "mean": 23849532.74
         },
         "security": {
-          "p50": 42394,
-          "p95": 66349,
-          "mean": 46369.34
+          "p50": 31032,
+          "p95": 80096,
+          "mean": 39356.84
         },
         "dispatcher": {
-          "p50": 1437204,
-          "p95": 1955569,
-          "mean": 1517297.16
+          "p50": 1584580,
+          "p95": 4747171,
+          "mean": 1999972.84
         },
         "failover": {
-          "p50": 65302,
-          "p95": 128020,
-          "mean": 77395.88
+          "p50": 63321,
+          "p95": 156764,
+          "mean": 83178.46
         },
         "budget": {
-          "p50": 16273,
-          "p95": 36178,
-          "mean": 27162.88
+          "p50": 18521,
+          "p95": 39209,
+          "mean": 32598.52
         }
       },
       "iterations": 50
     },
     "router": {
-      "cold_p50_ms": 154.960263,
-      "cold_p95_ms": 178.514543,
-      "cold_max_ms": 196.884887,
-      "warm_p50_ms": 21.885131,
-      "warm_p95_ms": 31.940252,
-      "warm_max_ms": 43.05571,
-      "warm_mean_ms": 23.269410079999997,
+      "cold_p50_ms": 143.561349,
+      "cold_p95_ms": 160.551718,
+      "cold_max_ms": 213.532479,
+      "warm_p50_ms": 23.29582,
+      "warm_p95_ms": 33.822251,
+      "warm_max_ms": 53.762973,
+      "warm_mean_ms": 24.778983078000003,
       "skill_count": 194,
       "agent_count": 170,
       "iterations": 1000
     },
     "security": {
-      "p50_ms": 0.006635,
-      "p95_ms": 0.020883,
-      "max_ms": 0.672925,
-      "mean_ms": 0.009671619000000001,
-      "throughput_ops_sec": 81717.191997893,
+      "p50_ms": 0.005661,
+      "p95_ms": 0.017543,
+      "max_ms": 0.654534,
+      "mean_ms": 0.008795423,
+      "throughput_ops_sec": 89656.86167273165,
       "blocked": 295,
       "safe": 705,
       "iterations": 1000
     },
     "memory": {
-      "cold_ms": 1.534354,
-      "hot_p50_ms": 0.004819,
-      "hot_p95_ms": 0.012851,
-      "hot_max_ms": 0.033594,
+      "cold_ms": 1.92628,
+      "hot_p50_ms": 0.005242,
+      "hot_p95_ms": 0.013279,
+      "hot_max_ms": 0.023763,
       "bytes_injected": 1189,
       "iterations": 100
     }
   },
   "deltas_vs_v4": {
     "pipeline50": {
-      "deltaPct": -41.023190899999996,
+      "deltaPct": -34.87113905,
       "regressed": false
     },
     "router_warm": {
-      "deltaPct": 15.184900000000006,
+      "deltaPct": 22.609578947368416,
       "regressed": true
     },
     "router_cold": {
-      "deltaPct": 236.87013695652172,
+      "deltaPct": 212.0898891304348,
       "regressed": true
     },
     "security": {
-      "deltaPct": -99.89792307692308,
+      "deltaPct": -99.9129076923077,
       "regressed": false
     },
     "memory_bytes": {
