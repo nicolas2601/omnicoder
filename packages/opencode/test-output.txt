@@ -1,0 +1,157 @@
+bun test v1.3.12 (700fc117)
+
+test/session/prompt.test.ts:
+[23:01:35.485] INFO (#20895): loop {
+  service: "session.prompt",
+  "session.id": "ses_25d2c01a6ffe6iqjlZVFkzY3St",
+  step: 0,
+}
+[23:01:35.935] INFO (#20895): loop {
+  service: "session.prompt",
+  "session.id": "ses_25d2c01a6ffe6iqjlZVFkzY3St",
+  step: 1,
+}
+[23:01:35.936] INFO (#20895): exiting loop {
+  service: "session.prompt",
+  "session.id": "ses_25d2c01a6ffe6iqjlZVFkzY3St",
+}
+[23:01:36.197] INFO (#21026): loop {
+  service: "session.prompt",
+  "session.id": "ses_25d2bfee3ffevb9FGa2BKIp3i9",
+  step: 0,
+}
+[23:01:36.408] INFO (#21009): cancel {
+  service: "session.prompt",
+  "session.id": "ses_25d2bfee3ffevb9FGa2BKIp3i9",
+}
+[23:01:37.798] INFO (#21249): command {
+  service: "session.prompt",
+  "session.id": "ses_25d2bf87effehfMJdhxeE7f2n4",
+  command: "nonexistent-command-xyz",
+}
+
+test/session/prompt-effect.test.ts:
+[23:02:03.200] ERROR (#37482): 1374 |           yield* Effect.sleep(50)
+1375 | 
+1376 |           yield* prompt.cancel(chat.id)
+1377 | 
+1378 |           const exit = yield* Fiber.await(loop)
+1379 |           expect(Exit.isSuccess(exit)).toBe(true)
+       ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at toBe (unknown:1:1)
+      at /home/nicolas/omnicoder-v5/packages/opencode/test/session/prompt-effect.test.ts:1379:40
+
+1374 |           yield* Effect.sleep(50)
+1375 | 
+1376 |           yield* prompt.cancel(chat.id)
+1377 | 
+1378 |           const exit = yield* Fiber.await(loop)
+1379 |           expect(Exit.isSuccess(exit)).toBe(true)
+       ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at toBe (unknown:1:1)
+      at /home/nicolas/omnicoder-v5/packages/opencode/test/session/prompt-effect.test.ts:1379:40
+      at ~effect/Effect/successCont (/home/nicolas/omnicoder-v5/node_modules/.bun/effect@4.0.0-beta.48/node_modules/effect/dist/internal/effect.js:913:22)
+      at runLoop (/home/nicolas/omnicoder-v5/node_modules/.bun/effect@4.0.0-beta.48/node_modules/effect/dist/internal/effect.js:420:66)
+      at evaluate (/home/nicolas/omnicoder-v5/node_modules/.bun/effect@4.0.0-beta.48/node_modules/effect/dist/internal/effect.js:380:14)
+      at /home/nicolas/omnicoder-v5/node_modules/.bun/effect@4.0.0-beta.48/node_modules/effect/dist/internal/effect.js:732:11
+(fail) cancel interrupts loop queued behind shell [303.99ms]
+
+test/provider/provider.test.ts:
+(fail) plugin config providers persist after instance dispose [5150.84ms]
+  ^ this test timed out after 5000ms.
+
+test/memory/abort-leak.test.ts:
+Baseline: 9.76 MB
+After 50 fetches: 9.50 MB
+Growth: -0.26 MB
+OLD pattern (closure): 0.00 MB growth (500 closures)
+NEW pattern (bind): 0.00 MB growth
+Improvement: 0.00 MB saved
+
+test/cli/tui/plugin-loader-entrypoint.test.ts:
+[tui.plugin] tui plugin has no entrypoint {
+  path: "acme-plugin@1.0.0",
+  retry: false,
+  message: "Plugin acme-plugin@1.0.0 does not expose a tui entrypoint",
+}
+[tui.plugin] failed to resolve tui plugin entry: Plugin acme-plugin@1.0.0 resolved tui entry outside plugin directory {
+  path: "acme-plugin@1.0.0",
+  retry: false,
+  error: {
+    type: "Error",
+    message: "Plugin acme-plugin@1.0.0 resolved tui entry outside plugin directory",
+    stack: "Error: Plugin acme-plugin@1.0.0 resolved tui entry outside plugin directory\n    at resolvePackageFile (/home/nicolas/omnicoder-v5/packages/opencode/src/plugin/shared.ts:94:15)\n    at resolvePackagePath (/home/nicolas/omnicoder-v5/packages/opencode/src/plugin/shared.ts:100:24)\n    at resolvePluginEntrypoint (/home/nicolas/omnicoder-v5/packages/opencode/src/plugin/shared.ts:142:17)\n    at createPluginEntry (/home/nicolas/omnicoder-v5/packages/opencode/src/plugin/shared.ts:228:23)\n    at processTicksAndRejections (native)",
+    cause: undefined,
+    formatted: "Error: Plugin acme-plugin@1.0.0 resolved tui entry outside plugin directory\n    at resolvePackageFile (/home/nicolas/omnicoder-v5/packages/opencode/src/plugin/shared.ts:94:15)\n    at resolvePackagePath (/home/nicolas/omnicoder-v5/packages/opencode/src/plugin/shared.ts:100:24)\n    at resolvePluginEntrypoint (/home/nicolas/omnicoder-v5/packages/opencode/src/plugin/shared.ts:142:17)\n    at createPluginEntry (/home/nicolas/omnicoder-v5/packages/opencode/src/plugin/shared.ts:228:23)\n    at processTicksAndRejections (native)",
+  },
+}
+[tui.plugin] failed to load tui plugin: Plugin acme-plugin@1.0.0 must default export either server() or tui(), not both {
+  path: "acme-plugin@1.0.0",
+  target: "file:///tmp/opencode-test-4timcrt0o3/mods/acme-plugin/tui.js",
+  retry: false,
+  error: {
+    type: "TypeError",
+    message: "Plugin acme-plugin@1.0.0 must default export either server() or tui(), not both",
+    stack: "Error: Plugin acme-plugin@1.0.0 must default export either server() or tui(), not both\n    at readV1Plugin (/home/nicolas/omnicoder-v5/packages/opencode/src/plugin/shared.ts:294:15)\n    at processTicksAndRejections (native)",
+    cause: undefined,
+    formatted: "Error: Plugin acme-plugin@1.0.0 must default export either server() or tui(), not both\n    at readV1Plugin (/home/nicolas/omnicoder-v5/packages/opencode/src/plugin/shared.ts:294:15)\n    at processTicksAndRejections (native)",
+  },
+}
+[tui.plugin] tui plugin has no entrypoint {
+  path: "file:///tmp/opencode-test-6373ismzjyb/mods/dir-plugin",
+  retry: false,
+  message: "Plugin file:///tmp/opencode-test-6373ismzjyb/mods/dir-plugin does not expose a tui entrypoint",
+}
+[tui.plugin] tui plugin has no entrypoint {
+  path: "file:///tmp/opencode-test-6373ismzjyb/mods/dir-plugin",
+  retry: true,
+  message: "Plugin file:///tmp/opencode-test-6373ismzjyb/mods/dir-plugin does not expose a tui entrypoint",
+}
+
+test/cli/tui/plugin-lifecycle.test.ts:
+[tui.plugin] failed to initialize tui plugin: bad plugin {
+  path: "file:///tmp/opencode-test-yor8540j0of/bad-plugin.ts",
+  id: "demo.bad",
+  error: {
+    type: "Error",
+    message: "bad plugin",
+    stack: "Error: bad plugin\n    at tui (/tmp/opencode-test-yor8540j0of/bad-plugin.ts:8:15)\n    at <anonymous> (/home/nicolas/omnicoder-v5/packages/opencode/src/cli/cmd/tui/plugin/runtime.ts:443:20)\n    at processTicksAndRejections (native)",
+    cause: undefined,
+    formatted: "Error: bad plugin\n    at tui (/tmp/opencode-test-yor8540j0of/bad-plugin.ts:8:15)\n    at <anonymous> (/home/nicolas/omnicoder-v5/packages/opencode/src/cli/cmd/tui/plugin/runtime.ts:443:20)\n    at processTicksAndRejections (native)",
+  },
+}
+[tui.plugin] timed out cleaning up tui plugin {
+  path: "file:///tmp/opencode-test-e8tpijzg0ev/timeout-plugin.ts",
+  id: "demo.timeout",
+  timeout: 5000,
+}
+
+test/cli/tui/plugin-add.test.ts:
+[tui.plugin] failed to resolve tui plugin: Plugin directory /tmp/opencode-test-8t27nkdbv22/retry-plugin is missing package.json or index file {
+  path: "file:///tmp/opencode-test-8t27nkdbv22/retry-plugin",
+  retry: false,
+  error: {
+    type: "Error",
+    message: "Plugin directory /tmp/opencode-test-8t27nkdbv22/retry-plugin is missing package.json or index file",
+    stack: "Error: Plugin directory /tmp/opencode-test-8t27nkdbv22/retry-plugin is missing package.json or index file\n    at resolvePathPluginTarget (/home/nicolas/omnicoder-v5/packages/opencode/src/plugin/shared.ts:191:13)\n    at processTicksAndRejections (native)\n    at toBe (native)\n    at <anonymous> (/home/nicolas/omnicoder-v5/packages/opencode/test/cli/tui/plugin-add.test.ts:101:71)\n    at processTicksAndRejections (native)",
+    cause: undefined,
+    formatted: "Error: Plugin directory /tmp/opencode-test-8t27nkdbv22/retry-plugin is missing package.json or index file\n    at resolvePathPluginTarget (/home/nicolas/omnicoder-v5/packages/opencode/src/plugin/shared.ts:191:13)\n    at processTicksAndRejections (native)\n    at toBe (native)\n    at <anonymous> (/home/nicolas/omnicoder-v5/packages/opencode/test/cli/tui/plugin-add.test.ts:101:71)\n    at processTicksAndRejections (native)",
+  },
+}
+
+ 1991 pass
+ 20 skip
+ 1 todo
+ 2 fail
+ 9973 expect() calls
+Ran 2014 tests across 161 files. [217.67s]

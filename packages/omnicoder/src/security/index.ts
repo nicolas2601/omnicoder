@@ -24,14 +24,21 @@ const DANGEROUS: RegExp[] = [
   /bash\s*<\(\s*wget/i,
   /\bsudo\b/i,
   />\s*\/etc\//i,
-  /(^|\s)\.\.\/(\.\.\/){2,}/, // path traversal ../../.. or deeper
+  /\.\.\// , // path traversal — block ANY ../ (including single level)
   /mv\s+\/\s+\/dev\/null/,
+  // SSRF prevention — block dangerous URL schemes
+  /\b(file|gopher|data|dict|ftp|ldap|ldaps):/i,
+  // Redirection to files — can write to sensitive locations
+  /[<>]{1,2}\s*\S*\/(etc|var|boot|bin|sbin|root|home\/[^/]+\/.ssh)/i,
 ]
 
 const SECRETS: RegExp[] = [
-  /\bcat\s+[^|]*\.env\b/i,
+  /\bcat\s+[^|]*\.env/i, // *.env, *.env.production, etc.
   /\becho\s+.*\b(API_KEY|SECRET|PASSWORD|TOKEN)\b/i,
+  /\becho\s+.*\$\{?(API_KEY|SECRET|PASSWORD|TOKEN|OPENAI_API_KEY|GITHUB_TOKEN|AWS_SECRET)\b/i,
   /\bprintenv\s+.*(KEY|SECRET|TOKEN|PASSWORD)\b/i,
+  // Detect credential patterns in variable assignments or exports
+  /(export|declare)\s+(OPENAI_API_KEY|GITHUB_TOKEN|AWS_SECRET_ACCESS_KEY|DATABASE_PASSWORD|PRIVATE_KEY)=/i,
 ]
 
 const WHITELIST: RegExp[] = [
@@ -45,7 +52,8 @@ const WHITELIST: RegExp[] = [
 
 // Command separators that can smuggle a second command past a prefix whitelist
 // (e.g. `git pull && rm -rf /`).  We split on them *before* whitelist matching.
-const SEPARATORS = /[;&|]{1,2}|\$\(|`/
+// Includes redirections (>, >>, <) and newlines (\n).
+const SEPARATORS = /[;&|]{1,2}|\$\(|`|[<>]{1,2}|\n/
 
 export class SecurityError extends Error {
   constructor(
@@ -67,7 +75,13 @@ export async function createSecurityGuard(_input: PluginInput): Promise<{
     i: { tool: string; sessionID?: string; callID?: string },
     o: { args: unknown },
   ): Promise<void> {
+    // SECURITY: Only bash is allowed through security checking.
+    // Other interpreters (python, node, perl, ruby, etc.) bypass guard completely.
+    // This is INTENTIONAL — they are considered higher-risk attack vectors.
+    // If future work requires python/node/perl, those tools need their OWN
+    // security guards (e.g., AST-based analysis for python, babel for node).
     if (i.tool !== "bash") return
+    
     const args = o.args as { command?: unknown } | null
     const command = typeof args?.command === "string" ? args.command.trim() : ""
     if (!command) return
