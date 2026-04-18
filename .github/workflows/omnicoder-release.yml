@@ -63,35 +63,45 @@ jobs:
           mkdir -p .artifacts/release
           NOTES_FILE=".artifacts/release/notes.md"
 
+          # Strip leading "v" so TAG="v5.0.0-alpha.1" matches header "## [5.0.0-alpha.1]".
+          TAG_BARE="${TAG#v}"
+
           if [ -f CHANGELOG.md ]; then
-            # Try to extract the section between the current tag header and the previous tag header.
-            # Matches headers like "## v5.0.0", "## [v5.0.0]", "## 5.0.0".
-            awk -v tag="${TAG}" '
+            awk -v tag="${TAG}" -v bare="${TAG_BARE}" '
               BEGIN { inside = 0 }
               /^##[[:space:]]/ {
                 if (inside) { exit }
-                if (index($0, tag) > 0) { inside = 1; next }
+                if (index($0, tag) > 0 || index($0, bare) > 0) { inside = 1; next }
               }
               inside { print }
             ' CHANGELOG.md > "$NOTES_FILE"
+          fi
 
-            if [ ! -s "$NOTES_FILE" ]; then
-              echo "::warning::No changelog entry found for ${TAG} — falling back to commit log"
-              PREV_TAG="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
+          if [ ! -s "$NOTES_FILE" ]; then
+            echo "::warning::No changelog entry found for ${TAG} — using recent commit log (capped)"
+            # Prefer range since previous omnicoder tag; exclude merges; cap at 100
+            # commits so we stay under GitHub's 125 000-char release body limit.
+            PREV_TAG="$(git tag --sort=-creatordate --list 'v[0-9]*.[0-9]*.[0-9]*' \
+              | grep -Fxv "${TAG}" | head -n1 || true)"
+            {
+              echo "_Auto-generated release notes (CHANGELOG entry missing)._"
+              echo ""
               if [ -n "$PREV_TAG" ]; then
-                git log --pretty=format:'- %s (%h)' "${PREV_TAG}..${TAG}" > "$NOTES_FILE"
+                git log --no-merges --pretty=format:'- %s (%h)' \
+                  "${PREV_TAG}..${TAG}" | head -n 100
               else
-                git log --pretty=format:'- %s (%h)' "${TAG}" > "$NOTES_FILE"
+                git log --no-merges --pretty=format:'- %s (%h)' "${TAG}" | head -n 100
               fi
-            fi
-          else
-            echo "::warning::CHANGELOG.md missing — using git log"
-            PREV_TAG="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
-            if [ -n "$PREV_TAG" ]; then
-              git log --pretty=format:'- %s (%h)' "${PREV_TAG}..${TAG}" > "$NOTES_FILE"
-            else
-              git log --pretty=format:'- %s (%h)' "${TAG}" > "$NOTES_FILE"
-            fi
+            } > "$NOTES_FILE"
+          fi
+
+          # Safety: hard-trim to <100k chars to stay clear of GitHub's 125k limit.
+          if [ "$(wc -c < "$NOTES_FILE")" -gt 100000 ]; then
+            echo "::warning::Notes exceed 100k chars; truncating"
+            head -c 99000 "$NOTES_FILE" > "$NOTES_FILE.tmp"
+            printf '\n\n…\n\n_(truncated — see CHANGELOG.md for full notes)_\n' \
+              >> "$NOTES_FILE.tmp"
+            mv "$NOTES_FILE.tmp" "$NOTES_FILE"
           fi
 
           echo "notes_file=${NOTES_FILE}" >> "$GITHUB_OUTPUT"
