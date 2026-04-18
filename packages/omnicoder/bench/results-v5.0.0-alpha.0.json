@@ -1,6 +1,6 @@
 {
   "version": "5.0.0-alpha.0",
-  "generatedAt": "2026-04-18T21:41:06.469Z",
+  "generatedAt": "2026-04-18T21:46:13.395Z",
   "bun": "1.3.12",
   "node": "v24.3.0",
   "platform": "linux-x64",
@@ -13,90 +13,90 @@
   },
   "metrics": {
     "pipeline_50_tool_calls": {
-      "wall_clock_ms": 1303.147925,
-      "per_call_p50_ms": 21.92904,
-      "per_call_p95_ms": 43.919959,
-      "per_call_max_ms": 72.251669,
+      "wall_clock_ms": 71.497745,
+      "per_call_p50_ms": 1.164823,
+      "per_call_p95_ms": 2.657483,
+      "per_call_max_ms": 3.920643,
       "stages_ns": {
         "memory": {
-          "p50": 13480,
-          "p95": 31848,
-          "mean": 16720.26
+          "p50": 9639,
+          "p95": 25772,
+          "mean": 11151.04
         },
         "router": {
-          "p50": 19806271,
-          "p95": 41650104,
-          "mean": 23807388.32
+          "p50": 819175,
+          "p95": 1445587,
+          "mean": 902157.16
         },
         "security": {
-          "p50": 30451,
-          "p95": 89398,
-          "mean": 38345.94
+          "p50": 13270,
+          "p95": 32477,
+          "mean": 15700.5
         },
         "dispatcher": {
-          "p50": 1436714,
-          "p95": 5596975,
-          "mean": 2016073.2
+          "p50": 269869,
+          "p95": 1312258,
+          "mean": 447686.34
         },
         "failover": {
-          "p50": 34642,
-          "p95": 99734,
-          "mean": 107067.38
+          "p50": 11594,
+          "p95": 45467,
+          "mean": 20920.4
         },
         "budget": {
-          "p50": 40369,
-          "p95": 97290,
-          "mean": 51573.9
+          "p50": 6705,
+          "p95": 23746,
+          "mean": 16228.42
         }
       },
       "iterations": 50
     },
     "router": {
-      "cold_p50_ms": 133.415367,
-      "cold_p95_ms": 150.148034,
-      "cold_max_ms": 170.037331,
-      "warm_p50_ms": 21.294876,
-      "warm_p95_ms": 33.690657,
-      "warm_max_ms": 53.611743,
-      "warm_mean_ms": 23.329728991,
+      "cold_p50_ms": 88.283398,
+      "cold_p95_ms": 109.481382,
+      "cold_max_ms": 138.179195,
+      "warm_p50_ms": 1.050771,
+      "warm_p95_ms": 2.180742,
+      "warm_max_ms": 3.118579,
+      "warm_mean_ms": 1.185871349,
       "skill_count": 194,
       "agent_count": 170,
       "iterations": 1000
     },
     "security": {
-      "p50_ms": 0.005727,
-      "p95_ms": 0.019905,
-      "max_ms": 0.524651,
-      "mean_ms": 0.008414803,
-      "throughput_ops_sec": 89402.02472341474,
+      "p50_ms": 0.005658,
+      "p95_ms": 0.019136,
+      "max_ms": 0.539179,
+      "mean_ms": 0.008477613,
+      "throughput_ops_sec": 92172.9921150614,
       "blocked": 295,
       "safe": 705,
       "iterations": 1000
     },
     "memory": {
-      "cold_ms": 1.622702,
-      "hot_p50_ms": 0.005797,
-      "hot_p95_ms": 0.013758,
-      "hot_max_ms": 0.03534,
+      "cold_ms": 1.702116,
+      "hot_p50_ms": 0.004819,
+      "hot_p95_ms": 0.014318,
+      "hot_max_ms": 0.038762,
       "bytes_injected": 1189,
       "iterations": 100
     }
   },
   "deltas_vs_v4": {
     "pipeline50": {
-      "deltaPct": -34.84260375,
+      "deltaPct": -96.42511275000001,
       "regressed": false
     },
     "router_warm": {
-      "deltaPct": 12.078294736842098,
-      "regressed": true
+      "deltaPct": -94.46962631578947,
+      "regressed": false
     },
     "router_cold": {
-      "deltaPct": 190.03340652173915,
+      "deltaPct": 91.92043043478262,
       "regressed": true
     },
     "security": {
-      "deltaPct": -99.91189230769231,
+      "deltaPct": -99.91295384615384,
       "regressed": false
     },
     "memory_bytes": {
@@ -106,9 +106,8 @@
   },
   "verdict": {
     "label": "optimize-first",
-    "summary": "Regressions >10% detected in: router_warm, router_cold.",
+    "summary": "Regressions >10% detected in: router_cold.",
     "regressions": [
-      "router_warm",
       "router_cold"
     ]
   }
