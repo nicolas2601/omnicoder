@@ -28,20 +28,20 @@ export const OmnicoderPlugin: Plugin = async (input: PluginInput) => {
   const failover = await createProviderFailover(input)
 
   return {
-    async "experimental.chat.system.transform"(i, o) {
+    async "experimental.chat.system.transform"(i: any, o: any) {
       await memory.inject(i, o)
       await router.inject(i, o)
     },
-    async "tool.execute.before"(i, o) {
+    async "tool.execute.before"(i: any, o: any) {
       await guard.check(i, o)
     },
-    async "tool.execute.after"(i, o) {
+    async "tool.execute.after"(i: any, o: any) {
       await dispatcher.onComplete(i, o)
     },
-    async "chat.params"(i, o) {
+    async "chat.params"(i: any, o: any) {
       await failover.tune(i, o)
     },
-    async event({ event }) {
+    async event({ event }: { event: any }) {
       await budget.onEvent(event)
       await dispatcher.onEvent(event)
     },

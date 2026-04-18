@@ -1,6 +1,7 @@
 {
   "extends": "../opencode/tsconfig.json",
   "compilerOptions": {
+    "types": ["bun"],
     "paths": {
       "@omnicoder/*": ["./src/*"]
     }

@@ -80,7 +80,7 @@ describe("bin/omnicoder wrapper", () => {
     // Doctor can legitimately exit 1 when opencode is missing on the runner
     // (feedback_ci_windows_bat.md #8). Both exit paths are acceptable; we
     // only require the output contract.
-    expect([0, 1]).toContain(result.status)
+    expect([0, 1]).toContain(result.status ?? -1)
     expect(result.stdout).toContain("NVIDIA_API_KEY")
     expect(result.stdout).toContain("MINIMAX_API_KEY")
     expect(result.stdout).toContain("DASHSCOPE_API_KEY")
