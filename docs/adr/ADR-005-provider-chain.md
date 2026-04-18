@@ -19,7 +19,12 @@ Default routing in `@omnicoder/core`:
 | Subagent `security-architect` | `anthropic` | `claude-sonnet-4-6` | Low-volume, high-stakes; pay here. |
 | Subagent `researcher` | `dashscope` | `qwen-max` | Tool-heavy, cheap. |
 
-Failover: if primary provider returns 429 / 5xx / timeout > 30 s, `chat.params` hook marks it cool-down (60 s) and the retry hits the next provider in a per-role ordered list.
+Failover: **opencode mainline does not support inter-provider failover** (upstream issue #7602). The `chat.params` hook cannot intercept streaming errors; the only working approach today is the `zortos293/opencode-combined-models` session-processor patch.
+
+Our stance in v5.0:
+- `hooks/provider-failover.ts` **logs** rate-limit / 5xx events and marks a cool-down window in `~/.omnicoder/state/provider-health.json` so the **next session** picks a healthy provider.
+- Real mid-session failover is **deferred to v5.1** and requires either (a) upstreaming the combined-models patch or (b) implementing failover at the MCP gateway layer.
+- Users can manually switch provider via `opencode` TUI (`/model` command) when a provider is down; v5.0 documents this in MIGRATION.md.
 
 ## Install-time provider detection
 

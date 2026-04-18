@@ -81,16 +81,36 @@
   // layer for defense-in-depth.
   "permission": {
     "edit": {
+      // System roots
       "/etc/**": "deny",
+      "/boot/**": "deny",
+      // Env + secret files
       "**/.env*": "deny",
       "**/*.pem": "deny",
-      "**/*.key": "deny"
+      "**/*.key": "deny",
+      "**/id_rsa*": "deny",
+      "**/id_ed25519*": "deny",
+      // Per-user tool configs (credentials)
+      "**/.ssh/**": "deny",
+      "**/.aws/**": "deny",
+      "**/.gcp/**": "deny",
+      "**/.azure/**": "deny",
+      "**/.kube/config": "deny",
+      "**/.docker/config.json": "deny",
+      "**/.npmrc": "deny",
+      "**/.netrc": "deny",
+      "**/.pypirc": "deny",
+      "**/.gitconfig": "ask",
+      "**/.git/config": "deny",
+      "**/.config/gh/**": "deny"
     },
     "bash": {
       "rm -rf /*": "deny",
-      "sudo *": "ask",
+      "sudo *": "deny",
       "curl * | sh": "deny",
-      "curl * | bash": "deny"
+      "curl * | bash": "deny",
+      "wget * | sh": "deny",
+      "wget * | bash": "deny"
     }
   },
 

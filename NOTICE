@@ -1,0 +1,26 @@
+OmniCoder v5
+============
+
+This project is a derivative work of Opencode by SST
+(https://github.com/sst/opencode), licensed under the MIT License.
+
+The OmniCoder distribution adds:
+  - @omnicoder/core plugin (packages/omnicoder/)
+  - .opencode/skills and .opencode/agent contents ported from OmniCoder v4
+  - Configuration defaults and installers
+
+Original copyright notice:
+  Copyright (c) 2025 SST / opencode
+  Licensed under MIT (see LICENSE).
+
+OmniCoder additions:
+  Copyright (c) 2026 nicolas2601
+  Licensed under MIT (same terms, see LICENSE).
+
+Third-party components used at runtime:
+  - Engram (gentle-ai/engram) — MIT — https://github.com/Gentleman-Programming/engram
+  - Vercel AI SDK (@ai-sdk/*) — Apache-2.0
+
+No code was removed from the upstream `sst/opencode` tree; OmniCoder-owned
+changes live under `packages/omnicoder/`, `.omnicoder/`, `.opencode/agent/`,
+`.opencode/skills/` and `docs/`.

@@ -36,6 +36,13 @@ Add to your `opencode.jsonc`:
 
 See `/docs/ADR-001` through `/docs/ADR-005` in the repo root for rationale.
 
+## Acknowledgements
+
+OmniCoder is a derivative work of **[Opencode](https://github.com/sst/opencode)** by SST (MIT).
+All core runtime, TUI, plugin framework and MCP client are Opencode's. This package only adds
+the OmniCoder-specific plugin glue, skill routing, security guard, memory layer and budget
+tracking. See `NOTICE` for full attribution.
+
 ## License
 
-MIT
+MIT — see `LICENSE` in the repository root.
