@@ -1,0 +1,102 @@
+// OmniCoder v5 — default Opencode configuration.
+// Users override by placing their own at ~/.config/opencode/opencode.jsonc
+// or at project root. Merge order: defaults → system → user → project → CLI.
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // ─── Providers ──────────────────────────────────────────────────────────
+  // Declared via AI SDK openai-compatible adapter for non-native providers.
+  // API keys use the {env:VAR} indirection so values never land in config.
+  "provider": {
+    "nvidia-nim": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "NVIDIA NIM",
+      "options": {
+        "baseURL": "https://integrate.api.nvidia.com/v1",
+        "apiKey": "{env:NVIDIA_API_KEY}"
+      },
+      "models": {
+        "minimax/minimax-m2": { "name": "MiniMax M2.7 (NIM)" },
+        "qwen/qwen3-coder-480b-a35b-instruct": { "name": "Qwen 3 Coder 480B" }
+      }
+    },
+    "minimax": {
+      "npm": "@ai-sdk/anthropic",
+      "name": "MiniMax (Anthropic-compat)",
+      "options": {
+        "baseURL": "https://api.minimax.io/anthropic",
+        "apiKey": "{env:MINIMAX_API_KEY}"
+      },
+      "models": {
+        "minimax-m2": { "name": "MiniMax M2 (with prompt cache)" }
+      }
+    },
+    "dashscope": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "DashScope (Qwen)",
+      "options": {
+        "baseURL": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+        "apiKey": "{env:DASHSCOPE_API_KEY}"
+      },
+      "models": {
+        "qwen-max": { "name": "Qwen Max" }
+      }
+    }
+  },
+
+  // ─── MCP servers ────────────────────────────────────────────────────────
+  // Engram is the default shared-memory backend. Agent-agnostic so
+  // Claude Code, Codex, Cursor can read the same ~/.engram/engram.db.
+  "mcp": {
+    "engram": {
+      "type": "local",
+      "command": ["engram", "mcp"],
+      "enabled": true,
+      "environment": {
+        "ENGRAM_PROJECT": "{env:ENGRAM_PROJECT}"
+      }
+    }
+  },
+
+  // ─── Plugins ────────────────────────────────────────────────────────────
+  // @omnicoder/core registers: router, security, memory, budget,
+  // tool-dispatcher, provider-failover. Single entry point.
+  "plugin": [
+    "@omnicoder/core"
+  ],
+
+  // ─── Skills discovery ──────────────────────────────────────────────────
+  // Opencode auto-scans ~/.claude, ~/.agents and project dirs. We
+  // additionally register the user-level omnicoder runtime so a single
+  // install covers all CLIs on the machine.
+  "skills": {
+    "paths": [
+      "~/.omnicoder/skills",
+      "~/.omnicoder/agents"
+    ]
+  },
+
+  // ─── Permissions ────────────────────────────────────────────────────────
+  // Security-guard plugin enforces runtime bans, but we also deny at config
+  // layer for defense-in-depth.
+  "permission": {
+    "edit": {
+      "/etc/**": "deny",
+      "**/.env*": "deny",
+      "**/*.pem": "deny",
+      "**/*.key": "deny"
+    },
+    "bash": {
+      "rm -rf /*": "deny",
+      "sudo *": "ask",
+      "curl * | sh": "deny",
+      "curl * | bash": "deny"
+    }
+  },
+
+  // ─── Share ──────────────────────────────────────────────────────────────
+  "share": "manual",
+
+  // ─── Telemetry (off by default) ─────────────────────────────────────────
+  "autoshare": false
+}
