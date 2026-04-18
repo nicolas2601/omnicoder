@@ -1,4 +1,4 @@
-/** @ts-expect-error */
+// OMNICODER: @lydell/node-pty now ships types upstream; @ts-expect-error no longer applies.
 import * as pty from "@lydell/node-pty"
 import type { Opts, Proc } from "./pty"
 
