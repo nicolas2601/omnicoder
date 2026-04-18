@@ -17,19 +17,27 @@
 
 ## Instalación en un solo comando
 
-Linux, macOS **y Windows (Git Bash)** — el mismo comando:
+Repo privado → necesitás `gh` autenticado (`gh auth login` una vez). Después, **el mismo comando** sirve en Linux, macOS y Windows (Git Bash):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/setup.sh | bash
+gh api repos/nicolas2601/omnicoder/contents/scripts/setup.sh --jq .content | base64 -d | bash
 ```
 
-El script hace todo: detecta OmniCoder v4 (Qwen Code) si existe y la desinstala con backup, clona el repo, instala `opencode` y `engram`, copia los wrappers, siembra `~/.omnicoder/` y `opencode.jsonc`, corre `doctor` y los tests + benchmarks.
+El script hace todo automático:
 
-Desinstalar (v4 + v5 completo) en un solo comando:
+1. Detecta OmniCoder v4 (Qwen Code) si existe y la desinstala con backup.
+2. Clona el repo en `~/omnicoder-v5`.
+3. Instala `opencode` global (si falta) y `engram` binary.
+4. Copia los wrappers `omnicoder` / `omnicoder.cmd` / `omnicoder.ps1`.
+5. Siembra `~/.omnicoder/` (skills + agents) y `opencode.jsonc`.
+6. **Pregunta tu API key** (default NVIDIA NIM free tier) y la persiste en `~/.omnicoder/env` + `~/.bashrc` / `~/.zshrc` / `~/.config/fish/config.fish`.
+7. Corre `doctor` + tests + benchmarks.
+
+Desinstalar todo (v4 + v5):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/uninstall.sh | bash
-# purga total (memoria + config + repo): añadir -s -- --purge-all
+gh api repos/nicolas2601/omnicoder/contents/scripts/uninstall.sh --jq .content | base64 -d | bash
+# purga total (memoria + config + repo): añadir al final  -s -- --purge-all
 ```
 
 Verificación:
@@ -40,7 +48,8 @@ omnicoder doctor
 omnicoder
 ```
 
-> Windows: correr el comando **dentro de Git Bash** (viene con Git for Windows).
+> **Windows**: correr **dentro de Git Bash** (viene con Git for Windows). Todo con bash, sin PowerShell.
+> **Colaboradores**: `gh auth login` primero; el owner debe haberte agregado como collaborator del repo.
 
 ## Providers soportados (una API key mínima)
 

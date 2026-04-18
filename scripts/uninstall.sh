@@ -174,10 +174,10 @@ summary() {
     $REPO_DIR             (cloned repo)                    $( [ "$PURGE_REPO" = "1" ]   && echo "[purged]" )
 
   To remove everything, re-run with --purge-all:
-    curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/uninstall.sh | bash -s -- --purge-all
+    gh api repos/nicolas2601/omnicoder/contents/scripts/uninstall.sh --jq .content | base64 -d | bash -s -- --purge-all
 
   To reinstall fresh:
-    curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/setup.sh | bash
+    gh api repos/nicolas2601/omnicoder/contents/scripts/setup.sh --jq .content | base64 -d | bash
 EOF
 }
 

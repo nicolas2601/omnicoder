@@ -13,7 +13,7 @@
 #   6. Optionally runs the tests + benchmark suite for a full QA sweep.
 #
 # One-liner:
-#   curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/setup.sh | bash
+#   gh api repos/nicolas2601/omnicoder/contents/scripts/setup.sh --jq .content | base64 -d | bash
 #
 # Flags (via env vars, since we support `curl | bash`):
 #   OMNICODER_REPO=<path>     override clone location (default $HOME/omnicoder-v5)
@@ -232,12 +232,18 @@ setup_api_key() {
   done
 
   # Piped (curl | bash) setups have no stdin. Try /dev/tty so we can still
-  # ask the user — that works for both piped and direct invocations.
+  # ask the user — that works for both piped and direct invocations. We
+  # actually open it once to prove it is a usable TTY; some containers
+  # expose /dev/tty as a character device that isn't wired up.
   have_tty=0
-  if [ -r /dev/tty ] && [ -w /dev/tty ]; then have_tty=1; fi
+  if [ -e /dev/tty ] && ( : </dev/tty ) >/dev/null 2>&1 && ( : >/dev/tty ) >/dev/null 2>&1; then
+    have_tty=1
+  fi
   if [ "$have_tty" = "0" ]; then
     warn "no interactive terminal — skipping API key prompt"
-    note "set NVIDIA_API_KEY (or MINIMAX / DASHSCOPE / ANTHROPIC / OPENAI) before launching omnicoder"
+    note "set your key later by editing ~/.omnicoder/env:"
+    note "  echo 'export NVIDIA_API_KEY=nvapi-...' >> ~/.omnicoder/env"
+    note "…or run: ${REPO_DIR}/scripts/setup.sh in a real terminal"
     return 0
   fi
 
@@ -343,10 +349,10 @@ summary() {
        omnicoder
 
   3. Re-run setup to upgrade at any time:
-       curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/setup.sh | bash
+       gh api repos/nicolas2601/omnicoder/contents/scripts/setup.sh --jq .content | base64 -d | bash
 
   4. Uninstall completely (v4 + v5):
-       curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/uninstall.sh | bash
+       gh api repos/nicolas2601/omnicoder/contents/scripts/uninstall.sh --jq .content | base64 -d | bash
 
   Repo:      $REPO_DIR
   Docs:      $REPO_DIR/docs/
