@@ -139,7 +139,35 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "tarball=${TARBALL}" >> "$GITHUB_OUTPUT"
 
-      - name: Pack @nicolas2601/omnicoder (npm package)
+      - name: Pack @nicolas2601/omnicoder-core (plugin)
+        id: pack_core
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          export VERSION="${TAG#v}"
+
+          # Sync plugin version with the tag + align wrapper's dep range.
+          node -e '
+            const fs = require("fs");
+            const core = "packages/omnicoder/package.json";
+            const wrap = "packages/omnicoder-npm/package.json";
+            const c = JSON.parse(fs.readFileSync(core, "utf8"));
+            const w = JSON.parse(fs.readFileSync(wrap, "utf8"));
+            c.version = process.env.VERSION;
+            w.dependencies = w.dependencies || {};
+            w.dependencies["@nicolas2601/omnicoder-core"] = "^" + process.env.VERSION;
+            fs.writeFileSync(core, JSON.stringify(c, null, 2) + "\n");
+            fs.writeFileSync(wrap, JSON.stringify(w, null, 2) + "\n");
+            console.log("core version:", c.version);
+          '
+
+          cd packages/omnicoder
+          npm pack
+          mv nicolas2601-omnicoder-core-*.tgz ../../.artifacts/release/
+          ls -lah ../../.artifacts/release/
+
+      - name: Pack @nicolas2601/omnicoder (npm wrapper)
         id: pack_npm
         env:
           TAG: ${{ steps.tag.outputs.tag }}
@@ -147,19 +175,18 @@ jobs:
           set -euo pipefail
           export VERSION="${TAG#v}"
 
-          # Sync npm package version with the tag.
           cd packages/omnicoder-npm
           node -e '
             const fs = require("fs");
             const p = JSON.parse(fs.readFileSync("package.json", "utf8"));
             p.version = process.env.VERSION;
             fs.writeFileSync("package.json", JSON.stringify(p, null, 2) + "\n");
-            console.log("set version:", p.version);
+            console.log("wrapper version:", p.version);
           '
 
           # prepack runs bundle-assets automatically.
           npm pack
-          mv nicolas2601-omnicoder-*.tgz ../../.artifacts/release/
+          mv nicolas2601-omnicoder-*.tgz ../../.artifacts/release/ 2>/dev/null || true
 
           ls -lah ../../.artifacts/release/
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
@@ -185,13 +212,25 @@ jobs:
           esac
           echo "Publishing version=${VERSION} dist-tag=${DIST_TAG}"
 
-          TARBALL=$(ls .artifacts/release/nicolas2601-omnicoder-*.tgz | head -1)
-          if [ -z "${TARBALL}" ]; then
-            echo "::error::No npm tarball found in .artifacts/release/"
-            exit 1
+          # Publish core plugin FIRST so the wrapper's dep on it resolves.
+          CORE_TARBALL=$(ls .artifacts/release/nicolas2601-omnicoder-core-*.tgz 2>/dev/null | head -1)
+          if [ -n "${CORE_TARBALL}" ]; then
+            echo "Publishing core plugin → ${CORE_TARBALL}"
+            npm publish "${CORE_TARBALL}" --access public --tag "${DIST_TAG}" || {
+              echo "::warning::omnicoder-core publish failed (maybe version already exists) — continuing"
+            }
+          else
+            echo "::warning::No omnicoder-core tarball to publish"
           fi
 
-          npm publish "${TARBALL}" --access public --tag "${DIST_TAG}"
+          # Then the wrapper (avoid matching the core tarball by name).
+          WRAP_TARBALL=$(ls .artifacts/release/nicolas2601-omnicoder-[0-9]*.tgz 2>/dev/null | head -1)
+          if [ -z "${WRAP_TARBALL}" ]; then
+            echo "::error::No npm wrapper tarball found in .artifacts/release/"
+            exit 1
+          fi
+          echo "Publishing wrapper → ${WRAP_TARBALL}"
+          npm publish "${WRAP_TARBALL}" --access public --tag "${DIST_TAG}"
 
       - name: Create GitHub release
         env:

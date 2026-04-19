@@ -4,6 +4,38 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.9] — 2026-04-19
+
+**Critical fix**: the personality (and all other plugin hooks — router,
+memory, security, budget, failover, dispatcher) never ran on npm installs.
+The plugin package `@omnicoder/core` lived only in the workspace, so when
+opencode tried to resolve the name from the config, it couldn't find it
+and silently fell back to the default system prompt — hence “I'm
+OpenCode, your software engineering assistant” when users had picked
+Omni-Man.
+
+### Fixed
+
+- **Plugin now ships as `@nicolas2601/omnicoder-core` on npm**. Opencode
+  resolves `plugin: ["@nicolas2601/omnicoder-core"]` from the config,
+  auto-installs from the registry on first launch, and runs all 7 hooks
+  (router, security, memory, budget, personality, dispatcher, failover).
+- `packages/omnicoder/package.json` renamed + `tsup` build step added so
+  it ships compiled JS + types (`dist/`) consumable by Node-resolve, not
+  just raw TypeScript consumable by bun-in-workspace.
+- `.omnicoder/opencode.jsonc` + seeded template now reference the new
+  package name.
+- Workflow `omnicoder-release.yml` publishes **both** packages in order:
+  `@nicolas2601/omnicoder-core` first (wrapper depends on it), then the
+  wrapper. Version sync is automatic from the git tag.
+
+### Added
+
+- `packages/omnicoder/tsup.config.ts` — esm bundle, d.ts types, node18
+  target, `@opencode-ai/*` kept as external.
+- `peerDependenciesMeta` marks the opencode peer deps as optional so
+  `npm install @nicolas2601/omnicoder-core` standalone doesn't warn.
+
 ## [5.0.0-alpha.8] — 2026-04-19
 
 First real patch to opencode core since the fork. `/personality` becomes a

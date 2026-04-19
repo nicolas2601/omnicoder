@@ -1,14 +1,15 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "@omnicoder/core",
-  "version": "5.0.0-alpha.8",
-  "description": "OmniCoder core plugin: skill routing, security guard, token budget, memory layer on top of Opencode",
+  "name": "@nicolas2601/omnicoder-core",
+  "version": "5.0.0-alpha.9",
+  "description": "OmniCoder core plugin for opencode: skill router (BM25), security guard, token budget, memory loader, personality injector, tool dispatcher, provider failover.",
   "type": "module",
   "license": "MIT",
   "author": "nicolas2601 <nm5571762@gmail.com>",
+  "homepage": "https://github.com/nicolas2601/omnicoder",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nicolas2601/omnicoder-v5"
+    "url": "https://github.com/nicolas2601/omnicoder"
   },
   "keywords": [
     "opencode-plugin",
@@ -16,28 +17,45 @@
     "coding-agent",
     "skills",
     "memory",
-    "router"
+    "router",
+    "bm25",
+    "omnicoder"
   ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./hooks/*": "./src/hooks/*.ts",
-    "./memory": "./src/memory/index.ts",
-    "./router": "./src/router/index.ts",
-    "./security": "./src/security/index.ts",
-    "./budget": "./src/budget/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "typecheck": "tsgo --noEmit",
     "test": "bun test --timeout 30000",
     "test:ci": "mkdir -p .artifacts/unit && bun test --timeout 30000 --reporter=junit --reporter-outfile=.artifacts/unit/junit.xml",
-    "build": "echo 'no build — consumed as source by opencode workspace'"
+    "build": "tsup",
+    "prepack": "tsup"
   },
   "peerDependencies": {
     "@opencode-ai/plugin": "*",
     "@opencode-ai/sdk": "*"
   },
+  "peerDependenciesMeta": {
+    "@opencode-ai/plugin": { "optional": true },
+    "@opencode-ai/sdk": { "optional": true }
+  },
   "devDependencies": {
     "@types/bun": "1.3.11",
+    "tsup": "8.5.1",
     "typescript": "5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

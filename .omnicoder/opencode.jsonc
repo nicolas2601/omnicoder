@@ -68,10 +68,10 @@
   },
 
   // ─── Plugins ────────────────────────────────────────────────────────────
-  // @omnicoder/core registers: router, security, memory, budget,
-  // tool-dispatcher, provider-failover. Single entry point.
+  // @nicolas2601/omnicoder-core registers: router, security, memory, budget,
+  // personality injector, tool-dispatcher, provider-failover. Single entry.
   "plugin": [
-    "@omnicoder/core"
+    "@nicolas2601/omnicoder-core"
   ],
 
   // ─── Skills discovery ──────────────────────────────────────────────────

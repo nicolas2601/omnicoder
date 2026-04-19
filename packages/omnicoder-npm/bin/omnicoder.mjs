@@ -163,6 +163,9 @@ seedIfNeeded({ quiet: true })
 // Best-effort background update check (fire and forget; 200ms budget).
 maybePrintUpdateHint().catch(() => {})
 
+// Opencode auto-installs `plugin: [...]` entries from the config via its
+// internal npm cache — we don't need to do anything here beyond making sure
+// @nicolas2601/omnicoder-core is published to the registry.
 const env = {
   ...process.env,
   OMNICODER: "1",
