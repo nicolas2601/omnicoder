@@ -68,6 +68,56 @@ describe("personality loader", () => {
     expect(preambleFor("off")).toBeNull()
   })
 
+  it("onCommand writes personality when /personality is executed", async () => {
+    const loader = createPersonalityLoader()
+    await loader.onCommand({
+      type: "command.executed",
+      properties: { name: "personality", arguments: "omni-man" },
+    })
+    const { readFileSync, existsSync } = await import("node:fs")
+    const file = path.join(tmpHome, ".omnicoder", "personality.json")
+    expect(existsSync(file)).toBe(true)
+    const j = JSON.parse(readFileSync(file, "utf8"))
+    expect(j.id).toBe("omni-man")
+  })
+
+  it("onCommand accepts common aliases", async () => {
+    const loader = createPersonalityLoader()
+    for (const alias of ["omniman", "NOLAN", "emperor", "none"]) {
+      await loader.onCommand({
+        type: "command.executed",
+        properties: { name: "personality", arguments: alias },
+      })
+    }
+    const { readFileSync } = await import("node:fs")
+    const file = path.join(tmpHome, ".omnicoder", "personality.json")
+    const j = JSON.parse(readFileSync(file, "utf8"))
+    // last call was "none" → off
+    expect(j.id).toBe("off")
+  })
+
+  it("onCommand ignores unknown personas", async () => {
+    const loader = createPersonalityLoader()
+    await loader.onCommand({
+      type: "command.executed",
+      properties: { name: "personality", arguments: "darkseid" },
+    })
+    const { existsSync } = await import("node:fs")
+    const file = path.join(tmpHome, ".omnicoder", "personality.json")
+    expect(existsSync(file)).toBe(false)
+  })
+
+  it("onCommand ignores other command events", async () => {
+    const loader = createPersonalityLoader()
+    await loader.onCommand({
+      type: "command.executed",
+      properties: { name: "ship", arguments: "omni-man" },
+    })
+    const { existsSync } = await import("node:fs")
+    const file = path.join(tmpHome, ".omnicoder", "personality.json")
+    expect(existsSync(file)).toBe(false)
+  })
+
   it("caches within TTL", async () => {
     const dir = path.join(tmpHome, ".omnicoder")
     mkdirSync(dir, { recursive: true })

@@ -102,6 +102,45 @@ export function preambleFor(id: PersonalityID): string | null {
 
 type Cache = { text: string | null; builtAt: number }
 
+// Canonical name + common alias resolver.  Keep in sync with the PREAMBLES
+// keys; we accept loose input ("omniman", "nolan") so users don't have to
+// remember the exact kebab-case.
+const ALIASES: Record<string, PersonalityID> = {
+  "omni-man": "omni-man",
+  omniman: "omni-man",
+  nolan: "omni-man",
+  grayson: "omni-man",
+  conquest: "conquest",
+  thragg: "thragg",
+  emperor: "thragg",
+  viltrum: "thragg",
+  anissa: "anissa",
+  cecil: "cecil",
+  cecilstedman: "cecil",
+  immortal: "immortal",
+  "the-immortal": "immortal",
+  off: "off",
+  none: "off",
+  default: "off",
+  normal: "off",
+}
+
+export function resolvePersonaArg(raw: string): PersonalityID | null {
+  const cleaned = raw.trim().toLowerCase().replace(/\s+/g, "")
+  if (!cleaned) return null
+  return ALIASES[cleaned] ?? null
+}
+
+export async function writePersonality(id: PersonalityID): Promise<string> {
+  const { promises: fsp } = await import("node:fs")
+  const dir = path.join(resolveHome(), ".omnicoder")
+  const file = path.join(dir, "personality.json")
+  await fsp.mkdir(dir, { recursive: true })
+  const payload = { id, setAt: new Date().toISOString() }
+  await fsp.writeFile(file, JSON.stringify(payload, null, 2), "utf8")
+  return file
+}
+
 export function createPersonalityLoader() {
   let cache: Cache | null = null
 
@@ -113,11 +152,32 @@ export function createPersonalityLoader() {
     return text
   }
 
+  async function onCommand(event: {
+    type?: string
+    properties?: { name?: string; arguments?: string }
+  }): Promise<void> {
+    // opencode's Bus emits events shaped roughly as
+    //   { type: "command.executed", properties: { name, arguments, … } }
+    if (event?.type !== "command.executed") return
+    if (event.properties?.name !== "personality") return
+    const id = resolvePersonaArg(event.properties.arguments ?? "")
+    if (!id) return
+    try {
+      await writePersonality(id)
+      cache = null // force reload so the next prompt picks up the change
+    } catch (err) {
+      // Best-effort; surface via console but never throw (breaks the event bus)
+      // eslint-disable-next-line no-console
+      console.error("[omnicoder:personality]", (err as Error).message)
+    }
+  }
+
   return {
     inject: async (_i: unknown, o: { system: string[] }): Promise<void> => {
       const text = await load()
       if (text) o.system.push(text)
     },
+    onCommand,
     _debug: {
       load,
       invalidate: () => {
@@ -125,6 +185,8 @@ export function createPersonalityLoader() {
       },
       readPersonality,
       preambleFor,
+      resolvePersonaArg,
+      writePersonality,
     },
   }
 }

@@ -47,6 +47,7 @@ export const OmnicoderPlugin: Plugin = async (input: PluginInput) => {
     async event({ event }: { event: any }) {
       await budget.onEvent(event)
       await dispatcher.onEvent(event)
+      await personality.onCommand(event)
     },
   }
 }

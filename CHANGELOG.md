@@ -4,6 +4,37 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.14] — 2026-04-19
+
+### Changed
+
+- **`/personality` ahora es un slash command real** (no un picker visual).
+  El picker de alpha.8 requería el fork del TUI, pero los usuarios corren
+  `opencode-ai` upstream via `npm install -g @nicolas2601/omnicoder@alpha`,
+  donde ese componente no existe. El nuevo enfoque:
+  - `.opencode/command/personality.md` minimal con `$ARGUMENTS` — solo
+    acknowledges, no ejecuta bash.
+  - El plugin (`@nicolas2601/omnicoder-core`) escucha
+    `command.executed` y cuando `name === "personality"` resuelve el arg
+    contra la tabla de aliases (`omni-man`, `omniman`, `nolan`, `emperor`,
+    `off`, `none`, etc.) y escribe `~/.omnicoder/personality.json`.
+  - El `[PERSONA-OVERRIDE]` preamble se inyecta en el próximo prompt.
+
+### Added
+
+- `resolvePersonaArg(raw)` — case-insensitive, tolera aliases comunes.
+- `writePersonality(id)` exportado.
+- 4 nuevos unit tests (`onCommand` happy path, aliases, unknown, otros
+  commands). 10 personality tests total, 93 tests suite total.
+
+### Uso
+
+```
+/personality omni-man   # activa Omni-Man
+/personality off        # desactiva
+/personality list       # muestra la lista
+```
+
 ## [5.0.0-alpha.13] — 2026-04-19
 
 ### Fixed
