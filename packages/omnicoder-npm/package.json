@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@nicolas2601/omnicoder",
-  "version": "5.0.0-alpha.11",
+  "version": "5.0.0-alpha.12",
   "description": "OmniCoder — opencode fork con 170+ agents, skill router BM25, per-phase routing, memory layer y tema morado. Instalable via npm en Linux/macOS/Windows.",
   "keywords": [
     "ai",
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "opencode-ai": "^1.14.18",
-    "@nicolas2601/omnicoder-core": "^5.0.0-alpha.11"
+    "@nicolas2601/omnicoder-core": "^5.0.0-alpha.12"
   },
   "engines": {
     "node": ">=18"

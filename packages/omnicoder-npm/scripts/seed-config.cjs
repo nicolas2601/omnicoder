@@ -54,7 +54,7 @@ function seed({ quiet = false, force = false } = {}) {
   const assetsRoot = path.join(__dirname, "..", "assets")
   const configDir = opencodeConfigDir()
   const ocHome = omnicoderHome()
-  const flagFile = path.join(ocHome, ".seeded-alpha10")
+  const flagFile = path.join(ocHome, ".seeded-alpha12")
 
   if (!force && fs.existsSync(flagFile)) return { skipped: true }
 
@@ -87,11 +87,44 @@ function seed({ quiet = false, force = false } = {}) {
   const presetsDst = path.join(ocHome, "routing-presets.json")
   if (fs.existsSync(presetsSrc)) fs.copyFileSync(presetsSrc, presetsDst)
 
-  // Default opencode.jsonc if user has none
+  // Default opencode.jsonc if user has none.
   const configSrc = path.join(assetsRoot, "opencode.jsonc")
   const configDst = path.join(configDir, "opencode.jsonc")
   if (fs.existsSync(configSrc) && !fs.existsSync(configDst)) {
     fs.copyFileSync(configSrc, configDst)
+  } else if (fs.existsSync(configDst)) {
+    // MIGRATION: rewrite deprecated plugin names in existing user configs.
+    // We only touch the plugin string — everything else is untouched so the
+    // user's custom keys, providers, and MCP servers survive.
+    try {
+      const src = fs.readFileSync(configDst, "utf8")
+      let next = src
+      const PLUGIN_MIGRATIONS = [
+        ["@omnicoder/core", "@nicolas2601/omnicoder-core"],
+      ]
+      let changed = false
+      for (const [from, to] of PLUGIN_MIGRATIONS) {
+        if (next.includes(from)) {
+          next = next.split(from).join(to)
+          changed = true
+        }
+      }
+      if (changed) {
+        fs.copyFileSync(configDst, configDst + ".bak")
+        fs.writeFileSync(configDst, next, "utf8")
+        console.log(
+          "[omnicoder] migrated plugin name in " +
+            configDst +
+            " (backup at .bak)",
+        )
+      }
+    } catch (err) {
+      // Don't block installs on config parse errors — user keeps whatever
+      // they had and can fix manually.
+      if (process.env.OMNICODER_DEBUG) {
+        console.error("[omnicoder] config migration skipped:", err?.message)
+      }
+    }
   }
 
   // Seed memory files if missing
@@ -103,7 +136,7 @@ function seed({ quiet = false, force = false } = {}) {
   }
 
   // Remove older seed flags so upgrades re-seed once.
-  for (const old of [".seeded-alpha7", ".seeded-alpha8", ".seeded-alpha9"]) {
+  for (const old of [".seeded-alpha7", ".seeded-alpha8", ".seeded-alpha9", ".seeded-alpha10", ".seeded-alpha11"]) {
     const f = path.join(ocHome, old)
     if (fs.existsSync(f)) fs.unlinkSync(f)
   }

@@ -4,6 +4,19 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.12] — 2026-04-19
+
+### Fixed
+
+- **Config migration on upgrade** — when a user had a pre-existing
+  `opencode.jsonc` with the old plugin name (`@omnicoder/core`), the
+  seed used to respect it and skip. That left the config pointing at a
+  package that was never on npm, so opencode silently ran without the
+  OmniCoder plugin — hence “Soy OpenCode” responses after picking a
+  persona. The seed now rewrites `@omnicoder/core` →
+  `@nicolas2601/omnicoder-core` on upgrade (backup saved at
+  `opencode.jsonc.bak`). All other keys in the config are untouched.
+
 ## [5.0.0-alpha.11] — 2026-04-19
 
 Polish + docs sync after alpha.10.
