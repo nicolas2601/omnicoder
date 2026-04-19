@@ -54,7 +54,7 @@ function seed({ quiet = false, force = false } = {}) {
   const assetsRoot = path.join(__dirname, "..", "assets")
   const configDir = opencodeConfigDir()
   const ocHome = omnicoderHome()
-  const flagFile = path.join(ocHome, ".seeded-alpha8")
+  const flagFile = path.join(ocHome, ".seeded-alpha10")
 
   if (!force && fs.existsSync(flagFile)) return { skipped: true }
 
@@ -102,10 +102,31 @@ function seed({ quiet = false, force = false } = {}) {
     }
   }
 
-  // Remove older seed flags so upgrades re-seed once
-  for (const old of [".seeded-alpha7"]) {
+  // Remove older seed flags so upgrades re-seed once.
+  for (const old of [".seeded-alpha7", ".seeded-alpha8", ".seeded-alpha9"]) {
     const f = path.join(ocHome, old)
     if (fs.existsSync(f)) fs.unlinkSync(f)
+  }
+
+  // Deprecated commands that must be removed on upgrade — they're replaced
+  // by native TUI dialogs that write their own state files, and leaving the
+  // markdown shim around makes the orchestrator echo the old prompt instead
+  // of opening the picker.
+  const DEPRECATED_COMMANDS = ["personality.md"]
+  for (const name of DEPRECATED_COMMANDS) {
+    for (const dir of [
+      path.join(configDir, "command"),
+      path.join(configDir, "commands"),
+    ]) {
+      const f = path.join(dir, name)
+      if (fs.existsSync(f)) {
+        try {
+          fs.unlinkSync(f)
+        } catch {
+          /* ignore permissions errors */
+        }
+      }
+    }
   }
 
   fs.writeFileSync(flagFile, new Date().toISOString(), "utf8")

@@ -205,6 +205,18 @@ if [ "$#" -ge 1 ]; then
       doctor_run
       exit $?
       ;;
+    update|upgrade)
+      # Reinstall from npm — works even when the wrapper was installed by
+      # scripts/install.sh rather than `npm install -g`, because npm will
+      # overwrite /usr/local/bin/omnicoder with its own wrapper.
+      shift
+      printf '[omnicoder] updating to latest @alpha from npm…\n'
+      if ! command -v npm >/dev/null 2>&1; then
+        printf 'omnicoder: npm not found. Install Node.js 18+ first.\n' >&2
+        exit 127
+      fi
+      exec npm install -g @nicolas2601/omnicoder@alpha "$@"
+      ;;
   esac
 fi
 
@@ -233,7 +245,19 @@ if [ -f "$OMNICODER_USER_CONFIG" ]; then
   export OPENCODE_CONFIG
 fi
 
+# Preserve the user's working directory — opencode opens the project at its
+# own process.cwd() and spawns bash from there, so if we `cd` into the repo
+# the user sees the repo path (bug in alpha.8/9 where `pwd` inside the TUI
+# returned ~/omnicoder-v5/packages/opencode regardless of launch dir).
+SAVED_CWD=$(pwd)
+
 if can_run_source; then
+  # When the user invoked `omnicoder` with no args, pass the launch dir as
+  # the [project] positional so opencode opens it.  With args we trust the
+  # user's intent verbatim.
+  if [ "$#" -eq 0 ]; then
+    set -- "$SAVED_CWD"
+  fi
   # `--conditions=browser` mirrors the root `dev` script so @opentui/solid's
   # browser entrypoint wins over the server-side one — same runtime shape as
   # `bun dev` from the repo root.
@@ -241,10 +265,15 @@ if can_run_source; then
 fi
 
 if ! command -v opencode >/dev/null 2>&1; then
-  printf 'omnicoder: opencode is not installed and the source repo is not ready at %s.\n' "$OMNICODER_REPO" >&2
-  printf '  - quick fix: run `bun install` at %s\n' "$OMNICODER_REPO" >&2
-  printf '  - or install the upstream binary: npm i -g opencode-ai@latest\n' >&2
+  printf 'omnicoder: opencode is not installed.\n' >&2
+  printf '  Install via npm:  npm install -g @nicolas2601/omnicoder@alpha\n' >&2
   exit 127
 fi
 
+# Pass the user's cwd when no project arg was given.  opencode's positional
+# [project] argument lets the user open any folder regardless of where the
+# opencode binary lives.
+if [ "$#" -eq 0 ]; then
+  exec opencode "$SAVED_CWD"
+fi
 exec opencode "$@"

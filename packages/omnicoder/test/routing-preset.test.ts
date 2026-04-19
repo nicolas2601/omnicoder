@@ -35,7 +35,12 @@ async function seedPresets(home: string): Promise<void> {
 }
 
 async function seedConfig(content: string): Promise<string> {
-  const cfgDir = path.join(tmpHome, ".config", "opencode")
+  // Match userConfigPath()'s resolver so tests pass on Windows (where the
+  // resolver uses %APPDATA%, not ~/.config).
+  const cfgDir =
+    process.platform === "win32"
+      ? path.join(tmpHome, "AppData", "Roaming", "opencode")
+      : path.join(tmpHome, ".config", "opencode")
   await fs.mkdir(cfgDir, { recursive: true })
   const cfgPath = path.join(cfgDir, "opencode.jsonc")
   await fs.writeFile(cfgPath, content)

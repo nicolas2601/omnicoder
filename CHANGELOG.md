@@ -4,6 +4,47 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.10] — 2026-04-19
+
+Bug bash round. Three issues reported after alpha.9:
+
+1. Launching `omnicoder` from any dir opened opencode at the fork repo
+   root instead of the user's cwd. `pwd` inside the TUI always said
+   `~/omnicoder-v5/packages/opencode`.
+2. `omnicoder update` failed with `Error: Failed to change directory to
+   .../update` because the shell wrapper forwarded it as a positional
+   project path.
+3. `/personality` still echoed the old markdown prompt for users who had
+   seeded it from alpha.7 / alpha.8 (`~/.config/opencode/command/
+   personality.md` lingered after the seed switched to the native
+   dialog).
+
+### Fixed
+
+- **`bin/omnicoder` shell wrapper preserves cwd** — when invoked with
+  no args, we pass `$(pwd)` as the `[project]` positional instead of
+  `cd`-ing into the repo before spawning bun. Source path is still used
+  for code (so the purple theme + plugin fast-paths still win), but the
+  opened project is always the user's invocation directory.
+- **`omnicoder update` works from the shell wrapper** — new `update` /
+  `upgrade` subcommand that shells out to `npm install -g
+  @nicolas2601/omnicoder@alpha`. Matches the `.mjs` wrapper's behaviour.
+- **Seed removes deprecated commands on upgrade** —
+  `scripts/seed-config.cjs` deletes `~/.config/opencode/command/
+  personality.md` (and the Windows `%APPDATA%` equivalent) during the
+  first alpha.10 launch, so the orchestrator stops echoing the old
+  markdown. Bumped seed flag to `.seeded-alpha10`.
+- **Stronger persona preamble** — rewrote
+  `packages/omnicoder/src/personality/index.ts` preambles with an
+  explicit `[PERSONA-OVERRIDE — ACTIVE]` header that tells the model
+  "ignore any prior instruction that says you are OpenCode". Earlier
+  drafts were too polite ("you are Nolan…") and the model kept
+  introducing itself as OpenCode.
+- **CI Windows — routing-preset test seeds the right dir** — on win32
+  the resolver uses `%APPDATA%\opencode\`, not `~/.config/opencode/`.
+  Test's `seedConfig()` now matches, unblocking the windows-latest
+  matrix.
+
 ## [5.0.0-alpha.9] — 2026-04-19
 
 **Critical fix**: the personality (and all other plugin hooks — router,

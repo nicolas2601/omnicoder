@@ -45,7 +45,8 @@ describe("personality loader", () => {
     await loader.inject({}, o)
     expect(o.system.length).toBe(1)
     expect(o.system[0]).toContain("Omni-Man")
-    expect(o.system[0]).toContain("Nolan")
+    expect(o.system[0]).toContain("NOLAN")
+    expect(o.system[0]).toContain("PERSONA-OVERRIDE")
   })
 
   it("ignores unknown ids (falls back to off)", async () => {
