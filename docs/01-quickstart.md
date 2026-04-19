@@ -1,83 +1,77 @@
 # 01 · Quickstart
 
-De cero a `omnicoder` corriendo en menos de 5 minutos.
-
----
+De cero a `omnicoder` corriendo en menos de 2 minutos.
 
 ## Requisitos
 
-| | Linux / macOS | Windows 10/11 |
-|---|---|---|
-| Node.js 18 LTS+ | distro package / `nvm` | [nodejs.org](https://nodejs.org) |
-| npm | incluido | incluido |
-| git | distro package | [git-scm.com](https://git-scm.com/download/win) |
-| PowerShell | — | 5.1+ (ya viene) o 7+ recomendado |
-| `bun` (solo si vas a contribuir) | `curl -fsSL https://bun.sh/install \| bash` | `npm i -g bun` |
-| Al menos una API key | `NVIDIA_API_KEY` **o** `MINIMAX_API_KEY` **o** `DASHSCOPE_API_KEY` **o** `ANTHROPIC_API_KEY` **o** `OPENAI_API_KEY` | idem |
+- Node.js 18+ (recomendado 20 LTS). https://nodejs.org/
+- Una API key de al menos un provider (NVIDIA NIM es free).
 
----
+## 1 · Instalar
 
-## 1 · Clonar e instalar
+```bash
+npm install -g @nicolas2601/omnicoder@alpha
+```
+
+Funciona igual en **Linux, macOS y Windows** (PowerShell o Git Bash). El package trae 172 agents + 29 commands + theme morado + routing presets y depende de `opencode-ai` (per-platform binary).
+
+## 2 · API key
 
 ```bash
 # Linux / macOS
-git clone https://github.com/nicolas2601/omnicoder ~/omnicoder-v5
-cd ~/omnicoder-v5
-bash scripts/install.sh --yes
-```
-
-```powershell
-# Windows
-git clone https://github.com/nicolas2601/omnicoder $env:USERPROFILE\omnicoder-v5
-cd $env:USERPROFILE\omnicoder-v5
-pwsh .\scripts\install-windows.ps1 -Yes
-```
-
-El installer es **idempotente** — correrlo dos veces no duplica nada y no
-pisa tus archivos en `~/.omnicoder/` ni tu `opencode.jsonc`.
-
-## 2 · Exportar una API key
-
-```bash
-# Linux / macOS (~/.bashrc, ~/.zshrc o ~/.config/fish/config.fish)
 export NVIDIA_API_KEY="nvapi-..."
 ```
 
 ```powershell
-# Windows — persistente a nivel usuario
+# Windows
 [Environment]::SetEnvironmentVariable("NVIDIA_API_KEY", "nvapi-...", "User")
-# abrir terminal nueva para que tome efecto
+# reabrir PowerShell para que tome efecto
 ```
 
-## 3 · Verificar
+NVIDIA NIM es free (40 RPM) con MiniMax M2.7. Si preferís Claude: `ANTHROPIC_API_KEY`.
 
-```bash
-omnicoder --omnicoder-version
-# omnicoder 5.0.0-alpha.1
-# opencode  1.4.11
-
-omnicoder doctor
-# Status: healthy
-```
-
-## 4 · Lanzar el CLI
+## 3 · Lanzar
 
 ```bash
 omnicoder
 ```
 
-Se abre el TUI de Opencode con tus **193 skills**, **167 agents** y los
-6 hooks del plugin cargados. Dentro del TUI, escribí tu tarea normal —
-el skill-router BM25 va a inyectar skills relevantes y el security-guard
-vigila los comandos bash.
+Primera ejecución imprime:
+```
+[omnicoder] seeded 172 agents + 29 commands → ~/.config/opencode/
+```
 
-## 5 · ¿Qué sigue?
+## 4 · Probar
 
-- [`02-install.md`](02-install.md) — one-liner sin clonar, opciones
-  avanzadas del installer.
-- [`04-skills-agents.md`](04-skills-agents.md) — cómo reordenar skills,
-  habilitar/deshabilitar agentes, crear los tuyos.
-- [`05-hooks.md`](05-hooks.md) — qué hace cada hook y cómo escribir uno
-  propio.
-- [`control-del-cli.md`](control-del-cli.md) — modificar el fork
-  directamente (renombrar comandos, nuevos subcomandos, branding).
+Dentro de la TUI:
+
+```
+/personality               # abre picker visual de personas
+/themes                    # cambiar tema
+/help                      # ver todos los comandos
+```
+
+En CLI:
+
+```bash
+omnicoder --version        # info completa
+omnicoder update           # actualizar a la última @alpha
+omnicoder doctor           # chequeo de salud
+omnicoder-routing list     # ver presets de per-phase routing
+omnicoder-routing apply balanced   # Sonnet plan, Haiku build
+```
+
+## Auto-update
+
+Al arrancar, el wrapper chequea el registry cada 24h. Si hay versión nueva, imprime en violeta:
+
+```
+→ omnicoder 5.0.0-alpha.12 available (current: 5.0.0-alpha.11)
+  run:  omnicoder update
+```
+
+Para desactivar: `export OMNICODER_NO_UPDATE_CHECK=1`.
+
+## ¿Y si algo falla?
+
+Ver [`07-troubleshooting.md`](07-troubleshooting.md) o correr `omnicoder doctor`.

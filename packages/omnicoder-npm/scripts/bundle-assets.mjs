@@ -109,7 +109,9 @@ function loadPresets() {
     console.error("[omnicoder-routing] presets missing at", PRESETS)
     process.exit(2)
   }
-  return JSON.parse(stripJsonc(readFileSync(PRESETS, "utf8")))
+  const raw = JSON.parse(stripJsonc(readFileSync(PRESETS, "utf8")))
+  // File may be { description, presets: {...} } or a flat map of preset names.
+  return raw.presets && typeof raw.presets === "object" ? raw.presets : raw
 }
 
 function loadConfig() {

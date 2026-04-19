@@ -1,143 +1,112 @@
-# 02 · Instalación detallada
+# 02 · Instalación
 
-## Opción Windows (recomendada para usuarias nuevas): bootstrap one-shot
+## Recomendado: `npm install -g` (Linux / macOS / Windows)
 
-Un único comando cubre todo: instala Node LTS + Git + GitHub CLI si faltan,
-corre `gh auth login`, limpia cualquier resto de v4 / Qwen Code / opencode
-viejo (con backup de memoria), clona el repo, instala v5 y pide la API key
-de NVIDIA NIM al final.
+```bash
+npm install -g @nicolas2601/omnicoder@alpha
+```
 
+Eso baja:
+- El wrapper `@nicolas2601/omnicoder` con 172 agents + 29 commands + theme + routing presets como assets bundleados.
+- `opencode-ai` upstream (per-platform binary: linux-x64, linux-arm64, darwin-x64, darwin-arm64, windows-x64, windows-arm64).
+- `@nicolas2601/omnicoder-core` plugin TS (skill router, security guard, memory loader, personality injector, token budget, tool dispatcher, provider failover).
+
+Verificar:
+
+```bash
+omnicoder --version
+# omnicoder 5.0.0-alpha.11
+#   runtime: opencode-ai 1.14.18
+#   node:    v20.20.2
+#   platform: linux x64
+#   binary:  ...
+```
+
+Primera ejecución:
+
+```bash
+omnicoder
+# [omnicoder] seeded 172 agents + 29 commands → ~/.config/opencode/
+```
+
+En Windows siembra en `%APPDATA%\opencode\`.
+
+### Pre-requisitos
+
+- **Node.js 18+** (recomendado 20 LTS). Bajar de https://nodejs.org/.
+- **Windows**: PowerShell 5.1+ o Git Bash. El wrapper es puro JS, no shell-dependent.
+
+### API key (al menos una)
+
+```bash
+export NVIDIA_API_KEY="nvapi-..."      # free tier 40 RPM con MiniMax M2.7
+export ANTHROPIC_API_KEY="sk-ant-..."  # Claude
+export MINIMAX_API_KEY="..."           # MiniMax direct
+export DASHSCOPE_API_KEY="..."         # Alibaba Qwen
+export OPENAI_API_KEY="..."            # OpenAI
+```
+
+Windows PowerShell:
 ```powershell
-iwr -useb https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/bootstrap-windows.ps1 -OutFile "$env:TEMP\oc-bootstrap.ps1"
-pwsh -ExecutionPolicy Bypass -File "$env:TEMP\oc-bootstrap.ps1"
+[Environment]::SetEnvironmentVariable("NVIDIA_API_KEY", "nvapi-...", "User")
+# reabrir terminal para que tome efecto
 ```
 
-Flags útiles:
+### Auto-update
 
-```
--Yes                       no pedir confirmaciones (CI / VM descartables)
--SkipCleanup               dejar v4 / Qwen Code intactos (install side-by-side)
--KeepMemory:$false         no respaldar ~\.omnicoder\memory durante la limpieza
--NvidiaApiKey nvapi-xxx    pasar la key sin prompt interactivo
--DryRun                    mostrar qué haría sin tocar el disco
--RepoDir C:\ruta\repo      clonar en otra carpeta (default ~\omnicoder-v5)
+El wrapper chequea el registry cada 24h al lanzar la TUI (TTY-only, cacheado). Si hay versión nueva imprime un hint. Para actualizar:
+
+```bash
+omnicoder update
+# o: npm install -g @nicolas2601/omnicoder@alpha
 ```
 
-El bootstrap es **seguro por defecto**: cada paso destructivo pregunta
-antes de ejecutarse (salvo que uses `-Yes`), nunca corre como admin,
-solo toca el perfil del usuario y el User PATH — nunca el sistema.
+Deshabilitar el chequeo: `export OMNICODER_NO_UPDATE_CHECK=1`.
+
+### Desinstalar
+
+```bash
+npm uninstall -g @nicolas2601/omnicoder
+# opcional: borrar assets sembrados
+rm -rf ~/.config/opencode/agent ~/.config/opencode/command
+rm -rf ~/.omnicoder
+```
+
+Windows PowerShell:
+```powershell
+npm uninstall -g @nicolas2601/omnicoder
+Remove-Item -Recurse -Force "$env:APPDATA\opencode\agent", "$env:APPDATA\opencode\command"
+Remove-Item -Recurse -Force "$env:USERPROFILE\.omnicoder"
+```
 
 ---
 
-## Opción A — clonar el repo (recomendada)
+## Alternativa: source build (para contribuidores)
 
 ```bash
-git clone https://github.com/nicolas2601/omnicoder ~/omnicoder-v5
+git clone https://github.com/nicolas2601/omnicoder.git ~/omnicoder-v5
 cd ~/omnicoder-v5
-bash scripts/install.sh --yes
+bun install --frozen-lockfile
+bun run dev                # lanza la TUI desde el source con live reload de cambios
 ```
 
-```powershell
-git clone https://github.com/nicolas2601/omnicoder $env:USERPROFILE\omnicoder-v5
-cd $env:USERPROFILE\omnicoder-v5
-pwsh .\scripts\install-windows.ps1 -Yes
-```
-
-## Opción B — one-liner curlable (sin repo local)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/install.sh | bash -s -- --yes
-```
-
-```powershell
-iwr -useb https://raw.githubusercontent.com/nicolas2601/omnicoder/main/scripts/install-windows.ps1 | iex
-```
-
-> Si vas a contribuir, preferí la Opción A — necesitás el repo para
-> correr tests, benchmarks y sincronizar upstream.
+Los cambios al plugin (`packages/omnicoder/`) requieren rebuild con `bun --cwd packages/omnicoder run build` antes de publicar. Los cambios al TUI (`packages/opencode/`) son live bajo `bun run dev`.
 
 ---
 
-## Flags del installer (POSIX)
+## Troubleshooting rápido
 
-```
---yes            no preguntar confirmaciones (modo CI)
---prefix DIR     prefix de instalación (default /usr/local)
---no-sudo        no escalar a sudo; falla si no hay permisos
---uninstall      desinstalar en vez de instalar
---purge-home     junto con --uninstall borra ~/.omnicoder/ también
-```
-
-Overrides via environment:
-
-```bash
-PREFIX=$HOME/.local bash scripts/install.sh --yes --no-sudo   # instalación user-local
-ENGRAM_SKIP=1 bash scripts/install.sh --yes                   # saltar Engram
-ENGRAM_SHA256_LINUX_X64="abcd…" bash scripts/install.sh --yes # pinnear checksum custom
-```
-
-## Flags del installer (Windows PS1)
-
-```
--Yes                    no preguntar confirmaciones
--InstallDir <path>      override del destino (default %LOCALAPPDATA%\Programs\omnicoder\bin)
--Uninstall              desinstalar
--PurgeHome              junto con -Uninstall borra %USERPROFILE%\.omnicoder\ también
--SkipEngramVerify       saltar verificación SHA-256 de Engram (dev-only)
--EngramSha256 <hex>     pinnear checksum custom
-```
-
----
-
-## Qué instala
-
-| Paso | Artefacto | Dónde |
+| Síntoma | Causa probable | Fix |
 |---|---|---|
-| 1 | `opencode` global npm | `$(npm root -g)/opencode-ai` |
-| 2 | `engram` binary (SHA-256 verificado, SEC-05) | `$PREFIX/bin/engram` · `$InstallDir\engram.exe` |
-| 3 | Wrappers `omnicoder*` | `$PREFIX/bin/` · `$InstallDir\` |
-| 4 | Skills + agents (solo si faltan) | `~/.omnicoder/{skills,agents}/` |
-| 5 | `opencode.jsonc` default (solo si no existe) | `~/.config/opencode/` · `%APPDATA%\opencode\` |
-| 6 | PATH patch (Windows únicamente) | User PATH vía `[Environment]::SetEnvironmentVariable` |
-
-El paso 4 usa **copy-if-missing**: nunca sobrescribe archivos del
-usuario. Si querés forzar reseteo de skills/agents, borralos antes:
-
-```bash
-rm -rf ~/.omnicoder/skills ~/.omnicoder/agents
-bash scripts/install.sh --yes
-```
+| `omnicoder: command not found` | npm prefix no está en PATH | `npm config get prefix` → agregar `<prefix>/bin` al PATH |
+| `Error: Failed to change directory to .../update` | Wrapper viejo sin soporte `update` | `npm install -g @nicolas2601/omnicoder@alpha --force` |
+| Opencode abre en `~/omnicoder-v5/packages/opencode` | Wrapper legacy del repo viejo | `npm install -g @nicolas2601/omnicoder@alpha --force` (reemplaza el wrapper por el de npm) |
+| `/personality` imprime texto en vez de abrir picker | `personality.md` viejo quedó cacheado | `omnicoder seed --force` (borra el markdown deprecated) |
+| Respuestas como "Soy OpenCode" tras elegir persona | Plugin no cargado | Verificar que el config tenga `"plugin": ["@nicolas2601/omnicoder-core"]`. `omnicoder seed --force` regenera el default. |
 
 ---
 
-## Ubicaciones estándar
+## Antiguo flujo (source clone + bootstrap) — DEPRECATED
 
-| | Linux/macOS | Windows |
-|---|---|---|
-| Binary user | `/usr/local/bin/omnicoder` | `%LOCALAPPDATA%\Programs\omnicoder\bin\omnicoder.cmd` |
-| Home del runtime | `~/.omnicoder/` | `%USERPROFILE%\.omnicoder\` |
-| Config Opencode | `~/.config/opencode/opencode.jsonc` | `%APPDATA%\opencode\opencode.jsonc` |
-| Memory del usuario | `~/.omnicoder/memory/*.md` | `%USERPROFILE%\.omnicoder\memory\*.md` |
-| Logs JSONL | `~/.omnicoder/logs/` | `%USERPROFILE%\.omnicoder\logs\` |
-
----
-
-## Actualización
-
-```bash
-cd ~/omnicoder-v5
-git pull origin main
-bash scripts/install.sh --yes   # idempotente; re-verifica Engram SHA-256
-```
-
-```powershell
-cd $env:USERPROFILE\omnicoder-v5
-git pull origin main
-pwsh .\scripts\install-windows.ps1 -Yes
-```
-
----
-
-## Desinstalación
-
-Ver [`uninstall.md`](uninstall.md).
+El `scripts/bootstrap-windows.ps1` y `scripts/install.sh` todavía funcionan
+para desarrollo local pero **no son la ruta recomendada para usuarios finales**. Usá `npm install -g @nicolas2601/omnicoder@alpha`.

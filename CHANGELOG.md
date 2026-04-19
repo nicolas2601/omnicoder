@@ -4,6 +4,25 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.11] — 2026-04-19
+
+Polish + docs sync after alpha.10.
+
+### Fixed
+
+- `omnicoder-routing list` enumeraba las claves top-level del JSON
+  (`description`, `presets`) en vez de los nombres de preset. El
+  archivo `routing-presets.json` usa la forma
+  `{ description, presets: { default, balanced, … } }`; el routing CLI
+  ahora desreferencia `presets.presets` cuando existe.
+
+### Changed
+
+- `README.md`, `docs/01-quickstart.md`, `docs/02-install.md` reescritos
+  para reflejar la instalación via npm (`npm install -g
+  @nicolas2601/omnicoder@alpha`) como ruta oficial. El flujo antiguo
+  basado en `gh api + bash` queda como "contribuidor / source build".
+
 ## [5.0.0-alpha.10] — 2026-04-19
 
 Bug bash round. Three issues reported after alpha.9:
