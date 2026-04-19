@@ -4,6 +4,17 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.13] — 2026-04-19
+
+### Fixed
+
+- **`omnicoder update` now uses `--force`** — npm's offline metadata
+  cache was making `npm install -g @nicolas2601/omnicoder@alpha` skip
+  genuine upgrades when both old and new versions shared the same
+  `@alpha` dist-tag. Users who ran `omnicoder update` still saw their
+  old version. `--force` bypasses the staleness check. The shell
+  wrapper `update` subcommand and the `.mjs` wrapper both updated.
+
 ## [5.0.0-alpha.12] — 2026-04-19
 
 ### Fixed

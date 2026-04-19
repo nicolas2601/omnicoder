@@ -51,13 +51,23 @@ function seedIfNeeded({ force = false, quiet = true } = {}) {
 // ---------------------------------------------------------------------------
 function cmdUpdate() {
   console.log("[omnicoder] checking npm registry for latest @alpha release…")
-  const r = spawnSync("npm", ["install", "-g", "@nicolas2601/omnicoder@alpha"], {
-    stdio: "inherit",
-    shell: process.platform === "win32",
-  })
+  // --force is required because npm will otherwise refuse to re-install a
+  // package that's already "up to date" in its offline cache, even when the
+  // registry has a newer version under the same @alpha dist-tag.  That's
+  // what bit users on the alpha.11 → alpha.12 upgrade.
+  const r = spawnSync(
+    "npm",
+    ["install", "-g", "@nicolas2601/omnicoder@alpha", "--force"],
+    {
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    },
+  )
   if (r.status !== 0) {
     console.error("[omnicoder] update failed (exit code " + r.status + ")")
-    console.error("[omnicoder] Try:  npm install -g @nicolas2601/omnicoder@alpha --force")
+    console.error(
+      "[omnicoder] Try manually:  npm install -g @nicolas2601/omnicoder@alpha --force",
+    )
     process.exit(r.status ?? 1)
   }
   seedIfNeeded({ force: true, quiet: false })

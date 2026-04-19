@@ -215,7 +215,9 @@ if [ "$#" -ge 1 ]; then
         printf 'omnicoder: npm not found. Install Node.js 18+ first.\n' >&2
         exit 127
       fi
-      exec npm install -g @nicolas2601/omnicoder@alpha "$@"
+      # --force so npm re-installs even when the cached metadata thinks
+      # the local copy is "up to date" under the same @alpha dist-tag.
+      exec npm install -g @nicolas2601/omnicoder@alpha --force "$@"
       ;;
   esac
 fi

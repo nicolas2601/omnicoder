@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@nicolas2601/omnicoder-core",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "description": "OmniCoder core plugin for opencode: skill router (BM25), security guard, token budget, memory loader, personality injector, tool dispatcher, provider failover.",
   "type": "module",
   "license": "MIT",
