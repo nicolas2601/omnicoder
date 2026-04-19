@@ -145,7 +145,7 @@ jobs:
           TAG: ${{ steps.tag.outputs.tag }}
         run: |
           set -euo pipefail
-          VERSION="${TAG#v}"
+          export VERSION="${TAG#v}"
 
           # Sync npm package version with the tag.
           cd packages/omnicoder-npm
