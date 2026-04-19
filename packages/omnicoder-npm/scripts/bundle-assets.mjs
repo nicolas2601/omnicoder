@@ -87,7 +87,15 @@ import { readFileSync, writeFileSync, existsSync, copyFileSync } from "node:fs"
 import path from "node:path"
 import os from "node:os"
 
-const CONFIG = path.join(os.homedir(), ".config", "opencode", "opencode.jsonc")
+function xdgConfigHome() {
+  if (process.env.XDG_CONFIG_HOME) return process.env.XDG_CONFIG_HOME
+  if (process.platform === "win32") {
+    return process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming")
+  }
+  return path.join(os.homedir(), ".config")
+}
+
+const CONFIG = path.join(xdgConfigHome(), "opencode", "opencode.jsonc")
 const PRESETS = path.join(os.homedir(), ".omnicoder", "routing-presets.json")
 
 function stripJsonc(text) {

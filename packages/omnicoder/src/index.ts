@@ -18,6 +18,7 @@ import { createMemoryLoader } from "./memory/index.js"
 import { createTokenBudget } from "./budget/index.js"
 import { createToolDispatcher } from "./hooks/tool-dispatcher.js"
 import { createProviderFailover } from "./hooks/provider-failover.js"
+import { createPersonalityLoader } from "./personality/index.js"
 
 export const OmnicoderPlugin: Plugin = async (input: PluginInput) => {
   const router = await createSkillRouter(input)
@@ -26,9 +27,11 @@ export const OmnicoderPlugin: Plugin = async (input: PluginInput) => {
   const budget = await createTokenBudget(input)
   const dispatcher = await createToolDispatcher(input)
   const failover = await createProviderFailover(input)
+  const personality = createPersonalityLoader()
 
   return {
     async "experimental.chat.system.transform"(i: any, o: any) {
+      await personality.inject(i, o)
       await memory.inject(i, o)
       await router.inject(i, o)
     },

@@ -4,6 +4,60 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.8] — 2026-04-19
+
+First real patch to opencode core since the fork. `/personality` becomes a
+native TUI slash command with a visual picker instead of the old markdown
+command that just printed help text at the orchestrator.
+
+Cross-platform install + auto-update flow is finalised: npm on Linux,
+macOS, and Windows (same single command, XDG-correct seed paths).
+
+### Added
+
+- **Native `/personality` dialog** — new
+  `packages/opencode/src/cli/cmd/tui/component/dialog-personality.tsx`
+  (marked `// OMNICODER:`). Slash registered in `app.tsx` under the
+  "OmniCoder" category. Writes selection to
+  `~/.omnicoder/personality.json`.
+- **Personality loader** — new `packages/omnicoder/src/personality/`
+  module. `@omnicoder/core` injects a preamble into the system prompt
+  before the memory + router hooks. 6 personas shipped (Omni-Man,
+  Conquest, Thragg, Anissa, Cecil, Immortal) + Off. 30s cache, 6 unit
+  tests.
+- **Subcomandos del wrapper**:
+  - `omnicoder update` / `upgrade` — re-ejecuta `npm install -g
+    @nicolas2601/omnicoder@alpha` y fuerza re-seed de agents/commands.
+  - `omnicoder --version` / `-v` — ya no pasa flag a opencode; imprime
+    versión, runtime subyacente (opencode-ai), node, platform, binary.
+  - `omnicoder seed [--force]` — re-siembra assets sin lanzar la TUI.
+- **Background update check** — al arrancar, chequeo no-bloqueante contra
+  registry.npmjs.org (cacheado 24h, skip si no es TTY, disable con
+  `OMNICODER_NO_UPDATE_CHECK=1`). Si hay versión mayor, imprime hint
+  violeta con el comando para actualizar.
+- **Guía de Windows** en `docs/install-paula.md` (pasos de limpieza de
+  instalación vieja, npm install, env vars via PowerShell, troubleshoot).
+
+### Fixed
+
+- **Windows path compatibility** — `scripts/seed-config.cjs` ahora
+  resuelve el directorio de config vía XDG-correcto:
+  - Linux: `~/.config/opencode/`
+  - macOS: `~/.config/opencode/`
+  - **Windows: `%APPDATA%\opencode\`** (antes apuntaba a
+    `~/.config/opencode/`, donde opencode no los buscaba).
+  El `routing-cli.mjs` generado por `bundle-assets.mjs` usa la misma
+  lógica.
+- **Upgrade seed flag** — el flag `~/.omnicoder/.seeded-alpha7` se
+  elimina para que la subida a alpha.8 vuelva a sembrar los assets.
+
+### Removed
+
+- `.opencode/command/personality.md` — el markdown command viejo que
+  solo imprimía el help del shell script. Reemplazado por el dialog
+  nativo. Si querés el comportamiento shell, los scripts viejos siguen
+  en `scripts/personality-assets/`.
+
 ## [5.0.0-alpha.7] — 2026-04-19
 
 First release published to npm. OmniCoder is now installable cross-platform
