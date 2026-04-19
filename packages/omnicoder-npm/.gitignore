@@ -1,0 +1,4 @@
+# Bundled by scripts/bundle-assets.mjs at prepack time.
+assets/
+*.tgz
+node_modules/

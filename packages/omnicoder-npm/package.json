@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@nicolas2601/omnicoder",
+  "version": "5.0.0-alpha.7",
+  "description": "OmniCoder — opencode fork con 170+ agents, skill router BM25, per-phase routing, memory layer y tema morado. Instalable via npm en Linux/macOS/Windows.",
+  "keywords": [
+    "ai",
+    "coding-agent",
+    "cli",
+    "opencode",
+    "claude",
+    "agents",
+    "skills",
+    "omnicoder"
+  ],
+  "author": "nicolas2601 <nm5571762@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/nicolas2601/omnicoder",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nicolas2601/omnicoder"
+  },
+  "bugs": {
+    "url": "https://github.com/nicolas2601/omnicoder/issues"
+  },
+  "type": "module",
+  "bin": {
+    "omnicoder": "bin/omnicoder.mjs",
+    "omnicoder-routing": "bin/omnicoder-routing.mjs"
+  },
+  "files": [
+    "bin",
+    "scripts",
+    "assets",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "prepack": "node scripts/bundle-assets.mjs",
+    "postinstall": "node scripts/postinstall.mjs || true"
+  },
+  "dependencies": {
+    "opencode-ai": "^1.14.18"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

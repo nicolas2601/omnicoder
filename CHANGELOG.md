@@ -4,6 +4,62 @@ All notable changes to OmniCoder v5 will be documented in this file. Format foll
 
 ## [Unreleased]
 
+## [5.0.0-alpha.7] — 2026-04-19
+
+First release published to npm. OmniCoder is now installable cross-platform
+with a single command — no more cloning the repo or running bootstrap
+scripts.
+
+### Added
+
+- **npm package `@nicolas2601/omnicoder`** — thin Node.js wrapper around
+  `opencode-ai` that ships 172 agents, 29 commands, the "omnicoder" purple
+  theme, and 7 per-phase routing presets bundled as static assets.
+  Cross-platform (Linux / macOS / Windows) because it piggybacks on
+  opencode-ai's existing per-platform binaries.
+- **`bin/omnicoder.mjs`** — Node launcher that resolves opencode's
+  per-platform binary via `require.resolve("opencode-ai/package.json")`,
+  seeds user config on every launch (idempotent, skips if already seeded),
+  and transparently spawns opencode with our env vars (`OMNICODER=1`,
+  `OMNICODER_VERSION`).
+- **`bin/omnicoder-routing.mjs`** — standalone JSONC editor for per-phase
+  routing presets (same capability as the dev-mode `omnicoder-routing`
+  shell script, now portable across OSes).
+- **`scripts/seed-config.cjs`** — idempotent copy of agents / commands /
+  theme / presets into `~/.config/opencode/` and `~/.omnicoder/`. Never
+  overwrites user edits; flag file `~/.omnicoder/.seeded-alpha7` short-
+  circuits on repeat launches.
+- **`scripts/bundle-assets.mjs`** — build step run by `npm pack`
+  `prepack`. Snapshots `.opencode/{agent,command}/`, the theme, and
+  routing presets into `packages/omnicoder-npm/assets/` so the tarball is
+  fully self-contained (no network fetch at install time).
+- Workflow `omnicoder-release.yml`: new `Pack @nicolas2601/omnicoder`
+  step syncs the npm package version with the git tag, runs `npm pack`,
+  and `npm publish --access public --tag <dist-tag>` (dist-tag resolves
+  from the version suffix: `-alpha.*` → `alpha`, `-beta.*` → `beta`,
+  `-rc.*` → `next`, stable → `latest`). Publish is skipped with a warning
+  if `NPM_TOKEN` is unset, so forks without a token don't hard-fail.
+
+### Changed
+
+- `packages/omnicoder/src/security/index.ts`: `createSecurityGuard`'s
+  `PluginInput` argument is now optional. The value is only used for
+  future hooks; making it optional lets tests (and non-plugin callers)
+  instantiate the guard without fabricating a full `PluginInput`.
+
+### Installation
+
+```bash
+npm install -g @nicolas2601/omnicoder@alpha
+omnicoder                     # launch TUI
+omnicoder-routing list        # list presets
+omnicoder-routing apply balanced
+```
+
+Package size: 733 kB tarball / 2.2 MB unpacked / 213 files. Depends on
+`opencode-ai ^1.14.18` (npm resolves the correct binary per platform at
+install time).
+
 ## [5.0.0-alpha.6] — 2026-04-18
 
 Fix the silent "orchestrator never delegates" bug. Two structural gaps

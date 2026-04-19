@@ -18,7 +18,7 @@ describe("Security Guard — Sprint 0 Fixes", () => {
 
   // Setup
   it("should initialize security guard", async () => {
-    guard = await createSecurityGuard({})
+    guard = await createSecurityGuard()
     expect(guard).toBeDefined()
   })
 

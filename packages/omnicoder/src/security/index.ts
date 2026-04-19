@@ -65,7 +65,7 @@ export class SecurityError extends Error {
   }
 }
 
-export async function createSecurityGuard(_input: PluginInput): Promise<{
+export async function createSecurityGuard(_input?: PluginInput): Promise<{
   check: (
     i: { tool: string; sessionID?: string; callID?: string },
     o: { args: unknown },

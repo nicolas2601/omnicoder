@@ -17,6 +17,7 @@ concurrency:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
@@ -35,6 +36,12 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+
+      - name: Setup Node.js (for npm publish)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -132,6 +139,60 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "tarball=${TARBALL}" >> "$GITHUB_OUTPUT"
 
+      - name: Pack @nicolas2601/omnicoder (npm package)
+        id: pack_npm
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          VERSION="${TAG#v}"
+
+          # Sync npm package version with the tag.
+          cd packages/omnicoder-npm
+          node -e '
+            const fs = require("fs");
+            const p = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            p.version = process.env.VERSION;
+            fs.writeFileSync("package.json", JSON.stringify(p, null, 2) + "\n");
+            console.log("set version:", p.version);
+          '
+
+          # prepack runs bundle-assets automatically.
+          npm pack
+          mv nicolas2601-omnicoder-*.tgz ../../.artifacts/release/
+
+          ls -lah ../../.artifacts/release/
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "::warning::NPM_TOKEN secret not set — skipping npm publish. Add it in repo Settings → Secrets."
+            exit 0
+          fi
+
+          VERSION="${TAG#v}"
+          # Choose dist-tag: alpha/beta/rc versions go to their own tag; stable → latest.
+          DIST_TAG="latest"
+          case "${VERSION}" in
+            *-alpha*) DIST_TAG="alpha" ;;
+            *-beta*)  DIST_TAG="beta"  ;;
+            *-rc*)    DIST_TAG="next"  ;;
+          esac
+          echo "Publishing version=${VERSION} dist-tag=${DIST_TAG}"
+
+          TARBALL=$(ls .artifacts/release/nicolas2601-omnicoder-*.tgz | head -1)
+          if [ -z "${TARBALL}" ]; then
+            echo "::error::No npm tarball found in .artifacts/release/"
+            exit 1
+          fi
+
+          npm publish "${TARBALL}" --access public --tag "${DIST_TAG}"
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -142,6 +203,9 @@ jobs:
           ASSETS=(.artifacts/release/omnicoder-core-*.tgz)
           if ls .artifacts/release/omnicoder-scripts-*.tgz >/dev/null 2>&1; then
             ASSETS+=(.artifacts/release/omnicoder-scripts-*.tgz)
+          fi
+          if ls .artifacts/release/nicolas2601-omnicoder-*.tgz >/dev/null 2>&1; then
+            ASSETS+=(.artifacts/release/nicolas2601-omnicoder-*.tgz)
           fi
           if [ -f .artifacts/release/install.sh ]; then
             ASSETS+=(.artifacts/release/install.sh)
